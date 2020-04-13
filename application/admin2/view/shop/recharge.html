@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+
+<body>
+    <div class="page-content-wrap">
+        <!--筛选-->
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="ono" class="layui-input" placeholder="输入订单号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="会员昵称/姓名/手机号">
+                </div>
+                <div class="layui-inline" style="width: 180px;">
+                    <input type="text" name="start_stop" id="start-stop" class="layui-input" placeholder="日期区间">
+                </div>
+                <div class="layui-inline">
+                    <select name="o_status">
+                        <option value="-2">订单状态</option>
+                        <option value="-1">过期</option>
+                        <option value="0">待支付</option>
+                        <option value="99">交易完成</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <select name="o_type">
+                        <option value="-1">渠道</option>
+                        <option value="0">会员购买</option>
+                        <option value="1">后台添加</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <!--数据表格-->
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="ot-tool">
+    {{#if(d.orders_type){ }}
+    后台添加
+    {{#}else{ }}
+    会员下单
+    {{#} }}
+</script>
+<script type="text/html" id="costs-tool">
+    {{#if(d.costs){ }}
+    是
+    {{#}else{ }}
+    否
+    {{#} }}
+</script>
+<script type="text/html" id="balance-tool">
+    {{#if(!d.orders_type || d.balance){ }}
+    是
+    {{#}else{ }}
+    否
+    {{#} }}
+</script>
+<script type="text/html" id="au-tool">
+    {{#if(!d.audit && d.orders_type){ }}
+    <button class="layui-btn layui-btn-sm layui-btn-normal audit-tool" data-id="{{d.id}}">审核</button>
+    {{#}else if(d.audit){ }}
+    {{d.user.nickname}}
+    {{#}else{ }}
+    已审
+    {{#} }}
+</script>
+<script type="text/html" id="recharge-tool">
+    {{#if(!d.orders_type){ }}
+    {{d.recharge.goods_name}}
+    {{#}else{ }}
+    手动添加
+    {{#} }}
+</script>
+<script type="text/html" id="recharge-money">
+    {{#if(d.sale_money > 0){ }}
+        {{#if(!d.orders_type){ }}
+        {{d.recharge.return_money}}
+        {{#}else if(d.audit==0){ }}
+        {{d.rmt.return_money}}
+        {{#}else{ }}
+        {{d.rm.return_money}}
+        {{#} }}
+    {{#}else{ }}
+    0
+    {{#} }}
+</script>
+<script type="text/html" id="recharge-date">
+    {{#if(d.sale_money > 0){ }}
+        {{#if(!d.orders_type){ }}
+        {{d.recharge.return_date}}
+        {{#}else if(d.audit==0){ }}
+        {{d.rmt.return_date}}
+        {{#}else{ }}
+        {{d.rm.return_date}}
+        {{#} }}
+    {{#}else{ }}
+    0
+    {{#} }}
+</script>
+<script type="text/html" id="recharge-residue">
+    {{#if(d.sale_money > 0){ }}
+        {{#if(d.rm){ }}
+            {{d.rm.residue_date}}
+        {{# }else{ }}
+            0
+        {{# }; }}
+    {{#}else{ }}
+        0
+    {{#} }}
+</script>
+<script type="text/html" id="order-status">
+    {{#if(d.status==-1){ }}
+    已过期
+    {{#}else if(d.status==0){ }}
+    待支付
+    {{#}else{ }}
+    交易完成
+    {{#} }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form','laydate'],function () {
+        let table=layui.table,form=layui.form;
+        layui.laydate.render({
+            elem:"#start-stop",
+            range:"_"
+        });
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('recharge')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{goods_type:2},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'订单列表',
+            //表头设置
+            cols:[[
+                {field:'order_no',title:'订单号',width:220},
+                {field:'nickname',title:'会员',width:160},
+                {field:'pay_money', title: '支付金额',width:100},
+                {field:'status', title: '订单状态',toolbar:"#order-status",width:100},
+                {field:'create_time', title: '下单时间',width:160},
+                {field:'pay_time', title: '支付时间',width:160},
+                {field:'recharge_tool', title: '充值卡',toolbar:"#recharge-tool",width:100},
+                {field:'recharge_money', title: '返现金额',toolbar:"#recharge-money",width:100},
+                {field:'recharge_date', title: '返现总期',toolbar:"#recharge-date",width:100},
+                {field:'recharge_residue', title: '剩余期数',toolbar:"#recharge-residue",width:100},
+                {field:'orders_type', title: '订单类型',width:100,toolbar:"#ot-tool"},
+                {field:'audit', title: '审核',width:100,toolbar:"#au-tool"},
+                {field:'costs', title: '员工提成',width:100,toolbar:"#costs-tool"},
+                {field:'balance', title: '计入余额',width:100,toolbar:"#balance-tool"},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500,2000,5000,10000]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //审核手动订单
+        $('#table-list').on('click', '.audit-tool', function() {
+            let id=$(this).data('id');
+            layer.confirm('审核消费订单会立即生效！！！<br>请您务必仔细核对！！！',
+                {title:site_name,btn:['审核生效','无效订单','取消']},
+                function(){
+                    $.post("{:url('audit')}",{id:id,type:5},function(redata){
+                        if(redata.code==0){
+                            layer.msg('订单审核完成',{icon:1,title:site_name,end:function(){
+                                    tableIns.reload();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                },
+                function () {
+                    layer.confirm('无效订单会立即删除！！！<br>请您务必仔细核对！！！'
+                        ,function () {
+                            $.post("{:url('audit')}",{id:id,type:7},function(redata){
+                                if(redata.code==0){
+                                    layer.msg('无效订单已删除',
+                                        {icon:1,title:site_name,end:function(){
+                                                tableIns.reload();
+                                            }});
+                                }else{
+                                    layer.msg(redata.msg,{icon:2,title:site_name});
+                                }
+                            });
+                        });
+                }
+            );
+            return false;
+        });
+    });
+
+</script>

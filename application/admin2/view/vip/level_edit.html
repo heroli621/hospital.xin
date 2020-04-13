@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+	</head>
+	<body>
+		<div>
+			<form class="layui-form" style="width: 90%;padding-top: 20px;">
+				<div class="layui-form-item">
+					<label class="layui-form-label">等级名称：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="level_name"   class="layui-input" >
+					</div>
+				</div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">等级：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="level_id"   class="layui-input" >
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        请填写等级数字
+                    </div>
+                </div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">满足金额：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="level_money"  class="layui-input" >
+					</div>
+                    <div class="layui-form-mid layui-word-aux">
+                        单位：元
+                    </div>
+				</div>
+                <div class="layui-form-item" >
+					<label class="layui-form-label">享受折扣：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="level_sale"  class="layui-input" >
+					</div>
+					<div class="layui-form-mid layui-word-aux">
+                        % 折扣值(1-100 如果打9折，请输入90)
+					</div>
+				</div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">条件描述：</label>
+                    <div class="layui-input-block">
+                        <textarea name="level_condition" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">权益描述：</label>
+                    <div class="layui-input-block">
+                        <textarea name="level_interests" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+						<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		{include file="public/script"}
+		<script>
+
+            layui.use(['form','layer'], function(){
+                var form = layui.form,layer=layui.layer;
+
+				//监听提交
+				form.on('submit(addForm)', function(data) {
+                    var jdata=data.field;
+                    $.post("{:url('admin/Vip/levelSave')}",jdata,function(redata){
+                        if(redata.code==0){
+                            layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                                var url="{:url('admin/Vip/level')}?time={:time()}";
+                                    parent.$('.layui-show .iframe').attr('src',url);
+                                    parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                    return false;
+				});
+
+			});
+		</script>
+	</body>
+
+</html>

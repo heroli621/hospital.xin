@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout" >
+<!--顶部-->
+{include file="public/top"}
+    <!--左侧导航-->
+{include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            {eq name="uid" value="1"}
+                <div class="layui-form-item">
+                    <div class="layui-inline tool-btn">
+                        <button class="layui-btn  layui-btn-normal edit-btn" data-url="{:url('edit')}" ><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                    </div>
+                </div>
+            {/eq}
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="top-btn">
+    {{# if(!d.parent){ }}
+    无
+    {{# }else{ }}
+    {{d.parent}}
+    {{# }; }}
+</script>
+<script type="text/html" id="type-btn">
+    {{# if(d.type==0){ }}
+    导航
+    {{# }else if(d.type==1){ }}
+    一级菜单
+    {{# }else{ }}
+    二级菜单
+    {{# }; }}
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}" data-status="{{d.status}}">显示</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}" data-status="{{d.status}}">隐藏</button>{{# }; }}
+</script>
+<script type="text/html" id="auth-btn">
+    {{# if(d.auth==0){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-auth"  data-id="{{d.id}}" data-status="{{d.auth}}">超管</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-auth" data-id="{{d.id}}" data-status="{{d.auth}}">普通</button>{{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{{d.id}}" data-url="{:url('edit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        {eq name="uid" value="1"}
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+        {/eq}
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('index')}",
+            //高度
+            height:"full-170",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{type:""},
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'id',title:'ID',width:50},
+                {field:'name',title:'导航名称'},
+                {field:'link', title: '链接地址'},
+                {field:'parent', title: '上级',toolbar: '#top-btn'},
+                {field:'path', title: '层级关系'},
+                {field:'type', title: '类型',width:100,toolbar: '#type-btn'},
+                {field:'sort', title: '排序',edit: 1,width:80},
+                {field:'status', title: '状态',width:80,toolbar: '#status-btn'},
+                {field:'auth', title: '权限',width:80,toolbar: '#auth-btn'},
+                {field:'right', title: '操作', width:100,toolbar: '#edit-btn'},
+            ]],
+            //分页设置
+           /* page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,20,30,50]
+            },*/
+        };
+        tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return ;
+                }
+            }
+            $.post("{:url('changeField')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            let val=parseInt(That.attr('data-status'));
+            let value=!val?1:0;
+
+            $.post("{:url('changeSort')}",{id:id,field:'status',value:value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='显示';
+                    }else{
+                        txt='隐藏';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+        //修改权限
+        $('#table-list').on('click', '.table-list-auth', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            let val=parseInt(That.attr('data-status'));
+            let value=!val?1:0;
+
+            $.post("{:url('changeSort')}",{id:id,field:'auth',value:value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='普通';
+                    }else{
+                        txt='超管';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+</script>

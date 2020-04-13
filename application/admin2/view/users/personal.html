@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .layui-input-hide{
+            width: 1px;height: 1px;border: none;
+            color:#fff;font-size: 0;background-color: #fff;
+            position: relative;z-index: 0;top:-100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="layui-tab page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                同步功能会更新绑定的手机号码和真实姓名。更新后请用新手机号登录，密码不变。
+            </div>
+        </blockquote>
+        <input type="text" class="layui-input-hide">
+        <input type="password" class="layui-input-hide">
+        {if $member }
+        <div class="layui-form-item">
+            <div class="layui-inline tool-btn">
+                <button class="layui-btn layui-btn-sm synchronization-btn" ><i class="layui-icon layui-icon-refresh"></i>同步手机、姓名</button>
+            </div>
+        </div>
+        {/if}
+        <div class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item">
+                <label class="layui-form-label">原密码：</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="old_pass" placeholder="输入原密码" autocomplete="off" lay-verify="required" class="layui-input">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    输入原有登录密码
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">新密码：</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="password" autocomplete="off" class="layui-input" lay-verify="required|psd" placeholder="输入新密码">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    密码须由6到16位字母、数字、下划线组成
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">重复密码：</label>
+                <div class="layui-input-inline">
+                  <input type="password" name="re_password" placeholder="再次输入新密码"  class="layui-input" lay-verify="required|psd|repsd">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    再次输出新密码
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                  <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">修改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var site_name='{$site_name}';
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //自定义验证规则
+        form.verify({
+            psd: [/[a-zA-Z0-9_]{6,16}$/, '密码必须6到16位字母、数字、下划线组成'],
+            repsd:function (value,item) {
+                if(value !== $('input[name=password]').val()){
+                    return '两次输入的密码不一致';
+                }
+            }
+        });
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            //console.log(data);
+            $.post("{:url('resetPassword')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg("修改密码成功",{icon:1,title:site_name,end:function(){
+                            parent.$('.layui-show .iframe').attr('src',"{:url('personal')}?time={:time()}");
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                    console.log(redata);
+                }
+            });
+            return false;
+        });
+        $('.synchronization-btn').on('click',function () {
+            layer.confirm('是否更新手机与姓名？',function () {
+                $.post("{:url('synchronization')}",{syn:1},function(redata){
+                    if(redata.code==0){
+                        if(redata.data){
+                            layer.msg("资料更新成功！请使用新手机号登录！！！",{icon:1,title:site_name,end:function(){
+                                    parent.location.href='/system.html';
+                                }});
+                        }else{
+                            layer.msg("资料更新成功！");
+                        }
+
+                    }else{
+                        layer.msg(redata.msg,{icon:2,title:site_name});
+                        console.log(redata);
+                    }
+                });
+            });
+        });
+    });
+</script>

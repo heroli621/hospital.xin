@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #upload-images-list img{max-width: 160px;max-height: 80px;margin-right: 5px;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">商品名称：</label>
+                    <div class="layui-input-block" style="width:50%;">
+                        <input type="text" name="goods_name"  lay-verify="required" class="layui-input" value="{$info.goods_name|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">显示评论：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="comment_show" lay-skin="switch" lay-filter="comment_show" lay-text="显示|隐藏" value="1" {if !isset($info) or $info.comment_show }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">显示详情：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="detail_show" lay-skin="switch" lay-filter="detail_show" lay-text="显示|隐藏" value="1" {if !isset($info) or $info.detail_show }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item" style="width: 100%">
+                    <label class="layui-form-label">图组：</label>
+                    <div class="layui-input-inline">
+                        <button type="button" class="layui-btn"  id="up-images">
+                            <i class="layui-icon layui-icon-upload"></i>选择图片
+                        </button>
+                    </div>
+                    <div class="layui-word-aux layui-form-mid">
+                        选择图片后需要点击上传按钮上传图片。双击可删除图片。
+                    </div>
+                </div>
+                <div class="layui-form-item" style="{if !isset($info) or !$info['pics'] }display: none;{/if}width: 100%;" id="imgs-show">
+                    <label class="layui-form-label">图片预览：</label>
+                    <div class="layui-input-block" id="upload-images-list">
+                        {if isset($info) and count($info['images'])}
+                        {volist name="info.images" id="vo"}
+                        <img class="edit-image-item" src="{$vo}" />
+                        {/volist}
+                        {/if}
+                    </div>
+                    <div class="layui-input-block" style="text-align: center;">
+                        <button type="button" class="layui-btn" id="upload-img-btn" style="display: none;">上传</button>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">详情：</label>
+                    <div class="layui-input-block">
+                        <textarea name="detail" id="content">{$info.detail|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.goods_id|default=''}">
+                        <input type="hidden" name="images" class="pics" value="{$info.pics|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script>
+
+    //编辑器初始化
+    var ue = UE.getEditor('content',{
+        initialFrameHeight: 400,
+    });
+    //Demo
+    layui.use(['form','layer','upload','laydate'], function(){
+        var form = layui.form,layer=layui.layer,laydate = layui.laydate;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('goodsEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                           location.href='{:url("goods")}';
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //图片上传
+        var files;
+        var images_arr={if isset($info) and $info.images}{$info.images|raw|json_encode}{else /}[]{/if};
+        var uploadListIns=layui.upload.render({
+            elem:"#up-images",
+            field:"pics",
+            url: "{:url('uploadImages')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:10240,
+            multiple:true,
+            number:5,
+            acceptMime: 'image/*',
+            auto:false,
+            bindAction:"#upload-img-btn",
+            choose: function(obj){
+                //将每次选择的文件追加到文件队列
+                files = obj.pushFile();
+                //console.log(files);
+                //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                obj.preview(function(index, file, result){
+                    let imgObj=$('<img class="no-upload-img" src="'+result+'" />');
+                    //删除
+                    imgObj.on('dblclick', function(){
+                        delete files[index]; //删除对应的文件
+                        imgObj.remove();
+                        //清空 input file 值，以免删除后出现同名文件不可选
+                        uploadListIns.config.elem.next()[0].value = '';
+                    });
+                    $("#upload-images-list").append(imgObj);
+                });
+                $("#imgs-show").show();
+                $("#upload-img-btn").show();
+            },
+            before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致
+                //images_arr=[];
+
+            },
+            done: function(res,index) {
+
+                delete files[index];
+
+                $("#upload-img-btn").hide();
+                if(res.code == 0){
+                    images_arr.push(res.data);
+                    $('.pics').val(images_arr.join(','));
+                    $("#upload-images-list").empty();
+                    var k,imgObj='';
+                    for(k in images_arr){
+                        imgObj = '<img class="edit-image-item" src="'+images_arr[k]+'" />';
+                        $("#upload-images-list").append(imgObj);
+                    }
+                }
+            },
+            allDone: function(obj) {
+                if(obj.total!=obj.successful){
+                    layer.msg('上传'+obj.total+"张图片，失败"+obj.aborted+"张");
+                }else{
+                    layer.msg('图片上传成功！');
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+        //删除旧产品图
+        $("#upload-images-list").on('dblclick','.edit-image-item',function () {
+            var url=$(this).attr('src');
+            var img_arr=$(".pics").val();
+            var imgs,i;
+            if(img_arr){
+                imgs=img_arr.split(',');
+                for(i in imgs){
+                    if(imgs[i] == url){
+                        imgs.splice(i,1);
+                    }
+                }
+                $('.pics').val(imgs.join(','));
+                images_arr = imgs;
+            }
+            $(this).remove();
+        });
+    });
+</script>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="wrap-container">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('servers')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">项目名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="server_name"  lay-verify="required" class="layui-input" value="{$info.server_name|default=''}">
+                </div>
+            </div>
+           <!-- <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">费用类型：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="type" title="常规" value="1" checked>
+                    <input type="radio" name="type" title="体验" value="0" >
+                </div>
+            </div>-->
+            <!--<div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">手工费：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="cost"  lay-verify="required|number"  class="layui-input" value="{$info.cost|default=''}" placeholder="￥">
+                </div>
+                <div class="layui-word-aux layui-form-mid">
+                    该项服务技师提成金额
+                </div>
+            </div>-->
+            <div class="layui-form-item" >
+                <label class="layui-form-label">说明：</label>
+                <div class="layui-input-block">
+                    <textarea name="des" class="layui-textarea">{$info.des|default=''}</textarea>
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=0}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('serverEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            var url="/admin/Vip/servers.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                部分信息已隐藏。需要查看，请使用表格工具筛选列。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="ono" class="layui-input" placeholder="订单号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="会员昵称/姓名/手机号">
+                </div>
+                <div class="layui-inline" style="width: 180px;">
+                    <input type="text" name="start_stop" id="start-stop" class="layui-input" placeholder="日期区间">
+                </div>
+                <div class="layui-inline">
+                    <select name="pay_type">
+                        <option value="0">支付类型</option>
+                        <option value="1">微信支付</option>
+                        <option value="2">余额支付</option>
+                        <option value="3">支付宝</option>
+                        <option value="4">银联、网银</option>
+                        <option value="5">现金支付</option>
+                        <option value="6">积分兑换</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <select name="o_status">
+                        <option value="-2">订单状态</option>
+                        <option value="-1">过期</option>
+                        <option value="0">待支付</option>
+                        <option value="1">已支付</option>
+                        <option value="2">待签收</option>
+                        <option value="99">交易完成</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <select name="o_type">
+                        <option value="-1">渠道</option>
+                        <option value="0">会员购买</option>
+                        <option value="1">后台添加</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="delivery-btn">
+    <button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('admin/Shop/goods')}" data-width="1200" data-height="520">查看</button>
+</script>
+<script type="text/html" id="ot-tool">
+    {{#if(d.orders_type){ }}
+    后台添加
+    {{#}else{ }}
+    会员下单
+    {{#} }}
+</script>
+<script type="text/html" id="costs-tool">
+    {{#if(d.costs){ }}
+    是
+    {{#}else{ }}
+    否
+    {{#} }}
+</script>
+<script type="text/html" id="balance-tool">
+    {{#if(d.balance){ }}
+    是
+    {{#}else{ }}
+    否
+    {{#} }}
+</script>
+<script type="text/html" id="au-tool">
+    {{#if(!d.audit && d.orders_type){ }}
+    <button class="layui-btn layui-btn-sm layui-btn-normal audit-tool" data-id="{{d.id}}">审核</button>
+    {{#}else if(d.audit){ }}
+    {{d.user.nickname}}
+    {{#}else{ }}
+    已审
+    {{#} }}
+</script>
+<script type="text/html" id="delete-btn">
+    <button class="layui-btn layui-btn-sm layui-btn-danger delete-tool">一键清除过期订单</button>
+    <button class="layui-btn layui-btn-sm layui-btn-normal sign-for">超时签收</button>
+</script>
+<script type="text/html" id="order-status">
+    {{#if(d.status==-1){ }}
+    已过期
+    {{#}else if(d.status==0){ }}
+    待支付
+    {{#}else if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('admin/Shop/deliveryGoods')}" data-width="520" data-height="300">待发货</button>
+    {{#}else if(d.status==2){ }}
+    待签收
+    {{#}else{ }}
+    交易完成
+    {{#} }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form','laydate'],function () {
+        let table=layui.table,form=layui.form;
+        layui.laydate.render({
+            elem:"#start-stop",
+            range:"_"
+        });
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('expense')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{goods_type:1},
+            //是否显示工具栏
+            toolbar:"#delete-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'订单列表',
+            //表头设置
+            cols:[[
+                {field:'order_no',title:'订单号',width:220},
+                {field:'nickname',title:'会员',width:80},
+                {field:'money', title: '订单金额',width:100},
+                {field:'pay_money', title: '支付金额',width:100},
+                {field:'sale_money', title: '减免金额',width:100},
+                {field:'express_fee', title: '快递费',width:80},
+                {field:'integral', title: '兑换积分',width:100},
+                {field:'pay_type', title: '支付方式',width:100},
+                {field:'status', title: '订单状态',toolbar:"#order-status",width:100},
+                {field:'create_time', title: '下单时间',width:160},
+                {field:'shop_tool', title: '商品列表',toolbar:"#delivery-btn",width:100},
+                {field:'message', title: '买家留言',width:120},
+                {field:'orders_type', title: '订单类型',width:100,toolbar:"#ot-tool"},
+                {field:'balance', title: '划拨余额',width:100,toolbar:"#balance-tool"},
+                {field:'audit', title: '审核',width:100,toolbar:"#au-tool"},
+                {field:'costs', title: '员工提成',width:100,toolbar:"#costs-tool"},
+                {field:'coupon_id', title: '享受优惠',hide:1},
+                {field:'pay_time', title: '支付时间',hide:1},
+                {field:'success_time', title: '收货时间',hide:1},
+                {field:'consignee', title: '收件人',hide:1},
+                {field:'phone', title: '联系电话',hide:1},
+                {field:'province', title: '省',hide:1},
+                {field:'city', title: '市',hide:1},
+                {field:'region', title: '区县',hide:1},
+                {field:'specific', title: '详细地址',hide:1},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500,2000,5000,10000]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //审核手动订单
+        $('#table-list').on('click', '.audit-tool', function() {
+            let id=$(this).data('id');
+            layer.confirm('审核消费订单会立即生效！！！<br>请您务必仔细核对！！！',
+                {title:site_name,btn:['审核生效','无效订单','取消']},
+                function(){
+                    $.post("{:url('audit')}",{id:id,type:5},function(redata){
+                        if(redata.code==0){
+                            layer.msg('订单审核完成',{icon:1,title:site_name,end:function(){
+                                    tableIns.reload();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                },
+                function () {
+                    layer.confirm('无效订单会立即删除！！！<br>请您务必仔细核对！！！'
+                        ,function () {
+                        $.post("{:url('audit')}",{id:id,type:7},function(redata){
+                            if(redata.code==0){
+                                layer.msg('无效订单已删除',
+                                    {icon:1,title:site_name,end:function(){
+                                        tableIns.reload();
+                                    }});
+                            }else{
+                                layer.msg(redata.msg,{icon:2,title:site_name});
+                            }
+                        });
+                    });
+                }
+            );
+            return false;
+        });
+        //一键清理过期订单
+        $('#table-list').on('click', '.delete-tool', function() {
+            layer.confirm('消费和充值过期订单会一并删除！<br>确定要删除过期订单吗？',
+                {title:site_name},
+                function(){
+                    $.post("{:url('del')}",{action:1},function(redata){
+                        if(redata.code==0){
+                            layer.msg('删除完成',{icon:1,title:site_name,end:function(){
+                                    tableIns.reload();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+            return false;
+        });
+        //超时签收
+        $('#table-list').on('click', '.sign-for', function() {
+            layer.confirm('签收超过10天未签收的订单！<br>确定要签收超时订单吗？',
+                {title:site_name},
+                function(){
+                    $.post("{:url('signFor')}",{action:1},function(redata){
+                        if(redata.code==0){
+                            layer.msg('签收完成',{icon:1,title:site_name,end:function(){
+                                    tableIns.reload();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+            return false;
+        });
+    });
+</script>

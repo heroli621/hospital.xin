@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                手动发送优惠券，所有项目必须填写。
+            </div>
+        </blockquote>
+        <div class="layui-row">
+            <form class="layui-form" style="width: 90%;padding-top: 20px;">
+                <div class="layui-form-item" style="width: 40%">
+                    <label class="layui-form-label">优惠券：</label>
+                    <div class="layui-input-block">
+                        <select name="coupon_id" layui-verify="required">
+                            <option value="">选择优惠券</option>
+                            {volist name="coupons" id="val"}
+                            <option value="{$val.id}">{$val.coupon_name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">会员手机：</label>
+                    <div class="layui-input-inline" style="width: 160px;">
+                        <input type="text" name="mobile" lay-verify="required" class="layui-input" placeholder="ALL">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        全部会员填写 ALL ，单个会员请填写手机号
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">会员等级：</label>
+                    <div class="layui-input-inline" style="width: 160px;">
+                        <select name="member_level">
+                            <option value="0">所有会员</option>
+                            {volist name="member_level" id="val"}
+                            <option value="{$val.level_id}">{$val.level_name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        会员等级只有填写ALL（所有会员）时才有效。
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block" >
+                        <textarea name="message" placeholder="此备注内容会以系统消息的方式发送给客户。例：因XXX补偿优惠券一张" class="layui-textarea" lay-verify="required"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">发送</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form'],function () {
+        let form=layui.form;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return false;
+            $.post("{:url('couponSend')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            tableIns.reload({
+                                where:{goods_id:"{$goods_id|default=0}"},
+                            });
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

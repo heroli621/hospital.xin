@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('exam')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型名称：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="exam_name"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.exam_name|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">年级：</label>
+                    <div class="layui-input-inline">
+                        <select name="grade" >
+                            <option value="1" {if !isset($info) or $info.grade==1}selected{/if}>初一</option>
+                            <option value="2" {if isset($info) and $info.grade==2}selected{/if}>初二</option>
+                            <option value="3" {if isset($info) and $info.grade==3}selected{/if}>初三</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">录入期限：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="validate" value="{$info.validate|default=''}" class="layui-input" id="validate" readonly />
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        录入期限内可录入学习成绩
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="status" lay-skin="switch" lay-filter="is_courseware" lay-text="使用|禁用" value="1" {if !isset($info) or $info.status }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">学期：</label>
+                    <div class="layui-input-inline">
+                        <select name="term" >
+                            <option value="1" {if !isset($info) or $info.term==1}selected{/if}>上学期</option>
+                            <option value="2" {if isset($info) and $info.term==2}selected{/if}>下学期</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <textarea name="remark" class="layui-textarea">{$info.remark|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.exam_id|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+
+<script>
+
+    layui.use(['form','layer','laydate'], function(){
+        var form = layui.form,layer=layui.layer,laydate=layui.laydate;
+        laydate.render({
+            elem: '#validate',
+            format: 'MM-dd',
+            range:'-'
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('examEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.href="{:url('exam')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+
+    });
+
+</script>

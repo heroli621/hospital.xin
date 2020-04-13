@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_black">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">尊享会员</span>
+		</div>
+		<!--会员卡-->
+		<div class="member_card">
+			<div class="card lv{$member.level_id>5?5:$member.level_id} flex">
+                <div class="code" style="width: .92rem;position:absolute;right: .5rem">
+                    <div class="pic_icon flex_aro color">
+                        <i class="iconfont icon-erweima1"></i>
+                    </div>
+                    <div class="color">邀请</div>
+                </div>
+				<div class="info flex">
+					<img src="{$member.headimg|default='/static/shop/images/via.png'}" class="via_img" />
+					<div class="flex_col text">
+						<div class="name color">{$member.nickname}</div>
+					</div>
+
+				</div>
+
+                <div class="color" style="text-align: center;font-size: .7rem;">{$member.level_name}</div>
+				<div class="flex_bet">
+					<div class="integral">
+						<div class="score color">&yen;<span class="big">{$member.balance}</span></div>
+						<div class="to_use flex_aro color">
+							<span>我的余额</span>
+							<i class="iconfont icon-youjiantou"></i>
+						</div>
+					</div>
+                    <div class="integral">
+                        <div class="score color">&yen;<span class="big">{$member.recharge_money}</span></div>
+                        <div class="to_use flex_aro color">
+                            <span>充值总额</span>
+                            <i class="iconfont icon-youjiantou"></i>
+                        </div>
+                    </div>
+				</div>
+			</div>
+		</div>
+		<!--VIP专属权益-->
+		<div class="member_rights">
+			<div class="title">VIP专属权益</div>
+			<div class="list flex_aro">
+				<a href="{:url('recharge')}" class="item">
+					<img src="/static/shop/images/qy1.png" class="img"/>
+					<p class="p">充值入口</p>
+				</a>
+				<a class="item show-return-log">
+					<img src="/static/shop/images/qy2.png" class="img"/>
+					<p class="p">返现记录</p>
+				</a>
+				<a href="/orders.html" class="item">
+					<img src="/static/shop/images/qy3.png" class="img"/>
+					<p class="p">消费记录</p>
+				</a>
+				<a class="item show-recharge-log">
+					<img src="/static/shop/images/qy4.png" class="img"/>
+					<p class="p">充值记录</p>
+				</a>
+			</div>
+		</div>
+		<!--会员等级对照表-->
+		<div class="member_box member_level">
+			<div class="title">
+				<i class="iconfont icon-huiyuandengji0101"></i>
+				<span>会员等级对照表</span>
+			</div>
+			<div class="table flex_bet">
+
+				<ul class="list">
+					<li class="first">会员等级</li>
+                    {volist name="member_level" id="va"}
+					<li class="odd">{$va.level_name}</li>
+                    {/volist}
+				</ul>
+				<ul class="list">
+                    <li class="first">尊享</li>
+                    {volist name="member_level" id="vo"}
+					<li class="odd">{$vo.level_interests}</li>
+                    {/volist}
+				</ul>
+				<ul class="list">
+                    <li class="first">满足条件</li>
+                    {volist name="member_level" id="val"}
+                    <li class="odd">{$val.level_condition}</li>
+                    {/volist}
+				</ul>
+			</div>
+		</div>
+		<!--会员规则-->
+		<div class="member_box member_rule">
+			<div class="title">
+				<i class="iconfont icon-wenhao"></i>
+				<span>会员规则</span>
+			</div>
+			<div class="row">
+				<div class="type">会员规则</div>
+				<div class="intr">{$member_rule}</div>
+			</div>
+			<div class="row">
+				<div class="type">专属活动</div>
+				<div class="intr">{$member_activity_introduce}</div>
+			</div>
+		</div>
+		<!--会员专区-->
+		<div class="member_box member_cash">
+			<div class="title">
+				<i class="iconfont icon-huiyuan1"></i>
+				<span>会员专区</span>
+			</div>
+			<div class="list flex_bet">
+                {volist name="goods_list" id="value"}
+				<a href="/goods/detail_{$value.id}.html" class="item">
+					<img src="{$value.cover}" class="img"/>
+					<p class="title over_1">{$value.goods_name}</p>
+					<p class="need">&yen;{$value.price}</p>
+				</a>
+                {/volist}
+			</div>
+		</div>
+		<!--开通会员-->
+		<!--<div class="dredge_member">
+			<div class="btn xls_grad-3">开通会员</div>
+		</div>-->
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function () {
+        //邀请
+        $('.code').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('invite')}",
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //充值记录
+        $('.show-recharge-log').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('rechargeLog')}",
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //返现记录
+        $('.show-return-log').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('returnLog')}",
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>

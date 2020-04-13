@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <select name="school" >
+                            <option value="">选择学校</option>
+                            {volist name="school" id="vo"}
+                            <option value="{$vo.school_id}">{$vo.school_name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select lay-filter="grade">
+                            <option value="0">选择年级</option>
+                            <option value="1">初一</option>
+                            <option value="2">初二</option>
+                            <option value="3">初三</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select name="classify" id="classify">
+                            <option value="">选择成绩分类</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <select name="exam" id="exam">
+                            <option value="">选择考试类型</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <input type="text" name="score_s" class="layui-input" style="width: 20%;display: inline-block;">
+                        -
+                        <input type="text" name="score_e" class="layui-input" style="width: 20%;display: inline-block;">
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                    </div>
+                </div>
+
+            <table class="layui-table">
+                <thead>
+                    <th>全市</th>
+                    <th>本区</th>
+                    <th>本校</th>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="data-city">0</td>
+                        <td class="data-county">0</td>
+                        <td class="data-school">0</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form'],function () {
+        let table=layui.table,form=layui.form;
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            $.post("{:url('grade')}",data.field,function(res){
+                if(res.code != 0){
+                    layer.alert(res.msg);
+                }
+                var redata = res.data;
+                $('.data-city').text(redata.city);
+                $('.data-county').text(redata.county);
+                $('.data-school').text(redata.school);
+            });
+            return false;
+        });
+        //监听年级
+        form.on('select(grade)', function(data){
+            if(data.value){
+                get_next(data.value);
+            }
+        });
+        function get_next(id) {
+            $.post("{:url('getGrade')}",{grade:id},function (res) {
+                var i,j,k,obj='';
+                var classify = res.classify;
+                var up_data=res.exam_up;
+                var down_data = res.exam_down;
+                for(i in classify){
+                    obj += '<option value="'+classify[i].classify_id+'">'+classify[i].classify_name+'</option>';
+                }
+                var exam = '<option value="">选择考试类型</option><optgroup label="上学期">';
+                for(j in up_data){
+                    exam += '<option value="'+ up_data[j].exam_id +'">'+ up_data[j].exam_name +'</option>';
+                }
+                exam += '</optgroup><optgroup label="下学期">';
+                for(k in down_data){
+                    exam += '<option value="'+ down_data[k].exam_id +'">'+ down_data[k].exam_name +'</option>';
+                }
+                exam +='</optgroup>';
+                console.log(exam);
+                $('#classify').empty().html(obj);
+                $('#exam').empty().html(exam);
+                form.render('select');
+            });
+        }
+    });
+</script>

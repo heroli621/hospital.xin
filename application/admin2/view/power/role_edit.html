@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+
+	</head>
+	<body>
+		<div class="layui-tab page-content-wrap">
+			<ul class="layui-tab-title">
+				<li><a href="{:url('admin/Power/roleList')}">角色列表</a></li>
+				<li class="layui-this">角色编辑</li>
+			</ul>
+		  <div class="layui-tab-content">
+		    <div class="layui-tab-item layui-show">
+		    	<form class="layui-form"  style="width: 90%;padding-top: 20px;">
+				  <div class="layui-form-item">
+				    <label class="layui-form-label">角色名称：</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="name" value="{$info.name|default=''}" autocomplete="off" class="layui-input " >
+				    </div>
+				  </div>
+				   <div class="layui-form-item">
+				    <label class="layui-form-label">排序值：</label>
+				    <div class="layui-input-inline">
+				      <input type="text" name="sort"   autocomplete="off" class="layui-input" value="{$info.sort_num|default=0}">
+				    </div>
+				  </div>
+				  <div class="layui-form-item layui-form-text">
+				    <label class="layui-form-label">描述：</label>
+				    <div class="layui-input-block">
+				      <textarea name="des" class="layui-textarea" style="resize: none;">{$info.description|default=''}</textarea>
+				    </div>
+				  </div>
+					<!--权限-->
+					<div class="layui-form-item">
+						<label class="layui-form-label">权限：</label>
+						<div class="layui-input-block">
+							{volist name="permissions" id="val"}
+							<input type="checkbox" name="permissions[{$val.id}]" value="{$val.id}" title="{$val.name}" data-title="{$val.description}" {in name="val.id" value="$p_ids"}checked{/in} />
+							{/volist}
+						</div>
+					</div>
+				  <div class="layui-form-item">
+				    <div class="layui-input-block">
+						<input type="hidden" name="id" value="{$info.id|default=''}">
+				      <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">保存</button>
+				    </div>
+				  </div>
+				</form>
+		    </div>
+		  </div>
+		</div>
+		{include file="public/script"}
+<script>
+
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            $.post("{:url('admin/Power/saveRole')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                        parent.$('.layui-show .iframe').attr('src',"{:url('admin/Power/roleList')}?time={:time()}");
+						parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+					}});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        $('input[type=checkbox]').next('div').hover(function () {
+            let $this=$(this);
+            let title=$this.prev('input').data('title');
+            layer.tips(title,$this,{tips:[3,'#666'],time:0});
+        },function () {
+            layer.closeAll('tips');
+        });
+    });
+</script>
+	</body>
+</html>

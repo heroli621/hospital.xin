@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+        <style>
+            .btn{
+                line-height: 30px;margin-right: 1rem;
+            }
+        </style>
+	</head>
+	<body>
+		<div class="fans_head">
+			<div class="headbar">
+				<a href="javascript:history.back(-1);" class="back">
+					<i class="iconfont icon-zuojiantou2"></i>
+				</a>
+				<span class="title">粉丝团</span>
+			</div>
+			<div class="flex fans_info">
+				<div class="left">
+					<img src="{$member.headimg|default='/static/shop/images/via.png'}" class="img"/>
+				</div>
+				<div class="center">
+					<div class="name">{$member.nickname}</div>
+					<div class="info flex">
+						<i class="iconfont icon-yonghuming"></i>
+						<span>：</span>
+						<span>{$fans_two_num+$fans_one_num}人</span>
+					</div>
+				</div>
+				<div class="right">
+					<div class="income">
+						<span>&yen;</span>
+						<span class="num">{$member.earnings/100|number_format=2}</span>
+					</div>
+					<a href="{:url('withdraw')}" class="to_deposit">立即提现</a>
+				</div>
+			</div>
+		</div>
+		<div class="fans_navbar flex_aro">
+			<div class="item">
+				<div class="num">{$fans_two_num+$fans_one_num}</div>
+				<div class="type">我的粉丝</div>
+			</div>
+			<div class="item">
+				<div class="num">{$fans_order_num}</div>
+				<div class="type">粉丝订单</div>
+			</div>
+			<div class="item">
+				<div class="num">{$withdraw_money}</div>
+				<div class="type">已提现</div>
+			</div>
+		</div>
+		<div class="fans_list">
+			<div>
+				<span class="title">我的粉丝</span>
+				<a href="{:url('invite')}" class="fr btn"><i class="iconfont icon-erweima1"></i>邀请</a>
+			</div>
+			<!--有粉丝-->
+			<div class="fans_nav flex_aro">
+				<div class="item active" data-type="1">一级（{$fans_one_num}）</div>
+				<div class="item" data-type="2">二级（{$fans_two_num}）</div>
+			</div>
+            <div id="mescroll" class="mescroll">
+                <div class="list" id="list">
+
+                </div>
+            </div>
+            <!--没有更多了-->
+            <div class="toBottom no_more" style="display: none;">
+                <span class="span">没有更多了</span>
+            </div>
+		</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var type=1;
+    //分页参数
+    var pages={
+        num:1,
+        size:5
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+        }, function(){
+            mescroll.endErr();
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let t=pd.create_time.split(' ');
+            let headimg=pd.fans_headimg==""?'/static/shop/images/via.png':pd.fans_headimg;
+            let obj_str='<a class="item flex_bet" data-id="'+pd.member_id+'">' +
+                '<img src="'+headimg+'" class="img" />' +
+                '<span class="center flex_col">' +
+                '<span class="name">'+pd.fans_name+'</span>' +
+                '<span class="date">'+t[0]+'</span>' +
+                '</span>' +
+                '<span class="right flex_col">' +
+                '<span class="span">+'+pd.fans_brokerage+'</span>' +
+                '<span class="span">'+pd.fans_num+'个成员</span>' +
+                '</span>' +
+                '</a>';
+
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('fans')}",{size:pageSize,page:pageNum,type:type},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                if(pageNum==1){
+                    let obj_str='<div class="order_empty">' +
+                            '<div class="box">' +
+                            '<img src="/static/shop/images/no3.png" class="img" />' +
+                            '<p class="p1">还没有粉丝~</p>' +
+                            '<a href="'+"{:url('invite')}"+'" class="btn">请快去邀请吧</a>' +
+                            '</div>' +
+                            '</div>';
+                    $("#list").empty().append(obj_str);
+
+                }
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+    $(function () {
+        //选择等级
+        $('.fans_nav').on('click','.item',function () {
+            type=$(this).attr('data-type');
+            $('.fans_nav .item').removeClass("active");
+            $(this).addClass('active');
+            downCallback();
+        });
+
+        //查看粉丝订单
+        $('#mescroll #list').on('click','.item',function () {
+            let mid=$(this).attr('data-id');
+            let index=layer.open({
+                type:2,
+                content:"{:url('showFans')}?id="+mid,
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+    });
+
+    //时间戳转日期
+    function createTime(v){
+        v+='000';
+        return new Date(parseInt(v)).toLocaleString()
+    }
+
+    Date.prototype.toLocaleString = function() {
+        var y = this.getFullYear();
+        var m = this.getMonth()+1;
+        m = m<10?'0'+m:m;
+        var d = this.getDate();
+        d = d<10?("0"+d):d;
+        var h = this.getHours();
+        h = h<10?("0"+h):h;
+        var M = this.getMinutes();
+        M = M<10?("0"+M):M;
+        var S=this.getSeconds();
+        S=S<10?("0"+S):S;
+        return y+"-"+m+"-"+d;
+    };
+</script>
+

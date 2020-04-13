@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html class="fullscreen">
+<head>
+    <meta charset="utf-8" />
+    <title>404错误页面</title>
+    <style>
+        ::-webkit-scrollbar {
+            width:5px;
+            height:10px;
+        }
+        ::-webkit-scrollbar-button {
+            background-color:#aaa;
+        }
+        ::-webkit-scrollbar-track     {
+            background:#ccc;
+        }
+        ::-webkit-scrollbar-track-piece {
+            background-color:#ccc;
+        }
+        ::-webkit-scrollbar-thumb{
+            background:#6fb3e0;
+            border-radius:4px;
+        }
+        ::-webkit-scrollbar-corner {
+            background:#eee;
+        }
+        .center{
+            width: 100%;position: absolute;text-align: center;padding-top: 5%;
+            top:0;left:0;right: 0;bottom:0;margin: auto;line-height: 90%;
+        }
+        .center img{max-height: 90%;max-width: 100%;}
+    </style>
+</head>
+
+<body>
+
+
+<div class="center">
+    <img src="/static/admin/images/404.png" >
+    <p style="color:#666;">5秒后返回首页</p>
+</div><!-- /.col -->
+<script>
+    setTimeout(function () {
+        location.href='/';
+    },5000);
+</script>
+
+</body>
+</html>

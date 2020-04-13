@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+    <title>预览</title>
+    <link rel="stylesheet" href="/static/shop/css/common.css">
+    <link rel="stylesheet" href="/static/shop/css/style.css">
+    <link rel="stylesheet" href="/static/shop/font/iconfont.css" />
+    {include file="public/script"}
+    <style>
+        .jifen{font-size: 0.26rem;}
+    </style>
+  <!--引入swiper组件-->
+  <link rel="stylesheet" href="/static/shop/css/swiper.min.css" />
+  <script src="/static/shop/js/swiper.min.js"></script>
+</head>
+<body class="body">
+<div class="goods_head">
+    <a href="{$back_url}" class="back">
+        <i class="iconfont icon-zuojiantou2"></i>
+    </a>
+    <a href="javascript:;" class="item on">商品</a>
+    <a href="javascript:;" class="item">评价</a>
+    <a href="javascript:;" class="item">详情</a>
+</div>
+<!--商品-->
+<div class="section" id="goods">
+    <div class="goods_show">
+        <div class="swiper-container goods_pic">
+          <div class="swiper-wrapper">
+              {volist name="info.images" id="vo"}
+                <a class="swiper-slide">
+                    <img src="{$vo}" class="img"/>
+                </a>
+              {/volist}
+          </div>
+          <div class="swiper-pagination goods_fraction"></div>
+        </div>
+        <!--商品信息-->
+        <div class="goods_info">
+            <div class="cur_price">
+                <span class="price">{eq name="info.is_int" value="1"}{$info.integral} <span class="jifen">积分</span>{else /}&yen;{$sale_price}{/eq}</span>
+                {eq name="info.is_int" value="0"}<s>{$info.price}</s>{/eq}
+
+                    {eq name="info.is_int" value="1"}<span class="tag">积分兑换</span>{/eq}
+                    {eq name="info.is_new" value="1"}<span class="tag">新人专享</span>{/eq}
+                    {neq name="info.vip_level" value="0"}<span class="tag">会员专享</span>{/neq}
+            </div>
+            {if $info.activity.activity_type}
+            <div class="old_price">
+                <span>促销：</span>
+                <span>
+                    {switch info.activity.activity_type}
+                        {case 1}立减{$info.activity.sale}元{/case}
+                        {case 2}{$info.activity.sale/10}折{/case}
+                        {case 3}赠送{$info.activity.sale}积分{/case}
+                        {case 4}赠送{$info.activity.sale}优惠券{/case}
+                    {/switch}
+                </span>
+            </div>
+            {/if}
+            <h3 class="title">{$info.goods_name}</h3>
+            <div class="flex_bet other">
+                <span>快递：{$info.express_fee}</span>
+                {if $info.activity.limits}<span>每人限购{$info.activity.limits}件</span>{/if}
+                <span>销量：{$sale_num}</span>
+            </div>
+        </div>
+    </div>
+    <!--优惠券-->
+    <div class="goods_box goods_coupon">
+        <div class="flex_bet coupon_link link" id="check_coupon">
+            <div class="row">
+                <span class="tag">优惠券</span>
+                <span class="over_1" style="display: inline-block;width: 80%;vertical-align: top">{volist name='coupons' id='val' key="k" offset="0" length="4"}{$val.coupon_name}；{/volist}</span>
+            </div>
+            <i class="iconfont icon-youjiantou"></i>
+        </div>
+        {eq name="info.is_int" value="0"}
+        <div class="coupon_link">
+            <div class="row">
+                <span class="tag">积分</span>
+                <span>购买可得{$info.get_integral}积分</span>
+            </div>
+        </div>
+        {/eq}
+        {notempty name="info.des"}<div class="tip">{$info.des}</div>{/notempty}
+    </div>
+</div>
+<!--评价-->
+<div class="section" id="evaluate">
+    <div class="goods_evaluate goods_box">
+        <div class="title flex_bet">
+            <div class="left">商品评价<span class="num">({$evaluate_num})</span></div>
+            <span class="right">{$grade}分</span>
+        </div>
+       {empty name="evaluate"}
+        <div class="empty">
+            <span>还没有评价哦~</span>
+        </div>
+        {else /}
+        <!--有评价-->
+        <div class="list">
+            {volist name="evaluate" id="value"}
+            <div class="item flex">
+                <div class="via">
+                    <img src="{$value.headimg}" class="img"/>
+                </div>
+                <div class="text">
+                    <div class="flex_bet">
+                        <div class="info">
+                            <span class="name">{php}
+                                if($value['anonymity']){
+                                echo mb_substr($value['nickname'],0,1,'utf-8').'***';
+                                }else{
+                                echo $value['nickname'];
+                                }
+                                {/php}</span>
+                            <span class="date">{$value.create_time}</span>
+                        </div>
+                        <div class="grade">
+                            {for start="0" end="$value.grade"}
+                            <i class="iconfont icon-iconfontxingxing"></i>
+                            {/for}
+                        </div>
+                    </div>
+                    <p class="cont">{$value.comment}</p>
+                    <div class="show_pic flex_bet">
+                        {volist name="value.images" id='v'}
+                        <img src="{$v}" class="img" />
+                        {/volist}
+                    </div>
+                    {notempty name="value.reply"}
+                    <div class="reply">{$value.reply}</div>
+                    {/notempty}
+                </div>
+            </div>
+            {/volist}
+        </div>
+        <a class="check_more">查看全部</a>
+        {/empty}
+    </div>
+</div>
+<!--详情-->
+<div class="section" id="details">
+    <div class="goods_details goods_box">
+        <div class="title">
+            <span class="span">商品详情</span>
+        </div>
+        <div class="content">
+            {$info.detail|raw}
+        </div>
+    </div>
+</div>
+
+<script>
+    $(function(){
+        var mySwiper = new Swiper('.swiper-container', {
+            loop : true,
+            pagination: {
+            el: '.swiper-pagination',
+            type: 'fraction'
+          }
+        });
+        //锚点导航
+        var $navs = $('.goods_head .item'),
+        $sections = $('.section'),
+            $window = $(window),
+            navLength = $navs.length - 1,
+            $height = $('.goods_head').height();
+        $(".goods_head").on("click", ".item", function(){
+            var i = $(this).index() - 1;
+            var stp = parseInt($sections.eq(i).offset().top - $height);
+            $("html, body").animate({
+          scrollTop: stp
+            }, {duration: 500,easing: "swing"});
+        });
+        $window.on('scroll', function() {
+          var scrollTop = $window.scrollTop(),
+            len = navLength;
+          for (; len > -1; len--) {
+            var that = $sections.eq(len);
+            if (scrollTop >= parseInt(that.offset().top - $height)) {
+              $navs.removeClass('on').eq(len).addClass('on');
+              break;
+            }
+          }
+        });
+    });
+</script>
+</body>
+</html>

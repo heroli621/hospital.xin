@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                只能生成上月薪资表。薪资构成：基本工资+满勤+绩效-考勤+-薪资项目费用<br />
+                生成工资计算内容过多已使用缓存处理，缓存时间1小时。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <!--<div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="员工姓名/昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="month" id="start-stop" class="layui-input" value="" placeholder="月份">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+-->
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+                <table class="layui-table" lay-even lay-skin="nob" lay-filter="list-table">
+                    <thead>
+                    <tr>
+                        <th lay-data="{field:'realname',width:100}">员工姓名</th>
+                        <th lay-data="{field:'phone',width:120}">手机</th>
+                        <th lay-data="{field:'base_pay',width:100}">基本工资</th>
+                        <th lay-data="{field:'full_award'}">满勤</th>
+                        <th lay-data="{field:'clocking_pay'}">考勤</th>
+                        <th lay-data="{field:'performance_pay'}">提成</th>
+                        <th lay-data="{field:'handwork_pay'}">手工费</th>
+                        {volist name="projects" id="vo"}
+                        <th lay-data="{field:'project-{$vo.id}'}">{$vo.project_name}</th>
+                        {/volist}
+                        <th lay-data="{field:'should_pay'}">应发金额</th>
+                        <th lay-data="{field:'abatement_pay'}">扣减金额</th>
+                        <th lay-data="{field:'actual_pay'}">实发金额</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {volist name="data" id="val"}
+                    <tr>
+                        <td>{$val.realname}</td>
+                        <td>{$val.phone}</td>
+                        <td>+{$val.base_pay}</td>
+                        <td>+{$val.full_award}</td>
+                        <td>-{$val.clocking_pay}</td>
+                        <td>+{$val.performance_pay}</td>
+                        <td>+{$val.handwork_pay}</td>
+                        {volist name="val.project" id="value"}
+                        <td>{$value.type==1?'+':'-'}{$value.fee}</td>
+                        {/volist}
+                        <td>{$val.should_pay}</td>
+                        <td>{$val.abatement_pay}</td>
+                        <td>{$val.actual_pay}</td>
+                    </tr>
+                    {/volist}
+                    </tbody>
+                </table>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="activate-tool">
+    <button class="layui-btn layui-btn-xs layui-btn-normal go-btn" data-id="{{d.id}}" data-url="{:url('addClockingIn')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('removeClockingIn')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+        table.init("list-table",{
+            height: "full-112",
+            limit:{$total},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'员工工资{$month}',
+        });
+    });
+
+</script>

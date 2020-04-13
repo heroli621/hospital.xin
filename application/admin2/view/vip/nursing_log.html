@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="layui-form" style="width: 96%;margin: 20px auto 0;">
+        <table class="layui-table" id="save-table">
+            <thead>
+            <tr>
+                <th>服务订单</th>
+                <th>商品名称</th>
+                <th>总次数</th>
+                <th>上次结余</th>
+                <th>本次扣减</th>
+                <th>类型</th>
+                <th>手工费</th>
+                <th>状态</th>
+                <th>完成日期</th>
+            </tr>
+            </thead>
+            <tbody id="save-data">
+            {volist name="list" id="vol"}
+            <tr>
+                <td>{$vol.subscribe.server_no}</td>
+                <td>{$vol.nursing.goods_name}</td>
+                <td>{$vol.nursing.amount}</td>
+                <td>{$vol.residue_degree}</td>
+                <td>{$vol.num}</td>
+                <td>{$vol.experience?'体验':'常规'}</td>
+                <td>{$vol.cost}</td>
+                <td>{switch $vol.status }{case 0}待服务{/case}{case 1}已服务{/case}{default}已完成{/switch}</td>
+                <td>{$vol.update_time}</td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var index = parent.layer.getFrameIndex(window.name);
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            layer.confirm("请仔细核对！！！<br>是否通过审核？",{icon:3},function () {
+                $.post("{:url('reserveAudit')}",jdata,function(redata){
+                    if(redata.code==0){
+                        layer.msg(redata.msg,{end:function () {
+                                parent.layer.close(index);
+                            }});
+                    }else{
+                        layer.msg(redata.msg);
+                    }
+                },"json");
+            });
+            return false;
+        });
+    });
+</script>

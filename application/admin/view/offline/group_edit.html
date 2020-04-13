@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+<div style="padding: 10px;">
+    <div class="layui-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">小组名称：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="title" lay-verify="required" class="layui-input" value="{$info.title|default=''}" />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">序列：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="sort" lay-verify="required|number" class="layui-input" value="{$info.sort|default=''}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">最大人数：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="member_count" lay-verify="required|number" class="layui-input" value="{$info.member_count|default=''}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="id" value="{$info.id|default=0}">
+                <input type="hidden" name="cid" value="{$cid}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form','layer'],function () {
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('editStudyGroup')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.location.reload();
+                            parent.layer.close(ifarme_name);
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

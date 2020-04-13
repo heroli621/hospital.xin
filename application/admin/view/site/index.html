@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+	<style>
+		img{max-width: 200px;}
+	</style>
+</head>
+<body>
+<div class="main-layout " >
+	<!--左侧导航-->
+	{include file="public/top"}
+	<!--顶部-->
+	{include file="public/left"}
+	<div class="page-content-wrap">
+		<div class="column-content-detail">
+			{if $uid==1 }
+            <div class="layui-form-item">
+                <div class="layui-inline tool-btn">
+                     <button class="layui-btn layui-btn-sm layui-btn-normal edit-btn" data-url="{:url('edit')}"><i class="layui-icon">&#xe654;</i></button>
+                </div>
+            </div>
+			{/if}
+			<div class="layui-form" id="table-list">
+				<table class="layui-table" lay-even lay-skin="nob">
+					<colgroup>
+						<col  width="150">
+						<col class="hidden-xs" width="200">
+						<col >
+						<col class="hidden-xs">
+						<col width="80">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>变量名称</th>
+							<th class="hidden-xs">配置说明</th>
+							<th >配置值</th>
+							<th class="hidden-xs">扩展值</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					{volist name="data" id="val"}
+						<tr>
+							<td class="hidden-xs">{$val.varname}</td>
+							<td>{$val.name}</td>
+							<td class="hidden-xs">
+								{eq name="val.model" value="1"}
+								{$val.value}
+								{else /}
+								<img src="{$val.value}" />
+								{/eq}
+
+							</td>
+							<td>{$val.extension}</td>
+							<td>
+								<div class="layui-inline">
+									{if $user_state >= 99 }
+									<button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{$val.id}" data-url="{:url('edit')}"><i class="layui-icon">&#xe642;</i></button>
+                                    {/if}
+								</div>
+							</td>
+						</tr>
+					{/volist}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+		<div class="page-wrap">{$data|raw}</div>
+	</div>
+</div>
+</body>
+</html>
+{include file="public/script"}

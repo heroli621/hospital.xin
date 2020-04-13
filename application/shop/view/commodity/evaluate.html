@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="has_top" >
+		<div class="headbar xls_grad-3">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">评价</span>
+		</div>
+		<div class="goods_evaluate eva_page">
+			<div class="head">
+				<div class="flex_bet">
+					<div class="total_score">
+						<div class="pre">{$ratio.good_ratio}%</div>
+						<div class="p">好评率</div>
+					</div>
+					<div class="score_list">
+						<div class="flex_bet row">
+							<div class="text">好评</div>
+							<div class="progress">
+								<div class="bar" style="width: {$ratio.good_ratio}%"></div>
+							</div>
+							<div class="num">{$ratio.good_ratio}%</div>
+						</div>
+						<div class="flex_bet row">
+							<div class="text">中评</div>
+							<div class="progress">
+								<div class="bar" style="width: {$ratio.mid_ratio}%"></div>
+							</div>
+							<div class="num">{$ratio.mid_ratio}%</div>
+						</div>
+						<div class="flex_bet row">
+							<div class="text">差评</div>
+							<div class="progress">
+								<div class="bar" style="width: {$ratio.low_ratio}%"></div>
+							</div>
+							<div class="num">{$ratio.low_ratio}%</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!--评价列表-->
+            <div id="mescroll">
+                <div class="list" id="list">
+
+                </div>
+
+            </div>
+		</div>
+
+	</body>
+</html>
+
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function () {
+        let iframe_index = parent.layer.getFrameIndex(window.name);
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+        //分页参数
+        var pages={
+            num:1,
+            size:6
+        };
+        //手机分页
+        var mescroll = new MeScroll("mescroll", {
+            down: {
+                auto: true,
+                callback: downCallback,
+            },
+            up: {
+                auto: false,
+                //isBounce: false,
+                callback: upCallback,
+                page:pages
+            }
+        });
+
+        function downCallback(){
+            getListDataFromNet(pages.num,pages.size, function(data){
+                mescroll.endSuccess();
+                setListData(data, false);
+            }, function(){
+                mescroll.endErr();
+            });
+        }
+
+        function upCallback(page){
+            getListDataFromNet(page.num, page.size, function(curPageData){
+                mescroll.endSuccess(curPageData.length);
+                setListData(curPageData, true);
+            }, function(){
+                mescroll.endErr();
+            });
+        }
+
+        function setListData(curPageData,isAppend){
+            if (!isAppend) {
+                $("#list").empty();
+            }
+            for (var i = 0; i < curPageData.length; i++) {
+                var pd=curPageData[i];
+                let obj_str='<div class="item flex">' +
+                    '<div class="via">' +
+                    '<img src="'+pd.headimg+'" class="img"/>' +
+                    '</div>' +
+                    '<div class="text">' +
+                    '<div class="flex_bet">' +
+                    '<div class="info">' +
+                    '<span class="name">'+pd.nickname+'</span>' +
+                    '<span class="date">'+pd.create_time+'</span>' +
+                    '</div>' +
+                    '<div class="grade">' +
+                    '<i class="iconfont icon-iconfontxingxing"></i>' +
+                    '</div>' +
+                    '</div>' +
+                    '<p class="cont">'+pd.comment+'</p>';
+                    if(pd.images.length>0){
+                        obj_str+='<div class="show_pic flex_bet">';
+                        let j,imgs=pd.images;
+                        for(j in imgs){
+                            if(imgs[j]!='')
+                                obj_str+='<img src="'+imgs[j]+'" class="img" />';
+                        }
+                        obj_str+='</div>';
+                    }
+                    if(pd.reply!=''){
+                        obj_str+='<div class="reply">'+pd.reply+'</div>';
+                    }
+
+                obj_str+='</div>' + '</div>';
+
+                $("#list").append(obj_str);
+            }
+        }
+
+        function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+            $.get("{:url('getEvaluate')}",{size:pageSize,page:pageNum,goods_id:'{$gid}'},function (res) {
+                if(res.code==0){
+                    var newArr=res.data;
+                    successCallback&&successCallback(newArr);
+                }else{
+                    errorCallback&&errorCallback();
+                }
+
+
+            });
+        }
+
+
+
+
+    });
+</script>
+

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+    <style>
+        thead tr th div,td{text-align: center;}
+        .lay-state{color:#009688;}
+    </style>
+</head>
+<body>
+<div style="padding: 10px;">
+    <table id="data-table" class="layui-table" lay-filter="data-table">
+        <thead>
+        <tr>
+            <th lay-data="{field:'title'}">志愿</th>
+            <th lay-data="{field:'weight',width:100}">权重</th>
+            <th lay-data="{field:'status',width:100}">状态</th>
+            <th lay-data="{field:'tool',width:120}">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="data" id="val" key="k"}
+        <tr>
+            <td>{$val.title}</td>
+            <td>{$val.weight}</td>
+            <td>{$val.status == 1?'<span class="lay-state">使用</span>':'禁用'}</td>
+            <td>
+                <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('volunteerEdit')}" data-width="100%" data-id="{$val.volunteer_id}" data-height="100%" data-title="编辑规则"><i class="layui-icon layui-icon-edit"></i></button>
+            </td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+<script type="text/html" id="class-tool">
+    <button class="layui-btn  layui-btn-normal open-btn " data-url="{:url('volunteerEdit',['batch_id'=>$batch_id])}" data-height="100%" data-width="100%" data-title="编辑"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        var table=layui.table;
+        //渲染表格
+        table.init('data-table', {
+            height: "full-115" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#class-tool",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+
+        });
+    });
+</script>

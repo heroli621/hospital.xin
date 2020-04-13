@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+		<style>
+            .hide{width: 0;height: 0;border: none;}
+		</style>
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_white">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">我要提现</span>
+			<a class="publish">提现记录</a>
+		</div>
+		<!--提现-->
+		<div class="withdraw_cover">
+			<img src="/static/shop/images/tx.png" class="img"/>
+		</div>
+		<div class="withdraw_box">
+			<div class="title">提现金额</div>
+			<div class="row flex">
+				<span class="symbol">&yen;</span>
+				<input type="text" class="input input_ph" autocomplete="{:time()}" placeholder="0.00" />
+			</div>
+			<div class="flex_bet">
+				<span class="able">可提现金额&nbsp;&yen;<span class="total" data-money="{$earnings}">{$earnings|number_format=2}</span></span>
+				<span class="all">全部提现</span>
+			</div>
+			<button class="save_btn disabled">确认提现</button>
+		</div>
+    <div class="toBottom">
+        {if !$account }<p class="set-account">
+        <a class="btn">设置提现账户</a>
+        <p style="height: .3rem;"></p>
+        </p>{/if}
+
+        {if $min_money }<span>最小提现金额：&yen;{$min_money}</span>{/if}
+    </div>
+    <div class="new_addr" id="account-form" style="display: none;">
+        <div class="row">
+            <input type="text" class="ph input realname" placeholder="真实姓名"/>
+        </div>
+        <div class="row">
+            <input type="text" class="ph input account" placeholder="银行卡号或支付宝账户"/>
+        </div>
+        <div class="row">
+            <input type="text" class="ph input bank" placeholder="开户行，支付宝账户不用填写"/>
+        </div>
+        <p style="height: .3rem;"></p>
+        <button class="save_account save_address xls_grad-3">保存</button>
+        <div class="toBottom">
+        <span>提现账户设置后不可修改，请确认账户后提交保存</span>
+        </div>
+    </div>
+        <input type="text" autocomplete="off" class="hide">
+        <input type="password" autocomplete="off" class="hide">
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var min_money={$min_money};
+    var is_account={$account};
+    var account_index;
+    var password={$pass};
+    $(function(){
+        //全部提现
+        $(".withdraw_box").on("click", ".all", function(){
+            var total = parseFloat($(".withdraw_box .total").data('money'));
+            if(total > min_money){
+                $(".withdraw_box .input").val(total);
+                $(".withdraw_box .save_btn").removeClass("disabled").attr('disabled',false);
+            }
+
+        });
+        $(".withdraw_box").on("input", ".input", function(){
+            var total = parseFloat($(".withdraw_box .total").data("money"));
+            var value = $(this).val();
+            if (value >= min_money && value <= total) {
+                $(".withdraw_box .save_btn").removeClass("disabled").attr('disabled',false);
+            } else {
+                $(".withdraw_box .save_btn").addClass("disabled").attr('disabled',true);
+            }
+        });
+
+        //提现记录
+        $('.publish').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('withdrawLog')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //提现
+        $(".withdraw_box").on('click','.save_btn',function () {
+            let money=parseFloat($(".withdraw_box .input").val());
+            if(!is_account){
+                layer.msg('请先设置提现账户');
+                return !1;
+            }
+            var $this=$(this);
+            $this.attr('disabled','disabled').addClass('disabled');
+            if(money >= min_money){
+                layer.prompt({
+                    title: '请输入交易密码',
+                    formType: 1,
+                    offset:'3rem',
+                    cancel:function () {
+                        $this.attr('disabled',false).removeClass('disabled');
+                    },btn2:function () {
+                        $this.attr('disabled',false).removeClass('disabled');
+                    }
+                    },
+                    function(pass, index) {
+                    layer.close(index);
+                    $.post("{:url('withdraw')}", {money: money,password:pass}, function (res) {
+                        layer.msg(res.msg);
+                        $this.attr('disabled',false).removeClass('disabled');
+                        if (res.code == 0) {
+                            location.href = location.href;
+                        }
+                    });
+                });
+            }
+        });
+
+        //显示设置提现账户窗口
+        $('.set-account').on('click',function () {
+            if(!password){
+                layer.msg('交易密码未设置，请前往个人中心设置密码！');
+                return !1;
+            }
+            account_index=layer.open({
+                type:1,
+                shadeClose:1,
+                title:'提现账户信息',
+                closeBtn:1,
+                area: ['100%','100%'],
+                content:$("#account-form"),
+                anim:2
+            });
+        });
+
+        //保存提现账户
+        $('#account-form').on('click','.save_account',function () {
+            let realname=$('.realname').val();
+            if(realname==""){
+                layer.msg('真实姓名必须填写',{anim:6,icon:7});
+                return !1;
+            }
+            let account=$('.account').val();
+            if(account==""){
+                layer.msg('账号、卡号必须填写',{anim:6,icon:7});
+                return !1;
+            }
+            let bank=$('.bank').val();
+
+            layer.prompt({title: '请输入交易密码', formType: 1}, function(pass, index) {
+                layer.close(index);
+                $.post("{:url('saveAccount')}",{realname:realname,account:account,bank:bank,password:pass}, function (res) {
+                    layer.close(account_index);
+                    layer.msg(res.msg);
+                    if (res.code == 0) {
+                        is_account = 1;
+                        $('.set-account').hide();
+                    }
+                });
+            });
+        });
+
+
+    });
+</script>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+            <table  class="layui-table" lay-filter="data-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'classify_name',width:200}">分类名称</th>
+                    <th lay-data="{field:'grade',width:100}">年级</th>
+                    <th lay-data="{field:'type',width:120}">成绩类别</th>
+                    <th lay-data="{field:'course'}">含有课程</th>
+                    <th lay-data="{field:'remark'}">备注</th>
+                    <th lay-data="{field:'tool',width:120}">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="data" id="val" key="k"}
+                <tr>
+                    <td>{$val.classify_name}</td>
+                    <td>{$val.grade}</td>
+                    <td>{$val.type}</td>
+                    <td>{$val.course.course_title}</td>
+                    <td>{$val.remark}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('classifyEdit')}" data-id="{$val.classify_id}"><i class="layui-icon layui-icon-edit"></i></button>
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="class-btn">
+    <button class="layui-btn layui-btn-sm open-btn"  data-url="{:url('classifyEdit')}">添加分类</button>
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        table.init('data-table', {
+            height: "full-115" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#class-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+            //导出文件时的文件名
+            //title:'课程表',
+        });
+
+    });
+
+
+
+</script>

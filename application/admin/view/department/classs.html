@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+
+                <div class="layui-form-item">
+                    <div class="layui-inline">
+                        <input type="text" name="school_name" class="layui-input" placeholder="输入学校名称">
+                    </div>
+                    <div class="layui-inline">
+                        <select name="grade" >
+                            <option value="0">选择年级</option>
+                            <option value="1">初一</option>
+                            <option value="2">初二</option>
+                            <option value="3">初三</option>
+                        </select>
+                    </div>
+                    <div class="layui-inline">
+                        <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                    </div>
+                    <div class="layui-inline tool-btn">
+                        <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('classsEdit')}" ><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                    </div>
+                </div>
+
+            <div id="list-table" lay-filter="user-table"></div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{{d.class_id}}" data-url="{:url('classsEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        {php}/*
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.grade_id}}" data-url="{:url('admin/article/del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn" data-url="{:url('share')}" data-id="{{d.grade_id}}" data-width="80%" data-height="100%" data-title="查看分享">查看分享</button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn" data-id="{{d.grade_id}}" data-url="{:url('createCode')}" data-height="100%" data-width="50%" data-title="生成二维码" title="生成二维码"><i class="layui-icon layui-icon-cols"></i></button>*/{/php}
+
+    </div>
+</script>
+<script type="text/html" id="grade-bar">
+    {{#if(d.grade == 1){ }}
+    初一
+    {{# }else if(d.grade == 2){ }}
+    初二
+    {{# }else{ }}
+    初三
+    {{# } }}
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('classs')}",
+            //高度
+            height:"full-200",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:,
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级列表',
+            //表头设置
+            cols:[[
+                {field:'school_name',title:'学校名称'},
+                {field:'grade',title:'年级',toolbar:"#grade-bar"},
+                {field:'class_name',title:'班级名称'},
+                {field:'create_time',title:'添加日期'},
+                {field:'right',title:'操作',width:90,toolbar:'#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,20,30,50]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where=data.field;
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+</script>

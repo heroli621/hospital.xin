@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入优惠券名称">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="name" class="layui-input" placeholder="昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="validity-date">
+    {{# if(d.start_time > 0){ }}
+    {{createTime(d.start_time)}}_{{createTime(d.stop_time)}}
+    {{# }else{ }}
+    无限制
+    {{# }; }}
+</script>
+<script type="text/html" id="validity-time">
+    {{# if(d.validity > 0){ }}
+    {{ createTime(d.validity,1)}}
+    {{# }else{ }}
+    无限制
+    {{# }; }}
+</script>
+<script type="text/html" id="need-money">
+    {{# if(d.need_money > 0){ }}
+    满{{d.need_money}}元
+    {{# }else{ }}
+    不限
+    {{# }; }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('gain')}",
+            //高度
+            height:"full-150",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'优惠券领取记录',
+            //表头设置
+            cols:[[
+                {field:'coupon_name',title:'优惠券名称'},
+                {field:'need_money', title: '订单金额',toolbar:'#need-money'},
+                {field:'sale_money',title:'立减金额'},
+                {field:'nickname', title: '会员昵称'},
+                {field:'validity', title: '使用时限',width:160,toolbar:"#validity-time"},
+                {field:'create_time', title: '领取时间',width:160},
+                {field:'use_time', title: '使用时间',width:160},
+                {field:'des', title: '说明'}
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,200]
+            },
+        };
+        var tableIns=table.render(tableOption);
+
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+</script>

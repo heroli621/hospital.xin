@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list">
+            <table class="layui-table" lay-skin="line" lay-filter="this-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'type'}">类型</th>
+                    <th lay-data="{field:'goods_name'}">商品名称</th>
+                    <th lay-data="{field:'spec_name', width:100}">规格</th>
+                    <th lay-data="{field:'price', width:100}">原价</th>
+                    <th lay-data="{field:'sale_money', width:100}">优惠价</th>
+                    <th lay-data="{field:'integral', width:100}">兑换积分</th>
+                    <th lay-data="{field:'buy_num', width:100}">购买数量</th>
+                    <th lay-data="{field:'activity_title', width:160}">活动</th>
+                    <th lay-data="{field:'get_integral', width:100}">获得积分</th>
+                    <th lay-data="{field:'goods_type'}">套餐内商品</th>
+                    <th lay-data="{field:'complimentary'}">赠品</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="list" id="val"}
+                <tr class="parent collapsed">
+                    <td>{if $val.complimentary}赠送{else /}购买{/if}</td>
+                    <td>{$val.goods.goods_name}</td>
+                    <td>{if($val.spec)}{$val.spec.spec_name}{else /}无{/if}</td>
+                    <td>{$val.price}</td>
+                    <td>{$val.sale_money}</td>
+                    <td>{$val.integral}</td>
+                    <td>{$val.buy_num}</td>
+                    <td>{if($val.activity)}{$val.activity.activity_title}{else /}无{/if}</td>
+                    <td>{$val.get_integral}</td>
+                    <td>{if $val.goods.goods_type }<button class="layui-btn layui-btn-xs edit-btn" data-id="{$val.goods_id}" data-url="{:url('admin/Sale/combo',['type'=>1])}" >查看</button>{/if}</td>
+                    <td>{if $val.goods.complimentary }<button class="layui-btn layui-btn-xs edit-btn" data-id="{$val.goods_id}" data-url="{:url('admin/Sale/combo')}">查看</button>{/if}</td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+        table.init('this-table', {
+            height: 460 //设置高度
+            ,limit: {:count($list)} //注意：请务必确保 limit 参数（默认：10）是与你服务端限定的数据条数一致
+            //支持所有基础参数
+        });
+    });
+</script>

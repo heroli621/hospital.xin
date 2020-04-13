@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		<style>
+            #up-image{background-image:url({$info.cover|default=''});background-size: contain;background-repeat: no-repeat;}
+		</style>
+	</head>
+	<body>
+    <div class="main-layout " >
+        <!--顶部-->
+        {include file="public/top"}
+        <!--左侧导航-->
+        {include file="public/left"}
+		<div class="page-content-wrap">
+
+            <ul class="layui-tab-title">
+                <li><a href="{:url('index')}">列表</a></li>
+                <li class="layui-this">编辑</li>
+            </ul>
+				<form class="layui-form" style="width: 90%;padding-top: 20px;">
+					<div class="layui-form-item" style="width: 60%">
+						<label class="layui-form-label">导航名称：</label>
+						<div class="layui-input-inline">
+							<input type="text" name="name"  lay-verify="required"  class="layui-input" value="{$info.name|default=''}">
+						</div>
+					</div>
+                    <div class="layui-form-item" style="width: 60%">
+                        <label class="layui-form-label">图标代码：</label>
+                        <div class="layui-input-inline">
+                            <input type="text" name="icon"  class="layui-input" value="{$info.icon|default=''}">
+                        </div>
+                    </div>
+                    <div class="layui-form-item"  style="width: 60%">
+                        <label class="layui-form-label">上级栏目：</label>
+                        <div class="layui-input-inline">
+                            <select name="parent_id">
+                                <option value="0">无</option>
+                                {volist name="menus" id="val"}
+                                {if isset($info) and $info.parent_id==$val.id }
+                                <option value="{$val.id}" selected>{$val.path|diy_indent|raw}{$val.name}</option>
+                                {else /}
+                                <option value="{$val.id}" >{$val.path|diy_indent|raw}{$val.name}</option>
+                                {/if}
+                                {/volist}
+                            </select>
+                        </div>
+                    </div>
+					<div class="layui-form-item"  style="width: 60%">
+						<label class="layui-form-label">跳转链接：</label>
+						<div class="layui-input-block">
+							<input type="text" name="link" lay-verify="required" class="layui-input" value="{$info.link|default=''}">
+						</div>
+					</div>
+					<!--{<div class="layui-form-item"  style="width: 60%">
+						<label class="layui-form-label">打开方式：</label>
+						<div class="layui-input-inline">
+							<select name="target">
+                                {present name="info"}
+                                <option value="_self" {eq name="info.target" value="_self"}selected{/eq}>原窗口</option>
+                                <option value="_blank" {eq name="info.target" value="_blank"}selected{/eq}>新窗口</option>
+                                {else /}
+                                <option value="_self">原窗口</option>
+								<option value="_blank">新窗口</option>
+                                {/present}
+							</select>
+						</div>
+					</div>}-->
+					<!--{<div class="layui-form-item"  style="width: 60%">
+						<label class="layui-form-label">类型：</label>
+						<div class="layui-input-inline">
+							<select name="type">
+                                {present name="info"}
+								<option value="0" {eq name="info.type" value="0"}selected{/eq}>导航</option>
+								<option value="1" {eq name="info.type" value="1"}selected{/eq}>一级菜单</option>
+								<option value="2" {eq name="info.type" value="2"}selected{/eq}>二级菜单</option>
+                                {else /}
+                                <option value="0">导航</option>
+                                <option value="1">一级菜单</option>
+                                <option value="2">二级菜单</option>
+                                {/present}
+							</select>
+						</div>
+					</div>}-->
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+                            <input type="hidden" name="id" value="{$info.id|default=''}">
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+						</div>
+					</div>
+				</form>
+		</div>
+    </div>
+	</body>
+
+</html>
+{include file="public/script"}
+<script>
+    //Demo
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('saveEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/columns/index.html";
+                            location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_white">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">管理收货地址</span>
+		</div>
+        {empty name="data"}
+		<!--无收货地址-->
+		<div class="order_empty address_empty">
+			<div class="box">
+				<img src="/static/shop/images/no5.png" class="img" />
+				<p class="p1">快把你的地址告诉我~</p>
+			</div>
+		</div>
+        {else /}
+		<!--有收货地址-->
+		<div class="address_list">
+            {volist name="data" id="val"}
+			<div class="item" data-id="{$val.id}">
+				<div class="flex_bet">
+					<div class="name">{$val.realname}</div>
+					<div class="phone">{$val.phone}</div>
+				</div>
+				<div class="details">{$val.province} {$val.city} {$val.region} {$val.address}</div>
+				<div class="flex_bet">
+					<div class="flex_bet select-default {eq name='val.default_addr' value='1'}on{else /}is_default{/eq}">
+						<i class="iconfont icon-2xuanzhong"></i>
+						<span>设为默认</span>
+					</div>
+					<div class="manage flex_aro">
+						<div class="edit style flex_aro">
+							<i class="iconfont icon-bianji"></i>
+							<span>编辑</span>
+						</div>
+						<div class="delete style flex_aro">
+							<i class="iconfont icon-shanchu1"></i>
+							<span>删除</span>
+						</div>
+					</div>
+				</div>
+			</div>
+            {/volist}
+		</div>
+        {/empty}
+		<!--新增收货地址-->
+		<div class="add_address xls_grad-3">新增收货地址</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    $(function () {
+        //删除地址
+        $('.address_list .item').on('click','.delete',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            layer.confirm("真的要删除收货地址吗？<br /> 删除后无法恢复！",{icon:3,title:"{:session('config.web_name')}"},function () {
+                $.post("{:url('addressDel')}",{id:id},function (re) {
+                    if(re.code==0){
+                        refresh();
+                    }else{
+                        layer.msg(re.msg)
+                    }
+                },"json");
+            });
+
+        });
+
+        //编辑地址
+        $('.address_list .item').on('click','.edit',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            let edit_index=layer.open({
+                type:2,
+                content:"{:url('addressEdit')}?id="+id,
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(edit_index);
+        });
+
+        //新增地址
+        $('.add_address').on('click',function () {
+            let add_index=layer.open({
+                type:2,
+                content:"{:url('addressAdd')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(add_index);
+        });
+
+        //设为默认地址
+        $(".address_list").on("click", ".is_default", function(){
+            let $this=$(this);
+            let id=$this.parents('.item').attr('data-id');
+            $.post("{:url('changeAddress')}",{id:id},function (res) {
+                if(res.code==0){
+                    $(".address_list .select-default").addClass("is_default");
+                    $(".address_list .select-default").removeClass("on");
+                    $this.addClass("on").removeClass("is_default");
+                }
+            },"json");
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+    });
+    //刷新地址
+    function refresh() {
+       location.href=location.href;
+    }
+</script>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #imgs-show #upload-images-list img{max-width: 20%;max-height: 100px;}
+        #upload-image{background-size: contain;background-repeat: no-repeat;background-image: url("{$info.cover|default=''}")}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item">
+                <label class="layui-form-label">班级名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="term_name"  lay-verify="required" class="layui-input" value="{$info.term_name|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">免费视频：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="url" class="layui-input" value="{$info.url|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">学习点：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="learning_count"  lay-verify="number"  class="layui-input" value="{$info.learning_count|default=''}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">兑换所需的学习点数</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">期数：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="periods"  lay-verify="required|number"  class="layui-input" value="{$info.periods|default=1}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">同一班级多次开班</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">班主任：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="class_teacher"  lay-verify="required"  class="layui-input" value="{$info.class_teacher|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">微信号：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="wechart"  lay-verify="required"  class="layui-input" value="{$info.wechart|default=''}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">班主任的微信号</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">课程时长：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="time_long"  lay-verify="required"  class="layui-input" value="{$info.time_long|default=''}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">班级课程总时长</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">更新时长：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="renewal_long"  lay-verify="required|number"  class="layui-input" value="{$info.renewal_long|default=''}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">课程视频更新时长，单位（周）</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">考试次数：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="exam_num"  lay-verify="number"  class="layui-input" value="{$info.exam_num|default=3}">
+                </div>
+                <div class="layui-word-aux layui-form-mid">课程考试的最大次数</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">更新周期：</label>
+                <div class="layui-input-inline">
+                    <select name="weekday">
+                        {if isset($info)}
+                        <option value="1" {eq name="info.weekday" value="1"}selected{/eq}>周一</option>
+                        <option value="2" {eq name="info.weekday" value="2"}selected{/eq}>周二</option>
+                        <option value="3" {eq name="info.weekday" value="3"}selected{/eq}>周三</option>
+                        <option value="4" {eq name="info.weekday" value="4"}selected{/eq}>周四</option>
+                        <option value="5" {eq name="info.weekday" value="5"}selected{/eq}>周五</option>
+                        <option value="6" {eq name="info.weekday" value="6"}selected{/eq}>周六</option>
+                        <option value="0" {eq name="info.weekday" value="0"}selected{/eq}>周日</option>
+                        {else /}
+                        <option value="1">周一</option>
+                        <option value="2">周二</option>
+                        <option value="3">周三</option>
+                        <option value="4">周四</option>
+                        <option value="5">周五</option>
+                        <option value="6">周六</option>
+                        <option value="0">周日</option>
+                        {/if}
+                    </select>
+                </div>
+                <div class="layui-word-aux layui-form-mid">视频更新周期</div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">班级分类：</label>
+                <div class="layui-input-inline">
+                    <select name="classify">
+                        {if isset($info)}
+                        <option value="1" {eq name="info.classify" value="1"}selected{/eq}>系统班</option>
+                        <option value="2" {eq name="info.classify" value="2"}selected{/eq}>定制班</option>
+
+                        {else /}
+                        <option value="1">系统班</option>
+                        <option value="2">定制班</option>
+                        {/if}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">开班日期：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="start_time" id="start_time" lay-verify="required"  class="layui-input" value="{$info.start_time|default=''}" readonly>
+                </div>
+                <div class="layui-word-aux layui-form-mid">视频更新起始日期</div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">班级封面：</label>
+                <div class="layui-upload-drag" id="upload-image" >
+                    <i class="layui-icon"></i>
+                    <p>点击上传，或将图片拖拽到此处</p>
+                    <!--<p>建议尺寸：336*336</p>-->
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">班级简介：</label>
+                <div class="layui-input-block">
+                    <textarea name="des" class="layui-textarea">{$info.des|default=''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">班级详情：</label>
+                <div class="layui-input-block">
+                    <textarea name="backdrop" id="backdrop">{$info.backdrop|default=''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">报名细则：</label>
+                <div class="layui-input-block">
+                    <textarea name="rules" id="rules">{$info.rules|default=''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    {if !$copy }
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    {/if}
+                    <input type="hidden" name="cover" value="{$info.cover|default=''}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script>
+    var form;
+    //编辑器初始化
+    UE.getEditor('backdrop', {
+        initialFrameHeight: 400
+    });
+    UE.getEditor('rules', {
+        initialFrameHeight: 400
+    });
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        form = layui.form;
+        var laydate=layui.laydate,layer=layui.layer;
+
+        //日期插件
+        laydate.render({
+            elem: '#start_time'
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('edit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.href="{:url('index')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        //封面上传
+        layui.upload.render({
+            elem:"#upload-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#upload-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

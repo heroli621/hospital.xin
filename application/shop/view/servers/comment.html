@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_gray">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">发表评价</span>
+			<a class="publish">发布</a>
+		</div>
+        {volist name="server_list" id="val"}
+            <div class="goods-item" data-id="{$val.id}" data-staff-id="{$val.staff_id}">
+                <div class="flex goods_describe">
+                    <div style="width:50%;text-overflow: ellipsis;white-space: nowrap;overflow: hidden;">
+                        <b>{$val.nursing.goods_name}</b>
+                    </div>
+                    <div style="width:50%;text-align: right;">
+                        <b>{$val.staff_name}</b> 为您服务
+                    </div>
+                </div>
+                <div class="flex goods_describe">
+                    <div class="graded flex_aro" data-value="5">
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                    </div>
+                    <div class="norm">非常好</div>
+                </div>
+                <div class="eval_area">
+                    <textarea class="area input_ph comment" placeholder="技师的服务您还满意吗？"></textarea>
+                </div>
+            </div>
+        {/volist}
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    $(function(){
+
+        //评分
+        var normArr = ['非常差', '差', '一般', '好', '非常好'];
+        $(".goods-item").on("click", ".graded .item", function(){
+            var idx = $(this).index();
+            let parents=$(this).parents('.goods-item');
+            parents.find(".graded").attr('data-value',idx+1);
+            parents.find(".graded .item").removeClass("on");
+            for (var i = 0; i <= idx; i++) {
+                parents.find(".graded .item:eq("+ i +")").addClass("on");
+                parents.find(".norm").text(normArr[i]);
+            }
+
+        });
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+
+        //发布评价
+        $('.publish').on('click',function () {
+            let data=[];
+            $('.goods-item').each(function () {
+                let comment=$(this).find('.comment').val();
+                let id=$(this).attr('data-id');
+                let staff_id=$(this).attr('data-staff-id');
+                let grade=$(this).find('.graded').attr('data-value');
+                data.push({goods_id:id,comment:comment,grade:grade,staff_id:staff_id});
+            });
+            let post_data={id:"{$id|default=0}",servers:data};
+            //console.log(post_data);return !1;
+            $.post("{:url('comment')}",post_data,function (res) {
+                if(res.code==0){
+                    layer.msg('恭喜您，评价成功',{end:function () {
+                            parent.downCallback();
+                            parent.layer.close(iframe_index);
+                        }});
+
+                }else{
+                    layer.msg(res.msg);
+                }
+            });
+        });
+    });
+</script>

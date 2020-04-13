@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="wrap-container">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('staff')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">员工：</label>
+                {if isset($info) }
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input layui-disabled" disabled value="{$info.realname}">
+                    {else /}
+                    <div class="layui-input-block">
+                    {volist name="staffs" id="val"}
+                    <input type="checkbox" name="member_id[]" value="{$val.member_id}" title="{$val.realname}" />
+                    {/volist}
+                    {/if}
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">项目：</label>
+                <div class="layui-input-inline">
+                    {if isset($info) }
+                    <input type="text" class="layui-input layui-disabled" disabled value="{$info.project_name}">
+                    {else /}
+                    <select name="project_id" lay-verify="required">
+                        {volist name="projects" id="vo"}
+                        <option value="{$vo.id}">{$vo.project_name}</option>
+                        {/volist}
+                    </select>
+                    {/if}
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">金额：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="fee"  lay-verify="required|number"  class="layui-input" value="{$info.fee|default=''}" placeholder="￥">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    扣减或奖励的金额，单位（元）
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">月份：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="month" id="laydate-month" lay-verify="required"  class="layui-input" readonly value="{$info.month|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    <input type="hidden" name="status" value="0">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+
+<script>
+
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+        //console.log(laydate);
+        //日期插件
+        laydate.render({
+            elem: '#laydate-month',
+            type:"month"
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('staffEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/Finance/staff.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //封面上传
+        var images_arr=[];
+        var uploadListIns=layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:true,
+            number:5,
+            acceptMime: 'image/*',
+            auto:false,
+            bindAction:"#upload-img-btn",
+            choose: function(obj){
+                //将每次选择的文件追加到文件队列
+                var files = obj.pushFile();
+                //console.log(files);
+                //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                obj.preview(function(index, file, result){
+                    let imgObj=$('<img src="'+result+'" />');
+                    //删除
+                    imgObj.on('click', function(){
+                        delete files[index]; //删除对应的文件
+                        imgObj.remove();
+                        //清空 input file 值，以免删除后出现同名文件不可选
+                        uploadListIns.config.elem.next()[0].value = '';
+                    });
+                    $("#upload-images-list").append(imgObj);
+                });
+                $("#imgs-show").show();
+                $("#upload-img-btn").show();
+            },
+            before: function(obj){ //obj参数包含的信息，跟 choose回调完全一致
+                images_arr=[];
+            },
+            done: function(res) {
+                $("#upload-img-btn").hide();
+                //console.log(res);return ;
+                if(res.code==0){
+                    images_arr.push(res.data);
+                    $('.pics').val(res.data);
+                }
+            },
+            allDone: function(obj) {
+                $('.pics').val(images_arr.join(','));
+                //console.log(res);return ;
+                $("#upload-images-list").empty();
+                let k;
+                for(k in images_arr){
+                    let imgObj=$('<img src="'+images_arr[k]+'" />');
+                    $("#upload-images-list").append(imgObj);
+                }
+
+
+                if(obj.total!=obj.successful){
+                    layer.msg('上传'+obj.total+"张图片，失败"+obj.aborted+"张");
+                }else{
+                    layer.msg('图片上传成功！');
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+        //封面上传
+        layui.upload.render({
+            elem:"#upload-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#upload-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+    <style>
+        .layui-input-hide{
+            width: 1px;height: 1px;border: none;
+            color:#fff;font-size: 0;background-color: #fff;
+            position: relative;z-index: 0;top:-100px;
+        }
+    </style>
+</head>
+<body>
+	<div class="wrap-container">
+
+		<div class="column-content-detail">
+            <blockquote class="layui-elem-quote">
+                <div class="layui-word-aux">
+                    系统管理员如需添加，请前往员工管理。
+                </div>
+            </blockquote>
+            <input type="text" class="layui-input-hide">
+            <input type="password" class="layui-input-hide">
+			<!--<form class="layui-form" action="">
+				<div class="layui-form-item">
+					<div class="layui-inline tool-btn">
+						 <button class="layui-btn layui-btn-sm layui-btn-normal go-btn" data-url="{:url('admin/Users/add')}" data-title="添加管理员"><i class="layui-icon">&#xe654;</i></button>
+					</div>
+				</div>
+			</form>-->
+			<div class="layui-form" id="table-list">
+				<table class="layui-table" lay-even lay-skin="nob">
+					<colgroup>
+						<col class="hidden-xs" width="150">
+						<col width="200">
+						<col class="hidden-xs">
+						<col class="hidden-xs">
+						<col class="hidden-xs">
+						<col class="hidden-xs" width="100">
+						<col width="180">
+					</colgroup>
+					<thead>
+						<tr>
+							<th class="hidden-xs">手机</th>
+							<th>姓名</th>
+							<th class="hidden-xs">登录ip</th>
+							<th class="hidden-xs">上次登录时间</th>
+							<th class="hidden-xs">用户组</th>
+							<th class="hidden-xs">状态</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					{volist name="data" id="val"}
+						<tr>
+							<td class="hidden-xs">{$val.mobile}</td>
+							<td>{$val.nickname}</td>
+							<td class="hidden-xs">{$val.ip}</td>
+							<td class="hidden-xs">{$val.last_login_time}</td>
+							<td class="hidden-xs">
+								{notempty name="val.role"}
+								{volist name="val.role" id="value"}
+								[{$value.name}]
+								{/volist}
+								{/notempty}
+							</td>
+							<td class="layui-status-btn" data-id="{$val.id}">
+								{switch val.status}
+								{case -1}
+								<button class="layui-btn layui-btn-xs layui-btn-danger" data-status="-1">冻结</button>
+								{/case}
+								{case 0}
+								<button class="layui-btn layui-btn-xs layui-btn-warm" data-status="0">待审核</button>
+								{/case}
+								{default /}
+								<button class="layui-btn layui-btn-xs layui-btn-normal" data-status="1">正常</button>
+								{/switch}
+							</td>
+							<td>
+								<div class="layui-inline">
+									<button class="layui-btn layui-btn-xs layui-btn-normal  user-reset" data-id="{$val.id}" title="重置密码" ><i class="layui-icon layui-icon-refresh"></i></button>
+									<button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{$val.id}" data-url="{:url('detail')}" data-title="角色分配" title="角色分配" data-height="300"><i class="layui-icon layui-icon-username"></i></button>
+									<button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{$val.id}" data-url="{:url('del')}"><i class="layui-icon layui-icon-delete"></i></button>
+								</div>
+							</td>
+						</tr>
+					{/volist}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+		<div class="page-wrap">{$data|raw}</div>
+	</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['layer'], function() {
+        var layer = layui.layer;
+
+        //改变管理员状态
+        $('.layui-status-btn').on('click','.layui-btn',function(){
+            var     $this=$(this),str='是否冻结用户？',
+                status=$this.attr('data-status'),
+                id=$this.parent().attr('data-id'),
+                newStatus=-1;
+
+            if(status=="0"){
+                layer.confirm('请选择对用户的操作',{btn:['通过审核','冻结员工'],icon:3},function(){
+                        var data={id:id,status:1};
+                        changeStatus(data,$this);
+
+                    },function(){
+                        var data={id:id,status:-1};
+                        changeStatus(data,$this);
+                    }
+                );
+            }else{
+                if(status=="-1"){
+                    str='是否解除用户的冻结状态？';
+                    newStatus=1
+                }
+                var data={id:id,status:newStatus};
+                layer.confirm(str,{btn:['确定','取消'],icon:3},function(){
+                        changeStatus(data,$this);
+                    }
+                );
+            }
+        });
+        //重置管理员密码
+        $('.user-reset').on('click',function () {
+            var uid=$(this).attr('data-id');
+            if(uid){
+                layer.prompt({
+                    title:'6-16位字母、数字、下划线组成：',
+                    formType:1
+                },function(val, index){
+                    layer.close(index);
+                    $.post("{:url('resetPassword')}",{id:uid,password:val},function (e) {
+                        if(e.code==0){
+                            layer.msg(e.msg,{icon:1,title:site_name})
+                        }else{
+                            layer.msg(e.msg,{icon:2,title:site_name});
+                        }
+                    });
+                });
+            }
+        });
+
+    });
+
+    function changeStatus(data,obj){
+        $.post("{:url('admin/Users/changeStatus')}",data,function(redata){
+            if(redata.code==0){
+                layer.msg('用户状态修改成功',{icon:1,title:site_name});
+                var txt='',class_='';
+                if(redata.data=='-1'){
+                    txt='冻结';
+                    class_='layui-btn-danger';
+                }else if(redata.data=='1'){
+                    txt='正常';
+                    class_='layui-btn-normal';
+                }else{
+                    txt='待审核';
+                    class_='layui-btn-warm';
+                }
+                obj.removeClass('layui-btn-normal layui-btn-danger layui-btn-warm').addClass(class_).text(txt).attr('data-status',redata.data);
+            }else{
+                layer.msg(redata.msg,{icon:2,title:site_name});
+            }
+        });
+    }
+</script>

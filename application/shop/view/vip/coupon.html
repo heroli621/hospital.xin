@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="body">
+		<div class="fans_order_head">
+			<div class="headbar xls_white">
+				<a class="back">
+					<i class="iconfont icon-zuojiantou2"></i>
+				</a>
+				<span class="title">我的优惠券</span>
+			</div>
+			<div class="flex_aro fans_order_nav">
+				<div class="item active" data-value="1">未使用</div>
+				<div class="item" data-value="2">已使用</div>
+				<div class="item" data-value="3">已过期</div>
+			</div>
+		</div>
+		<div class="coupon_list" id="mescroll">
+
+		</div>
+
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    var type=1;
+    //分页参数
+    var pages={
+        num:1,
+        size:5
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            mescroll.lockUpScroll( false );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<a href="/goods/index.html"><div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">您还没有相关的记录</p>' +
+                '<p class="p2">可以去商品中心看看</p>' +
+                '</div></a>' +
+                '</div>';
+            $("#mescroll").empty().append(obj_str);
+            mescroll.lockUpScroll( true );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#mescroll").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            var pd=curPageData[i];
+            let ne_str=pd.coupons.need_money > 0?'满'+pd.coupons.need_money+'元可用':'无限制';
+            let validity_str=pd.validity > 0?createTime(pd.validity):'无使用限制';
+            let date_str=pd.coupons.start_time > 0?createTime(pd.coupons.start_time)+'-'+createTime(pd.coupons.stop_time):'无时间限制';
+
+
+            let obj_str='<div class="coupon_item flex_bet" id="list">' +
+                '<div class="left flex">' +
+                '<div class="reduced">' +
+                '<span>&yen;</span>' +
+                '<span class="money">'+pd.coupons.sale_money+'</span>' +
+                '</div>' +
+                '<div class="use">'+ne_str+'</div>' +
+                '</div>' +
+                '<div class="center">' +
+                '<div class="flex border">' +
+                '<div>' +
+                '<div class="t1 over_1">'+pd.coupons.coupon_name+'</div>' +
+                '<p class="t2">'+validity_str+'</p>' +
+                '</div>' +
+                '<a href="/goods/index.html" class="use_btn" target="_parent">立即使用</a>' +
+                '</div>' +
+                '<p class="t2">'+date_str+'</p>' +
+                '</div>' +
+                '</div>';
+            if(type==2){
+                obj_str='<div class="coupon_item flex_bet used">' +
+                    '<div class="left flex">' +
+                    '<div class="reduced">' +
+                    '<span>&yen;</span>' +
+                    '<span class="money">'+pd.coupons.sale_money+'</span>' +
+                    '</div>' +
+                    '<div class="use">'+ne_str+'</div>' +
+                    '</div>' +
+                    '<div class="center">' +
+                    '<div class="flex border">' +
+                    '<div>' +
+                    '<div class="t1 over_1">'+pd.coupons.coupon_name+'</div>' +
+                    '<p class="t2">'+validity_str+'</p>' +
+                    '</div>' +
+                    '<div class="xls_icon state"></div>' +
+                    '</div>' +
+                    '<p class="t2">'+date_str+'</p>' +
+                    '</div>' +
+                    '</div>';
+            }else if(type==3){
+                obj_str='<div class="coupon_item flex_bet expired">' +
+                    '<div class="left flex">' +
+                    '<div class="reduced">' +
+                    '<span>&yen;</span>' +
+                    '<span class="money">'+pd.coupons.sale_money+'</span>' +
+                    '</div>' +
+                    '<div class="use">'+ne_str+'</div>' +
+                    '</div>' +
+                    '<div class="center">' +
+                    '<div class="flex border">'+
+                    '<div>' +
+                    '<div class="t1 over_1">'+pd.coupons.coupon_name+'</div>' +
+                    '<p class="t2">'+validity_str+'</p>' +
+                    '</div>' +
+                    '<div class="xls_icon state"></div>' +
+                    '</div>' +
+                    '<p class="t2">'+date_str+'</p>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            $("#mescroll").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('coupon')}",{size:pageSize,page:pageNum,type:type},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+    $(function () {
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+
+        //选择类型
+        $('.fans_order_nav').on('click','.item',function () {
+            type=$(this).attr('data-value');
+            $('.fans_order_nav .item').removeClass("active");
+            $(this).addClass('active');
+            downCallback();
+        });
+    });
+
+    //时间戳转日期
+    function createTime(v){
+        v+='000';
+        return new Date(parseInt(v)).toLocaleString()
+    }
+
+    Date.prototype.toLocaleString = function() {
+        var y = this.getFullYear();
+        var m = this.getMonth()+1;
+        m = m<10?'0'+m:m;
+        var d = this.getDate();
+        d = d<10?("0"+d):d;
+        var h = this.getHours();
+        h = h<10?("0"+h):h;
+        var M = this.getMinutes();
+        M = M<10?("0"+M):M;
+        var S=this.getSeconds();
+        S=S<10?("0"+S):S;
+        return y+"-"+m+"-"+d;
+    };
+</script>
+

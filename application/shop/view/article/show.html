@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_grad-3">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">新闻详情</span>
+		</div>
+		
+		<div class="news_content">
+			<h3 class="title">{$info.title}</h3>
+			<p class="time">{$info.create_time|date='Y-m-d'}</p>
+			<div class="details">
+				{$info.detail|raw}
+			</div>
+		</div>
+	</body>
+</html>

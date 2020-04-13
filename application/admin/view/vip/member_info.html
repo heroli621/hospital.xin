@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item">
+                <label class="layui-form-label">昵称：</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" value="{$info.nickname|default=''}" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">婚否：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="info.marital_status" value="0" title="保密" {eq name="info.marital_status" value="0"}checked{/eq} />
+                    <input type="radio" name="info.marital_status" value="1" title="已婚" {eq name="info.marital_status" value="1"}checked{/eq} />
+                    <input type="radio" name="info.marital_status" value="2" title="未婚" {eq name="info.marital_status" value="2"}checked{/eq} />
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">性别：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="sex" value="3" title="保密" {eq name="info.sex" value="3"}checked{/eq} />
+                    <input type="radio" name="sex" value="1" title="男" {eq name="info.sex" value="1"}checked{/eq} />
+                    <input type="radio" name="sex" value="2" title="女" {eq name="info.sex" value="2"}checked{/eq} />
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">生日：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="birthday" class="layui-input" value="{$info.birthday|date='Y-m-d'|default=''}" id="birthday-date">
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 60%">
+                <label class="layui-form-label">联系地址：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="address" class="layui-input" value="{$info.address|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">血型：</label>
+                <div class="layui-input-inline">
+                    <select name="blood">
+                        <option value="">未知</option>
+                        <option value="A型" {eq name="info.blood" value="A型"}selected{/eq} >A型</option>
+                        <option value="B型" {eq name="info.blood" value="B型"}selected{/eq} >B型</option>
+                        <option value="AB型" {eq name="info.blood" value="AB型"}selected{/eq} >AB型</option>
+                        <option value="O型" {eq name="info.blood" value="O型"}selected{/eq} >O型</option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">职业：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="profession" class="layui-input" value="{$info.profession|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">职位：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="position" class="layui-input" value="{$info.position|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">家庭电话：</label>
+                <div class="layui-input-inline" >
+                    <input type="text" name="tel" class="layui-input" value="{$info.tel|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身高：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="stature" class="layui-input" value="{$info.stature|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">体重：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="weight" class="layui-input" value="{$info.weight|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">QQ：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="qq" class="layui-input" value="{$info.qq|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">个人爱好：</label>
+                <div class="layui-input-block">
+                    <textarea name="interests" class="layui-textarea">{$info.interests|default=''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+
+        //日期插件
+        laydate.render({
+            elem: '#birthday-date'
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('memberEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/Vip/index.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

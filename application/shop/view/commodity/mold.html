@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	    <!--引入swiper组件-->
+	    <link rel="stylesheet" href="/static/shop/css/swiper.min.css" />
+	    <script src="/static/shop/js/swiper.min.js"></script>
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="has_top">
+	<div class="headbar xls_white">
+		<a href="javascript:history.back(-1);" class="back">
+			<i class="iconfont icon-zuojiantou2"></i>
+		</a>
+		<span class="title">{$min_title}</span>
+	</div>
+		
+		<!--分类列表-->
+		<div class="header">
+			<div class="swiper-container sort_banner">
+				<div class="swiper-wrapper">
+					{volist name="activity" id="val"}
+
+					    <a href="/goods/detail_{$val.goods_id}.html" class="swiper-slide">
+							<img src="{$val.cover}" class="img"/>
+						</a>
+					{/volist}
+				</div>
+				<div class="swiper-pagination"></div>
+			</div>
+				<!--产品列表-->
+			<div class="pro_list flex_bet" id="mescroll">
+
+			</div>
+		</div>
+
+        <div class="toBottom">
+            <span class="span" style="display: none;">没有更多了</span>
+        </div>
+		
+
+        <script src="/static/shop/libs/layer/layer.js"></script>
+		<script>
+			$(function(){
+				var mySwiper = new Swiper('.swiper-container', {
+					autoplay: {
+						delay: 5000
+					},
+					loop : true,
+					pagination: {
+				    el: '.swiper-pagination'
+				  }
+				});
+
+				//搜索
+                $('.sort_to_search').on('click',function () {
+                    let index=layer.open({
+                        type:2,
+                        content:"{:url('/search')}",
+                        area: ['auto','100%'],
+                        shadeClose:1,
+                        title:false,
+                        closeBtn:0,
+                        anim:2
+                    });
+                    layer.full(index);
+                });
+			});
+            //分页参数
+            var pages={
+                num:1,
+                size:6
+            };
+            //手机分页
+            var mescroll = new MeScroll("mescroll", {
+                down: {
+                    auto: true,
+                    callback: downCallback,
+                },
+                up: {
+                    auto: false,
+                    //isBounce: false,
+                    callback: upCallback,
+                    page:pages
+                }
+            });
+
+            function downCallback(){
+                getListDataFromNet(pages.num,pages.size, function(data){
+                    mescroll.endSuccess();
+                    setListData(data, false);
+                }, function(){
+                    mescroll.endErr();
+                    $('.toBottom .span').show();
+                });
+            }
+
+            function upCallback(page){
+                getListDataFromNet(page.num, page.size, function(curPageData){
+                    mescroll.endSuccess(curPageData.length);
+                    setListData(curPageData, true);
+                }, function(){
+                    mescroll.endErr();
+                    $('.toBottom .span').show();
+                });
+            }
+
+            function setListData(curPageData,isAppend){
+                if (!isAppend) {
+                    $("#mescroll").empty();
+                }
+                for (var i = 0; i < curPageData.length; i++) {
+                    var pd=curPageData[i];
+                    let obj_str='<div class="item">   ' +
+						'<a href="/goods/detail_'+pd.id+'.html" class="block">                        <img src="'+pd.cover+'" class="img"/>' +
+						'<h3 class="title">'+pd.goods_name+'</h3>' +
+						'</a>' +
+						'<div class="flex_bet buy">' +
+						'<div class="price">' +
+						'<span class="current">&yen;'+pd.sale_price+'</span>' +
+						'<s class="original">&yen;'+pd.price+'</s>' +
+						'</div>' +
+						'<div class="cart">' +
+						'<i class="iconfont icon-gouwuche1"></i>' +
+						'</div></div></div>';
+
+                    $("#mescroll").append(obj_str);
+                }
+            }
+
+            function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+                $.get("{:url('getMold')}",{size:pageSize,page:pageNum,type:'{$mold}'},function (res) {
+                    if(res.code==0){
+                        var newArr=res.data;
+                        successCallback&&successCallback(newArr);
+                    }else{
+                        errorCallback&&errorCallback();
+                    }
+
+
+                });
+            }
+		</script>
+	</body>
+</html>

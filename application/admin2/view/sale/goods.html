@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                点击规格按钮，可编辑商品规格。积分商品、会员专属商品、新人专享商品不能添加规格属性，也不能发起优惠活动。
+            </div>
+        </blockquote>
+        <div class="layui-tab">
+            <ul class="layui-tab-title">
+                <li class="{eq name='type' value='0'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index')}">全部</a>
+                </li>
+                <li class="{eq name='type' value='1'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>1])}">普通商品</a>
+                </li>
+                <li class="{eq name='type' value='2'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>2])}">积分商品</a>
+                </li>
+                <li class="{eq name='type' value='3'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>3])}">VIP专属</a>
+                </li>
+                <li class="{eq name='type' value='4'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>4])}">新人专属</a>
+                </li>
+                <li class="{eq name='type' value='5'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>5])}">套餐商品</a>
+                </li>
+                <li class="{eq name='type' value='6'}layui-this{/eq}">
+                    <a href="{:url('admin/sale/index',['type'=>6])}">体验商品</a>
+                </li>
+            </ul>
+        </div>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入商品名称">
+                </div>
+                <div class="layui-inline">
+                    <select name="classify_id">
+                        <option value="0">选择商品分类</option>
+                        {volist name="goods_classify" id="val" empty=''}
+                        <option value="{$val.id}">{$val.classify_name}</option>
+                        {/volist}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('edit')}" ><i class="layui-icon layui-icon-add-1"></i>添加单品</button>
+                    <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('edit',['type'=>1])}" ><i class="layui-icon layui-icon-add-1"></i>添加套餐</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
+<script type="text/html" id="is-new">
+    <span>{{# if(d.is_new==1){ }}是{{# }; }}</span>
+</script>
+<script type="text/html" id="is-experience">
+    <span>{{# if(d.experience==1){ }}是{{# }; }}</span>
+</script>
+<script type="text/html" id="goods-activity">
+    {{# if((!d.vip_level) && (!d.is_int) && (!d.is_new)){ }}<button class="layui-btn layui-btn-xs go-btn" data-id="{{d.id}}" data-url="{:url('admin/Article/activityAdd')}">添加活动</button>{{# }; }}
+</script>
+<script type="text/html" id="spec-btn">
+    {{# if((!d.vip_level) && (!d.is_int) && (!d.is_new)){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('admin/Sale/spec')}">规格</button>{{# }; }}
+</script>
+<script type="text/html" id="is-combo">
+    {{# if(d.goods_type){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('combo',['type'=>1])}">查看</button>{{# }; }}
+</script>
+<script type="text/html" id="is-complimentary">
+    {{# if(d.complimentary){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('combo')}">查看</button>{{# }; }}
+</script>
+<script type="text/html" id="top-btn">
+    <button class="layui-btn layui-btn-xs  table-list-top {{# if(d.top==1){ }}layui-btn-danger{{# }else{ }}layui-btn-primary{{# } }}" data-id="{{d.id}}">置顶</button>
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}">上架</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}">下架</button>{{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  open-btn"  data-url="/preview_{{d.id}}.html" data-width="360" data-height="640" title="预览" data-title="{{d.goods_name}}"><i class="layui-icon layui-icon-search"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal  go-btn" data-id="{{d.id}}" data-url="{:url('admin/Sale/edit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/Sale/del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('index')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{type:"{$type}"},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'商品列表',
+            //表头设置
+            cols:[[
+                {field:'goods_name',title:'商品名称',edit:1,width:260},
+                {field:'classify_name', title: '分类',width:100},
+                {field:'price', title: '价格',edit:1,width:80},
+                {field:'integral', title: '积分',edit:1,width:80},
+                {field:'inventory', title: '总库存',edit:1,width:80},
+                {field:'level_name', title: 'VIP专属',width:100},
+                {field:'spec', title: '规格',width:80,toolbar: '#spec-btn'},
+                {field:'sort', title: '排序', width:80,sort:true,edit:1},
+                {field:'top', title: '置顶', width:80,toolbar:'#top-btn'},
+                {field:'status',title:'状态',toolbar:'#status-btn',width:80},
+                {field:'is_new',title:'新人专享',toolbar:'#is-new',width:90},
+                {field:'nursing_num',title:'护理次数',width:90},
+                {field:'goods_type',title:'套餐商品',toolbar:'#is-combo',width:90},
+                {field:'complimentary',title:'赠品',toolbar:'#is-complimentary',width:90},
+                {field:'experience',title:'体验产品',toolbar:'#is-experience',width:90},
+                {field:'activity',title:'活动',width:90,toolbar:'#goods-activity'},
+                {field:'right', title:'操作',width:140,toolbar:'#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort' || obj.field=='integral' || obj.field=='inventory'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            if(obj.field=='price'){
+                if(!/^[0-9]+\.*\d{1,2}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            $.post("{:url('admin/Sale/changeField')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field,type:"{$type}"};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            $.post("{:url('admin/Sale/toggleField')}",{id:id,field:'status'},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='上架';
+                    }else{
+                        txt='下架';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+
+        //修改置顶
+        $('#table-list').on('click', '.table-list-top', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            $.post("{:url('admin/Sale/toggleField')}",{id:id,field:'top'},function(redata){
+                if(redata.code==0){
+                    That.toggleClass('layui-btn-danger layui-btn-primary').attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+
+</script>

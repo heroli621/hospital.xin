@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                分类名称、排序，点击可修改。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入分类名称">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('admin/Sale/classifyAdd')}" data-width="400" data-height="200"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/Sale/classifyDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('classify')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'classify_name',title:'分类名称',edit:1},
+                {field:'sort', title: '排序', width:120, sort: true,edit:1},
+                {field:'create_time', title: '发布日期', width:180, sort: true},
+                {field:'right', title: '操作', width:160,toolbar: '#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','count'],
+                //limits:[10,20,30,50]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return ;
+                }
+            }
+            $.post("{:url('admin/Sale/changeClassify')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    layout:['prev','page','next','count'],
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+</script>

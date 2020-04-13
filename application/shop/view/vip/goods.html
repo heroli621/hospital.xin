@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    <style>
+        .tab{padding-left: 1rem;margin-bottom: .6rem;font-size: 1rem;}
+    </style>
+</head>
+<body>
+    <!--产品列表-->
+    {notempty name="combos"}
+    <div class="my_order_list" >
+        <div class="tab">套餐内含商品</div>
+        {volist name="combos" id="vol"}
+        <div class="item">
+            <div class="flex_bet center">
+                <div class="pic">
+                    <img src="{$vol.goods.cover}" class="img"/>
+                </div>
+                <div class="info flex">
+                    <h3 class="name over_1">{$vol.goods.goods_name}</h3>
+                    <div class="flex_bet">
+                        <div class="price">
+                            <span>&yen;</span>
+                            <span class="unit">{$vol.goods.price}</span>
+                        </div>
+                        <span class="num">x{$vol.amount}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/volist}
+    </div>
+    {/notempty}
+    {notempty name="comps"}
+    <div class="my_order_list" >
+        <div class="tab">赠品</div>
+        {volist name="comps" id="val"}
+        <div class="item">
+            <div class="flex_bet center">
+                <div class="pic">
+                    <img src="{$val.goods.cover}" class="img"/>
+                </div>
+                <div class="info flex">
+                    <h3 class="name over_1">{$val.goods.goods_name}</h3>
+                    <div class="flex_bet">
+                        <div class="price">
+                            {if $val.goods.is_int}
+                            {$val.goods.integral}积分
+                            {else /}
+                            <span>&yen;</span>
+                            <span class="unit">{$val.goods.price}</span>
+                            {/if}
+                        </div>
+                        <span class="num">x{$val.amount}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {/volist}
+    </div>
+    {/notempty}
+</body>
+</html>

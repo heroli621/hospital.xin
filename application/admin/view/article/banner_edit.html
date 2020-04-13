@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #up-image{background-image:url({$info.cover|default=''});background-size: contain;background-repeat: no-repeat;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('banner')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item" >
+                <label class="layui-form-label">标题：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="title" required lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.title|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">跳转链接：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="link" class="layui-input" value="{$info.link|default=''}" >
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">封面：</label>
+                <div class="layui-upload-drag" id="up-image">
+                    <i class="layui-icon"></i>
+                    <p>点击上传，或将图片拖拽到此处</p>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">场景：</label>
+                <div class="layui-input-inline">
+                    <select name="type">
+                        {present name="info"}
+                        <option value="1" {eq name="info.type" value="1"}selected{/eq}>轮播广告</option>
+                        <option value="2" {eq name="info.type" value="2"}selected{/eq}>弹窗广告</option>
+                        <option value="3" {eq name="info.type" value="3"}selected{/eq}>页面广告</option>
+                        {else /}
+                        <option value="1">轮播广告</option>
+                        <option value="2">弹窗广告</option>
+                        <option value="3">页面广告</option>
+                        {/present}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    <input type="hidden" name="cover" value="{$info.cover|default=''}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+        //console.log(laydate);
+        //日期插件
+        laydate.render({
+            elem: '#release-date'
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('saveBanner')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/Article/banner.html";
+                            location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //封面上传
+        layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadBanner')}",
+            exts:'jpg|jpeg|png|bmp|gif',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

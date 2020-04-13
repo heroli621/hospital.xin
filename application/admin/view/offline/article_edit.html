@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #up-image{background-image:url({$info.cover|default=''});background-size: contain;background-repeat: no-repeat;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('articles')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">标题：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="title"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.title|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">视频：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="url" autocomplete="off" class="layui-input" value="{$info.url|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">关键字：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="keywords"   autocomplete="off" class="layui-input" value="{$info.keys|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">作者：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="writer" value="{$info.writer|default=''}" autocomplete="off" class="layui-input" >
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">封面：</label>
+                    <div class="layui-upload-drag" id="up-image">
+                        <i class="layui-icon"></i>
+                        <p>点击上传，或将图片拖拽到此处</p>
+                        <!--<p>建议尺寸：414*232</p>-->
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">简述：</label>
+                    <div class="layui-input-block">
+                        <textarea name="description" class="layui-textarea" style="resize: none;">{$info.des|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">发布日期：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="create_time" value="{$info.create_time|default=''}" class="layui-input" id="release-date" readonly />
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        当前日期不用选择
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">内容：</label>
+                    <div class="layui-input-block">
+                        <textarea name="content" id="content">{$info.content|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.id|default=''}">
+                        <input type="hidden" name="cover" value="{$info.cover|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script>
+
+    //编辑器初始化
+    var ue = UE.getEditor('content',{
+        initialFrameHeight: 400
+    });
+    UE.Editor.prototype.getActionUrl = function(action) {
+        /* 按config中的xxxActionName返回对应的接口地址 */
+        if (action == 'uploadimage' || action == 'uploadscrawl') {
+            return '/admin/offline/image';
+        } else if (action == 'uploadvideo') {
+            return '/admin/offline/video';
+        }else if (action=='uploadfile') {
+            return '/admin/offline/file';
+        } else {
+            return this._bkGetActionUrl.call(this, action);
+        }
+    };
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+        //console.log(laydate);
+        //日期插件
+        laydate.render({
+            elem: '#release-date'
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('articlesEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/offline/articles.html";
+                           location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //封面上传
+        layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadImg')}",
+            exts:'jpg|jpeg|png|bmp|gif',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

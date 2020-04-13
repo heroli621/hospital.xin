@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                连续签到天数、可获积分，点击可修改。
+            </div>
+        </blockquote>
+        <div id="table-list">
+            <div class="layui-inline tool-btn">
+                <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('signEdit')}" data-width="400" data-height="300"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('signDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('signSet')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'level',title:'等级', sort: true},
+                {field:'continuous', title: '连续签到天数', edit:1},
+                {field:'integral', title: '可获积分',  edit:1},
+                {field:'right', title: '操作', toolbar: '#edit-btn',width:100},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','count'],
+                //limits:[10,20,30,50]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //验证
+            if(!/^\d{1,9}$/.test(obj.value)){
+                layer.alert('只能填写数字！');return ;
+            }
+
+            $.post("{:url('signEdit')}",{id:obj.data.id,field:obj.field,value:obj.value,type:2},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    layout:['prev','page','next','count'],
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+</script>

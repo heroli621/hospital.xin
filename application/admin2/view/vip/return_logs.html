@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list">
+            <table class="layui-table" lay-skin="line" lay-filter="this-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'goods_name', width:200}">会员</th>
+                    <th lay-data="{field:'spec_name', width:120}">返现金额</th>
+                    <th lay-data="{field:'price', width:100}">当前期数</th>
+                    <th lay-data="{field:'sale_money', width:100}">总期数</th>
+                    <th lay-data="{field:'create_time'}">返现日期</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="list" id="val"}
+                <tr class="parent collapsed">
+                    <td>{$val.nickname}</td>
+                    <td>{$val.return_money}</td>
+                    <td>{$val.return_now}</td>
+                    <td>{$val.return_date}</td>
+                    <td>{$val.create_time}</td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+        table.init('this-table', {
+            height: 460 //设置高度
+            ,limit: {:count($list)} //注意：请务必确保 limit 参数（默认：10）是与你服务端限定的数据条数一致
+            //支持所有基础参数
+        });
+    });
+</script>

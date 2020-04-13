@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout">
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('classify')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item">
+                <label class="layui-form-label">分类名称：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="classify_name"  lay-verify="required" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 25%;">
+                <label class="layui-form-label">上级分类：</label>
+                <div class="layui-input-block">
+                    <select name="parent_id">
+                        <option value="0">无</option>
+                        {volist name="classify_list" id="val"}
+                        <option value="{$val.id}">{$val.classify_name}</option>
+                        {/volist}
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    //Demo
+    layui.use(['laydate','form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('classifyEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.href="{:url('classify')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

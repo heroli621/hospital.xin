@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+<ul class="layui-tab-title">
+    <li><a href="{:url('clockingIn')}">列表</a></li>
+    <li class="layui-this">编辑</li>
+</ul>
+	<div class="layui-form" style="width: 90%;padding-top: 20px;">
+		<div class="layui-form-item">
+			<label class="layui-form-label">员工：</label>
+			<div class="layui-input-inline">
+                {if(isset($info.realname))}
+                <input type="text" readonly class="layui-input" value="{$info.realname}">
+                {else /}
+				<select name="member_id">
+                    <option value="0">选择员工</option>
+                {volist name="staffs" id="val"}
+                    <option value="{$val.member_id}">{$val.realname}</option>
+                {/volist}
+				</select>
+                {/if}
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">事务：</label>
+			<div class="layui-input-inline">
+				<select name="affair_id" id="">
+                    <option value="0">选择事务</option>
+                {volist name="affairs" id="vo"}
+                    {if(isset($info.affair_id) and ($info.affair_id==$vo.id))}
+                    <option value="{$vo.id}" selected>{$vo.affair_name}</option>
+                    {/if}
+                    <option value="{$vo.id}">{$vo.affair_name}</option>
+                {/volist}
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item" >
+			<label class="layui-form-label">开始时间：</label>
+			<div class="layui-input-inline" >
+				<input type="text" name="start_time" readonly lay-verfiy="required" class="layui-input" id="start-time" value="{$info.start_time|default=''}">
+			</div>
+		</div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">结束时间：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="stop_time" readonly lay-verfiy="required" class="layui-input" id="stop-time" value="{$info.stop_time|default=''}">
+            </div>
+        </div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">扣减金额：</label>
+			<div class="layui-input-inline">
+				<input type="text" name="fee" lay-verify="required|number" class="layui-input" placeholder="￥" value="{$info.fee|default=''}">
+			</div>
+            <div class="layui-form-mid layui-word-aux">
+                单位：元
+            </div>
+		</div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">说明：</label>
+            <div class="layui-input-block">
+                <textarea class="layui-textarea" name="des">{$info.des|default=''}</textarea>
+            </div>
+        </div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+                {if(isset($info.realname))}
+                <input type="hidden"  name="member_id" value="{$info.member_id}">
+                {/if}
+                <input type="hidden" name="id" value="{$info.id|default=0}">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer','laydate'], function(){
+        var form = layui.form,layer=layui.layer;
+        layui.laydate.render({
+            elem:"#start-time",
+            type:"datetime"
+        });
+        layui.laydate.render({
+            elem:"#stop-time",
+            type:"datetime"
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('addClockingIn')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            var url="{:url('clockingIn')}?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

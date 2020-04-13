@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+<!--顶部-->
+{include file="public/top"}
+<!--左侧导航-->
+{include file="public/left"}
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                注意！！！优惠券添加后满减金额、使用期限、使用范围不能修改！！！
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="need-money">
+    {{# if(d.need_money > 0){ }}
+    满{{d.need_money}}元
+    {{# }else{ }}
+    不限
+    {{# }; }}
+</script>
+<script type="text/html" id="amount-tool">
+    {{# if(d.amount >= 0){ }}
+    {{d.amount}}
+    {{# }else{ }}
+    不限
+    {{# }; }}
+</script>
+<script type="text/html" id="get-amount">
+    {{# if(d.get_amount > 0){ }}
+    限领{{d.get_amount}}张
+    {{# }else{ }}
+    不限
+    {{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.coupon_id}}" data-url="{:url('edit')}" title="编辑">
+        <i class="layui-icon layui-icon-edit"></i>
+    </button>
+</script>
+<script type="text/html" id="add-btn">
+    <button class="layui-btn layui-btn-sm layui-btn-normal edit-btn" data-url="{:url('edit')}" ><i class="layui-icon layui-icon-add-1"></i>添加</button>
+</script>
+<script type="text/html" id="validity-day">
+    {{# if(d.validity_time > 0){ }}
+    领取后{{d.validity_time}}天
+    {{# }else{ }}
+    不限
+    {{# }; }}
+</script>
+<script type="text/html" id="classify-bar">
+    {{# if(!d.classify_id){ }}
+    全场
+    {{# }else{ }}
+    {{d.classify_name}}
+    {{# } }}
+</script>
+<script type="text/html" id="state-btn">
+    {{# if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.coupon_id}}" data-value="{{d.status}}">启用</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.coupon_id}}" data-value="{{d.status}}">禁用</button>
+    {{# }; }}
+</script>
+<script type="text/html" id="top-btn">
+    {{# if(d.top==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal table-list-top"  data-id="{{d.coupon_id}}" data-value="{{d.top}}">是</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-primary table-list-top" data-id="{{d.coupon_id}}" data-value="{{d.top}}">否</button>
+    {{# }; }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('coupon')}",
+            //高度
+            height:"full-215",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            toolbar:"#add-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'优惠券',
+            //表头设置
+            cols:[[
+                {field:'coupon_name',title:'优惠券名称', width:200},
+                {field:'need_money', title: '订单金额',toolbar:'#need-money'},
+                {field:'sale_money', title: '立减金额'},
+                {field:'amount', title: '剩余',toolbar:'#amount-tool'},
+                //{field:'validity', title: '起止日期', width:200,toolbar:'#validity-date'},
+                {field:'validity_time', title: '使用时限',toolbar:'#validity-day'},
+                {field:'get_amount', title: '领取限额',toolbar:'#get-amount'},
+                {field:'status', title: '状态', width:100,toolbar:'#state-btn'},
+                {field:'top', title: '置顶', width:100,toolbar:'#top-btn'},
+                {field:'sort', title: '排序', width:100,edit:1},
+                {field:'classify', title: '使用范围', width:160,toolbar:'#classify-bar'},
+                {field:'right', title: '删除', width:60,toolbar: '#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,200,500]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            $.post("{:url('changeField')}",{id:obj.data.coupon_id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let this_value = parseInt(That.attr('data-value'));
+            this_value = this_value?0:1;
+            $.post("{:url('changeField')}",{id:id,field:"status",value:this_value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='启用';
+                    }else{
+                        txt='禁用';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+        //修改置顶
+        $('#table-list').on('click', '.table-list-top', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let this_value = parseInt(That.attr('data-value'));
+            this_value = this_value?0:1;
+            $.post("{:url('changeField')}",{id:id,field:"top",value:this_value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='是';
+                    }else{
+                        txt='否';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+</script>

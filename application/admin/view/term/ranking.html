@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div style="padding-top: 20px;">
+    <div class="layui-form" id="table-list" lay-filter="lay-form">
+        <div class="layui-form-item" style="margin: 0px 50px;">
+            <div class="layui-inline">
+                <input type="text" name="title" class="layui-input" placeholder="单位">
+            </div>
+            <div class="layui-inline">
+                <input type="text" name="one" class="layui-input" placeholder="一级部门">
+            </div>
+            <div class="layui-inline">
+                <input type="text" name="two" class="layui-input" placeholder="二级部门">
+            </div>
+            <div class="layui-inline">
+                <input type="text" name="three" class="layui-input" placeholder="三级部门">
+            </div>
+            <div class="layui-inline">
+                <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+            </div>
+        </div>
+        <div id="list-table" lay-filter="user-table">
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="p-btn">
+    {{d.progress}}%
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('ranking')}",
+            //高度
+            height:"full-100",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{"tid":"{$tid}"},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级学员学分排行',
+            //表头设置
+            cols:[[
+                {field:'rank',title:'排名',type:"numbers"},
+                {field:'realname',title:'姓名'},
+                {field:'nickname',title:'昵称'},
+                {field:'phone', title: '手机'},
+                {field:'progress', title: '进度',width:100,toolbar:"#p-btn"},
+                {field:'credit', title: '学分'},
+                {field:'firm', title: '工作单位'},
+                {field:'department_one', title: '一级部门'},
+                {field:'department_two', title: '二级部门'},
+                {field:'department_three', title: '三级部门'}
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,200,1000,5000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field,"tid":"{$tid}"};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+</script>

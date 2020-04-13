@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+		<!-- 选择插件 -->
+		<link rel="stylesheet" href="/static/shop/libs/mobileSelect.css">
+		<script src="/static/shop/libs/mobileSelect.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_grad-3">
+			<!--<a href="java" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>-->
+			<span class="title">预约</span>
+			<span class="publish title">我的预约</span>
+		</div>
+		<div class="appoint_form">
+			<div class="flex_bet appoint_item">
+				<div class="type">预约项目：</div>
+				<div class="sel_serve flex_bet" id="selServe">
+					<span>选择项目</span>
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</div>
+			<div class="flex_bet appoint_item">
+				<div class="type">预约时间：</div>
+				<div class="sel_serve flex_bet" id="selDate">
+					<span>选择时间</span>
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</div>
+			<div class="flex_bet appoint_item">
+				<div class="type">预约备注：</div>
+				<div class="sel_serve flex_bet">
+					<textarea class="textarea ph_gray" placeholder="如有特殊要求,请提前备注说明"></textarea>
+				</div>
+			</div>
+		</div>
+        <form id="reserve-form">
+            <input type="hidden" name="reserve_time" class="reserve-time">
+            <input type="hidden" name="servers_ids" class="servers-ids">
+            <button type="button" class="xls_grad-3 appoint_btn">立即预约</button>
+        </form>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script type="text/javascript">
+    var selDate = new MobileSelect({
+            trigger: '#selDate',
+            title: '选择美容时间',
+            wheels: [
+                {
+                    data: {$dates|raw}
+            },
+            {
+                data:{$times|raw}
+            }
+            ],
+            position: [0, 0],
+                callback: function(indexArr, data) {
+                let i,value='';
+                for(i in data){
+                    value+=data[i].value+' ';
+                }
+                $('.reserve-time').val($.trim(value));
+            }
+        });
+    $(function(){
+        $('.appoint_btn').on('click',function(){
+            let servers_ids=$('.servers-ids').val();
+            if(servers_ids==''){
+                layer.msg('请选择一个预约项目');
+                return !1;
+            }
+            let reserve_time=$('.reserve-time').val();
+            if(reserve_time==''){
+                layer.msg('请选择一个预约时间');
+                return !1;
+            }
+            let data={reserve_time:reserve_time,servers_ids:servers_ids};
+            $.post();
+        });
+    });
+</script>

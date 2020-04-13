@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">学校名称：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="school_name"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.school_name|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型：</label>
+                    <div class="layui-input-inline">
+                        <select name="type">
+                            <option value="1" {if isset($info) and $info.type == 1}selected{/if}>就读</option>
+                            <option value="2" {if isset($info) and $info.type == 2}selected{/if}>报考</option>
+                        </select>
+                    </div>
+                </div>
+                {php}/*
+                <div class="layui-form-item">
+                    <label class="layui-form-label">省市区：</label>
+                    <div class="layui-input-inline">
+                        {if isset($info)}
+                        <select name="province_id" lay-filter="province">
+                            <option value="" {if !$info.province_id}selected{/if}>省份</option>
+                            {volist name="province" id="vo"}
+                            <option value="{$vo.id}" {if $info.province_id == $vo.id}selected{/if}>{$vo.name}</option>
+                            {/volist}
+                        </select>
+                        {else /}
+                        <select name="province_id" lay-filter="province">
+                            <option value="" >省份</option>
+                            {volist name="province" id="vo"}
+                            <option value="{$vo.id}">{$vo.name}</option>
+                            {/volist}
+                        </select>
+                        {/if}
+                    </div>
+                    <div class="layui-input-inline">
+                        {if isset($info)}
+                        <select name="city_id" lay-filter="city" id="city">
+                            <option value="" {if !$info.city_id}selected{/if}>城市</option>
+                            {volist name="city" id="val"}
+                            <option value="{$val.id}" {if $info.city_id == $val.id}selected{/if}>{$val.name}</option>
+                            {/volist}
+                        </select>
+                        {else /}
+                        <select name="city_id" lay-filter="city" id="city">
+                            <option value="" >城市</option>
+                        </select>
+                        {/if}
+                    </div>
+                    <div class="layui-input-inline">
+                        {if isset($info)}
+                        <select name="county_id" lay-filter="county" id="county">
+                            <option value="" {if !$info.county_id}selected{/if}>区县</option>
+                            {volist name="county" id="value"}
+                            <option value="{$value.id}" {if $info.county_id == $value.id}selected{/if}>{$value.name}</option>
+                            {/volist}
+                        </select>
+                        {else /}
+                        <select name="county_id" lay-filter="county" id="county">
+                            <option value="" >区县</option>
+                        </select>
+                        {/if}
+
+                    </div>
+                </div>
+                */{/php}
+                <div class="layui-form-item">
+                    <label class="layui-form-label">区县：</label>
+                    <div class="layui-input-inline">
+                        <select name="county_id" lay-filter="county" >
+                            <option value="">选择区县</option>
+                            {volist name="county" id="value"}
+                            <option value="{$value.id}" {if isset($info) and $info.county_id == $value.id}selected{/if}>{$value.name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">详细地址：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="address" value="{$info.address|default=''}" class="layui-input" >
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">简述：</label>
+                    <div class="layui-input-block">
+                        <textarea name="des" class="layui-textarea" style="resize: none;">{$info.des|default=''}</textarea>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.school_id|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('schoolEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="{:url('index')}";
+                           location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //监听省份
+        form.on('select(province)', function(data){
+            get_next(data.value,1);
+        });
+        //监听城市
+        form.on('select(city)', function(data){
+            get_next(data.value,0);
+        });
+        function get_next(id,type) {
+            $.post("{:url('getNext')}",{pid:id},function (res) {
+                var str = type == 1? '城市':'区县';
+                var obj = '<option value="">'+str+'</option>';
+                var i;
+                for(i in res){
+                    obj += '<option value="'+res[i].id+'">'+res[i].name+'</option>';
+                }
+                console.log(obj);
+                if(type == 1){
+                    $('#city').empty().html(obj);
+                    $('#county').empty();
+                }else{
+                    $('#county').empty().html(obj);
+                }
+                form.render('select');
+            });
+        }
+    });
+
+</script>

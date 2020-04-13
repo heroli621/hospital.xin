@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+
+</head>
+<body>
+<div style="padding: 10px;">
+    <div class="layui-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">选项：</label>
+            <div class="layui-form-mid layui-word-aux">单选题和判断题只能有一个答案，超出一个正确答案，只取第一个。清空已有选项则删除该选项</div>
+        </div>
+        <div class="layui-form-item" style="padding-left: 110px;">
+            <div  class="layui-input-block row" style="width: 100%;height: 1px; margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text" class="layui-input" name="options[0]" value="{if isset($data.options.0)}{$data.options.0.option}{/if}" />
+                    <input type="hidden" name="oid[0]" value="{if isset($data.options.0)}{$data.options.0.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="0" title="正确答案" {if isset($data.options.0) and in_array($data.options.0.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+            <div  class="layui-input-block row" style="width: 100%;height: 1px;margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text"  class="layui-input" name="options[1]" value="{if isset($data.options.1)}{$data.options.1.option}{/if}"/>
+                    <input type="hidden" name="oid[1]" value="{if isset($data.options.1)}{$data.options.1.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="1" title="正确答案" {if isset($data.options.1) and in_array($data.options.1.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+            <div  class="layui-input-block row" style="width: 100%;height: 1px;margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text"  class="layui-input" name="options[2]" value="{if isset($data.options.2)}{$data.options.2.option}{/if}"/>
+                    <input type="hidden" name="oid[2]" value="{if isset($data.options.2)}{$data.options.2.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="2" title="正确答案" {if isset($data.options.2) and in_array($data.options.2.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+            <div  class="layui-input-block row" style="width: 100%;height: 1px;margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text" class="layui-input" name="options[3]" value="{if isset($data.options.3)}{$data.options.3.option}{/if}"/>
+                    <input type="hidden" name="oid[3]" value="{if isset($data.options.3)}{$data.options.3.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="3" title="正确答案" {if isset($data.options.3) and in_array($data.options.3.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+            <div  class="layui-input-block row" style="width: 100%;height: 1px;margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text" class="layui-input" name="options[4]" value="{if isset($data.options.4)}{$data.options.4.option}{/if}" />
+                    <input type="hidden" name="oid[4]" value="{if isset($data.options.4)}{$data.options.4.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="4" title="正确答案" {if isset($data.options.4) and in_array($data.options.4.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+            <div  class="layui-input-block row" style="width: 100%;height: 1px;margin-bottom: 10px;">
+                <div class="col-xs-8">
+                    <input type="text" class="layui-input" name="options[5]" value="{if isset($data.options.5)}{$data.options.5.option}{/if}" />
+                    <input type="hidden" name="oid[5]" value="{if isset($data.options.5)}{$data.options.5.id}{/if}" />
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" name="answers[]" value="5" title="正确答案" {if isset($data.options.5) and in_array($data.options.5.id,$data.answers) }checked{/if} />
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="exam_questions_id" value="{$data.id}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        var table=layui.table,form=layui.form;
+        tableIns=table.init('data-table', {
+            height: 300 //设置高度
+            ,limit: '{$data|count}'
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('showOptions')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.reload();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

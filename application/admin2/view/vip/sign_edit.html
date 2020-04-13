@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+	<style>
+		.layui-form-item{width: 40%}
+	</style>
+</head>
+<body>
+	<div class="layui-form" style="width: 90%;padding-top: 20px;">
+		<div class="layui-form-item" style="width: 100%">
+			<label class="layui-form-label">等级：</label>
+			<div class="layui-input-block">
+				<input type="text" name="level" readonly  class="layui-input" value="{$level|default=1}">
+			</div>
+		</div>
+		<div class="layui-form-item" style="width: 100%">
+			<label class="layui-form-label">连续天数：</label>
+			<div class="layui-input-block">
+				<input type="text" name="continuous" required lay-verify="required|number"  class="layui-input" >
+			</div>
+		</div>
+        <div class="layui-form-item" style="width: 100%">
+            <label class="layui-form-label">可获积分：</label>
+            <div class="layui-input-block">
+                <input type="text" name="integral" required lay-verify="required|number" class="layui-input" >
+            </div>
+        </div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+                <input type="hidden" name="type" value="1">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+			</div>
+		</div>
+	</div>
+
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    //Demo
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            $.post("{:url('signEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            var url="{:url('signSet')}?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

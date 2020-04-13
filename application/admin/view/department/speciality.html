@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+            <table  class="layui-table" lay-filter="data-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'title'}">特长</th>
+                    <th lay-data="{field:'status'}">状态</th>
+                    <th lay-data="{field:'tool',width:120}">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="data" id="val" key="k"}
+                <tr>
+                    <td>{$val.title}</td>
+                    <td>{$val.status?'启用':'禁用'}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn"  data-url="{:url('specialityEdit')}" data-id="{$val.speciality_id}"><i class="layui-icon layui-icon-edit"></i></button>
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="class-btn">
+    <button class="layui-btn layui-btn-sm edit-btn"  data-url="{:url('specialityEdit')}">添加特长</button>
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        table.init('data-table', {
+            height: "full-115" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#class-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[]
+        });
+
+    });
+
+
+
+</script>

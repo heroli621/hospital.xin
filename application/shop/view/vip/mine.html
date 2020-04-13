@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body>
+
+		<div class="mine_head">
+			<a href="/message.html" class="msg">
+				<i class="iconfont icon-xiaoxi"></i>
+                {if $message_num }<span class="tag"></span>{/if}
+			</a>
+			<div class="flex_bet bottom_option">
+				<div class="info_box flex">
+					<div class="via">
+						<img src="{$member.headimg|default='/static/shop/images/via.png'}" class="img"/>
+						<div class="lv">V{$member.level_id}</div>
+					</div>
+					<div class="info">
+						<div class="name">{$member.phone}</div>
+						<a href="{:url('information')}" class="edit" style="width: 100%;">
+                            <i class="iconfont icon-edit"></i>个人资料
+                        </a>
+					</div>
+				</div>
+				<a href="{:url('signIn')}" class="signin flex xls_grad-1">
+					<i class="iconfont icon-qiandao"></i>
+					<span>今日签到</span>
+				</a>
+			</div>
+		</div>
+		<!--账户信息-->
+		<div class="flex_aro mine_info">
+			<div class="item">
+				<div class="h5">我的余额</div>
+				<div class="h4">
+					<span class="b">{$member.balance}</span>
+					<span class="s">元</span>
+				</div>
+			</div>
+			<div class="item">
+				<div class="h5">我的收益</div>
+				<div class="h4">
+					<span class="b">{$member.earnings}</span>
+					<span class="s">元</span>
+				</div>
+			</div>
+			<div class="item">
+				<div class="h5">我的积分</div>
+				<div class="h4">
+					<span class="b">{$member.integral}</span>
+				</div>
+			</div>
+		</div>
+		<!--订单详情-->
+		<div class="mine_order">
+			<div class="head flex_bet">
+				<span class="title">订单详情</span>
+				<a href="/orders.html" class="detail">查看全部订单<i class="iconfont icon-youjiantou"></i></a>
+			</div>
+			<div class="list flex_aro">
+				<a href="/orders/1.html" class="item">
+					<i class="xls_icon xls_order_wait"></i>
+					<p class="state">待付款</p>
+				</a>
+				<a href="/orders/2.html" class="item">
+					<i class="xls_icon xls_order_send"></i>
+					{if $orders.ship }<span class="tag">{$orders.ship}</span>{/if}
+					<p class="state">待发货</p>
+				</a>
+				<a href="/orders/3.html" class="item">
+					<i class="xls_icon xls_order_take"></i>
+					<p class="state">待收货</p>
+				</a>
+				<a href="/orders/4.html" class="item">
+					<i class="xls_icon xls_order_eval"></i>
+					<p class="state">待评价</p>
+				</a>
+			</div>
+		</div>
+		<!--列表导航-->
+		<div class="mine_list">
+			<a href="{:url('member')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-huiyuan1"></i>
+					<span>尊享会员</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a href="{:url('fans')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-fensi"></i>
+					<span>粉丝团</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a href="{:url('nursing')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-haoping"></i>
+					<span>我的护理</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a href="{:url('Commodity/integral')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-store_icon"></i>
+					<span>积分商城</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a class="mine_item flex_bet coupon-manage">
+				<div class="left flex">
+					<i class="iconfont icon-youhuiquan"></i>
+					<span>我的优惠券</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a class="mine_item flex_bet address-manage">
+				<div class="left flex">
+					<i class="iconfont icon-dizhi"></i>
+					<span>收货地址</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a href="{:url('bindMobile')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-bangding"></i>
+					<span>绑定手机</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			{if !$pass }
+			<a href="{:url('dealPassword')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-yuebao"></i>
+					<span>设置交易密码</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			{/if}
+			{if $member.staff }
+			<a href="{:url('Servers/work')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-shijian"></i>
+					<span>我的工作</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			<a href="{:url('Servers/follow')}" class="mine_item flex_bet">
+				<div class="left flex">
+					<i class="iconfont icon-bianji"></i>
+					<span>会员跟进</span>
+				</div>
+				<div class="right flex">
+					<i class="iconfont icon-youjiantou"></i>
+				</div>
+			</a>
+			{/if}
+		</div>	
+		<!--底部导航-->
+		{include file="public/foot"}
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function () {
+
+        //收货地址管理
+        $('.address-manage').on('click',function () {
+             let index=layer.open({
+                type:2,
+                content:"{:url('addressManage')}",
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //优惠券管理
+        $('.coupon-manage').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('coupon')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+       /* //粉丝管理
+        $('.fans-manage').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('fans')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });*/
+    });
+</script>

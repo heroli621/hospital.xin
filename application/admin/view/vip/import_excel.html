@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .upload-file-link{
+            width: 196px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .tips-aux{
+            width: 300px;
+            resize:none ;
+            background-color: #333;
+            border: none;
+            color:#fff;
+        }
+    </style>
+</head>
+<body>
+    <form class="layui-form" style="width: 90%;padding-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">上传文件：</label>
+            <div class="layui-upload-drag" id="upload-file" >
+                <i class="layui-icon"></i>
+                <p>点击上传，或将文件拖拽到此处</p>
+                <p class="upload-file-link">{$info.url|default=''}</p>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="file_dir">
+                <input type="hidden" name="tid" value="{$tid}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">导入</button>
+                <a target="_blank" class="layui-btn" href="/uploads/user/template.xlsx" ><i class="layui-icon layui-icon-template"></i>下载模板</a>
+            </div>
+        </div>
+    </form>
+    <!--数据表格-->
+    <div id="list-table" lay-filter="user-table">
+
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form','layer','table','upload'], function(){
+        var form = layui.form,layer=layui.layer,table=layui.table;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('importExcel')}",jdata,function(redata){
+                //清除上传文件
+                $('.upload-file-link').text('');
+                if(redata.code==0){
+                    let data=redata.data;
+                    layer.msg(redata.msg,{icon:1,title:site_name,time:3000,end:function(){
+                            if(data.length>0){
+                                table.render({
+                                    elem:"#list-table",
+                                    height:"full-260",
+                                    data:data,
+                                    //表头设置
+                                    cols:[[
+                                        {field:'realname',title:'姓名'},
+                                        {field:'phone',title:'手机号'},
+                                        {field:'msg',title:'错误提示'},
+                                    ]],
+                                });
+                            }
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        //上传
+        layui.upload.render({
+            elem:"#upload-file",
+            field:"files",
+            url: "{:url('uploadFile')}",
+            exts:'xls|xlsx',
+            size:20000,
+            multiple:false,
+            acceptMime: 'file/*',
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=file_dir]').val(res.data);
+                    $('.upload-file-link').text(res.data);
+                }else{
+                    layer.alert(res.msg);
+                }
+            }
+        });
+    });
+</script>

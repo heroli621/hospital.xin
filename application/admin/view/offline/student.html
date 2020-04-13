@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .offline-group-list{height: 560px;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="row">
+            <div class="col-md-8">
+                <blockquote class="layui-elem-quote">
+                    <h3 style="color:#009688;font-weight: 700;">小组学员</h3>
+                </blockquote>
+                <div id="transfer-box">
+
+                </div>
+            </div>
+            <div class="col-md-4">
+                <blockquote class="layui-elem-quote" style="border-left-color: #1E9FFF;">
+                    <h3 style="color:#1E9FFF;font-weight: 700;">学习小组</h3>
+                </blockquote>
+                <ul class="offline-group-list">
+                    {volist name="groups" id="vo" empty="请创建学习小组"}
+                        <li class="layui-cursor-pointer layui-elem-quote {if $key neq 0}layui-quote-nm{else /}select-sign{/if}"  data-id="{$vo.id}">
+                                {$vo.title}（最大人数：{$vo.has_count}/{$vo.member_count}）
+                        </li>
+                    {/volist}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+{include file="public/script"}
+<script>
+    var data={$students|json_encode|raw};
+    var value_={$group_students|raw|json_encode};
+    var is_group={$is_group};
+    var cid={$cid};
+    var gid={$gid};
+    layui.use(['transfer'],function () {
+        let transfer=layui.transfer;
+        if(!is_group){
+            layer.alert('没有学习小组<br/>请先创建学习小组',{title:site_name,icon:3},function () {
+                location.href="{:url('index')}";
+            });
+        }
+        //穿梭框渲染
+        transfer.render({
+            elem: '#transfer-box'  //绑定元素
+            ,data: data
+            ,value:value_
+            ,id: 'demo1' //定义索引
+            ,width:"45%"
+            ,height:560
+            ,title:["公共学员","{$group_name}"]
+            ,onchange: function(data, index){
+                //transfer_(data,index);
+                let i,uids=[];
+                for(i in data){
+                    uids.push(data[i].value);
+                }
+                var sub_data={
+                    action:index,
+                    cid:cid,
+                    gid:gid,
+                    uid:uids.join()
+                };
+                //console.log(data);
+                $.post("{:url('bindGroup')}",sub_data,function (res) {
+                    if(res.code){
+                        layer.alert(res.msg,{title:site_name,end:function(){
+                                location.reload();
+                            }})
+                    }else{
+                        //渲染穿梭框标题
+                        transfer.reload('demo1', {
+                            title: ['公共学员', res.title]
+                        });
+                        //渲染小组列表标题
+                        $('.select-sign').text(res.title);
+                    }
+                });
+            }
+            ,showSearch:true
+        });
+        //选择学习小组
+        $('.offline-group-list').on('click','li',function () {
+            $('.offline-group-list li').addClass('layui-quote-nm').removeClass('select-sign');
+            $(this).addClass('select-sign').removeClass('layui-quote-nm');
+            gid=$(this).attr('data-id');
+            $.ajax({
+                async:false,
+                data:{gid:gid,id:cid},
+                dataType:"json",
+                type:"post",
+                url:"{:url('student')}",
+                success:function(res){
+                    //可以重载所有基础参数
+                    transfer.reload('demo1', {
+                        title: ['公共学员', res.title],
+                        value:res.value,
+                        data:res.data
+                    });
+                }
+            });
+        })
+    });
+    function transfer_(data,index) {
+        let i,uids=[];
+        for(i in data){
+            uids.push(data[i].value);
+        }
+        var sub_data={
+            action:index,
+            cid:cid,
+            gid:gid,
+            uid:uids.join()
+        };
+        //console.log(data);
+        $.post("{:url('bindGroup')}",sub_data,function (res) {
+            if(res.code){
+                layer.alert(res.msg,{title:site_name,end:function(){
+                        location.reload();
+                    }})
+            }else{
+                transfer.reload('demo1', {
+                    title: ['公共学员', res.title]
+                });
+            }
+        });
+    }
+</script>

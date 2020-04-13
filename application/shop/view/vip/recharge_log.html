@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+    <style>
+        #mescroll #list{padding-top: .3rem;}
+        .goods-name{font-size: .6rem;text-align: center;}
+        #mescroll #list .btn_green{
+            border-color: green;
+            color: green;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+    <script src="/static/shop/js/mescroll.min.js"></script>
+</head>
+<body class="body has_top">
+    <div class="headbar xls_grad-3">
+        <a class="back">
+            <i class="iconfont icon-zuojiantou2"></i>
+        </a>
+        <span class="title">充值记录</span>
+    </div>
+    <!--订单列表-->
+    <div id="mescroll">
+        <div class="my_order_list" id="list">
+
+        </div>
+    </div>
+    <!--没有更多了-->
+    <div class="toBottom no_more" style="display: none;">
+        <span class="span">没有更多了</span>
+    </div>
+    <form action="/wxpay.html" id="pay-form" method="post">
+        <input type="hidden" name="order_id" class="order-id" />
+    </form>
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:4
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        $('.toBottom').hide();
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            mescroll.lockUpScroll( false );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<a href="/recharge.html"><div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">您还没有相关的记录</p>' +
+                '<p class="p2">可以去充值中心看看</p>' +
+                '</div></a>' +
+                '</div>';
+            $("#list").empty().append(obj_str);
+            mescroll.lockUpScroll( true );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let btn=pd.status==99?'<a href="/shop/vip/recharge.html" class="btn btn_green">我还要充</a>':'<a class="btn btn_color js-pay-order">去支付</a>';
+            let obj_str='<div class="item" data-id="'+pd.id+'">' +
+                '<div class="flex_bet top">' +
+                '<span class="no">订单号：'+pd.order_no+'</span>' +
+                '</div>' +
+                '<div class="flex_bet center">' +
+                '<div class="info flex">' +
+                '<div class="goods-name">充值'+pd.pay_money+'元</div>' +
+                '<div class="flex_bet">' +
+                '<div class="price">' +
+                '<span>支付：&yen;</span>' +
+                '<span class="unit">'+pd.pay_money+'元</span>' +
+                '</div>' +
+                '<span class="num">返还：&yen;'+pd.recharge.return_money+'</span>' +
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="bottom">' +
+                '<div class="btn_group flex">' +
+                btn+
+                '</div>' +
+                '</div>' +
+                '</div>';
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('rechargeLog')}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+        });
+    }
+    $(function(){
+
+        //去支付
+        $('#list').on('click','.item .js-pay-order',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            $('.order-id').val(id);
+            //console.log(id);return !1;
+            $("#pay-form").submit();
+        });
+
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>

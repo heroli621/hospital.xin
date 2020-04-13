@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+
+	</head>
+	<body>
+		<div class="layui-tab page-content-wrap">
+		  <div class="layui-tab-content">
+			  <ul class="layui-tab-title">
+				  <li><a href="{:url('admin/Users/index')}">管理员列表</a></li>
+				  <li class="layui-this">管理员添加</li>
+			  </ul>
+		    <div class="layui-tab-item layui-show">
+		    	<form class="layui-form"  style="width: 90%;padding-top: 20px;">
+				  <div class="layui-form-item">
+				    <label class="layui-form-label">手机：</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="phone"  autocomplete="off" class="layui-input " >
+				    </div>
+				  </div>
+				   <div class="layui-form-item">
+				    <label class="layui-form-label">密码：</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="psd"  lay-verify="required" placeholder="6-16位字符（字母、数字、下划线组成）" autocomplete="off" class="layui-input">
+				    </div>
+				  </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">姓名：</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="username" autocomplete="off" class="layui-input" value="">
+                        </div>
+                    </div>
+				  <div class="layui-form-item">
+				    <label class="layui-form-label">邮箱：</label>
+				    <div class="layui-input-block">
+				      <input type="text" name="mail"   placeholder="请输入邮箱地址" autocomplete="off" class="layui-input">
+				    </div>
+				  </div>
+				  <div class="layui-form-item layui-form-text">
+				    <label class="layui-form-label">备注：</label>
+				    <div class="layui-input-block">
+				      <textarea name="des" placeholder="请输入内容" class="layui-textarea" style="resize: none;"></textarea>
+				    </div>
+				  </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">角色：</label>
+                        <div class="layui-input-block">
+                            {volist name="roles" id="val"}
+                            <input type="checkbox" name="roles[{$val.id}]" value="{$val.id}" title="{$val.name}" />
+                            {/volist}
+                        </div>
+                    </div>
+				  <div class="layui-form-item">
+				    <div class="layui-input-block">
+				      <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">立即提交</button>
+				    </div>
+				  </div>
+				</form>
+		    </div>
+		  </div>
+		</div>
+		{include file="public/script"}
+<script>
+    var site_name='{$site_name}';
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //自定义验证规则
+        /*form.verify({
+            psd: [/[a-zA-Z0-9_]{6,16}$/, '密码必须6到16位字母、数字、下划线组成']
+
+        });*/
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            $.post("{:url('admin/Users/saveAdd')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg("添加管理员成功",{icon:1,title:site_name,end:function(){
+                        parent.$('.layui-show .iframe').attr('src',"{:url('admin/Users/index')}?time={:time()}");
+						parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+					}});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>
+	</body>
+</html>

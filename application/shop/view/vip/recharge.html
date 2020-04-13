@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+  <!--数字滚动-->
+  <link rel="stylesheet" href="/static/shop/libs/runNum.css" />
+  <script src="/static/shop/libs/runNum.js"></script>
+</head>
+<body>
+    <!--会员充值-->
+    <div class="recharge_head">
+        <div class="headbar">
+            <a class="back">
+                <i class="iconfont icon-zuojiantou2"></i>
+            </a>
+            <span class="title">会员充值</span>
+        </div>
+        <div class="use_balance" id="use_balance" data-balance="{$balance}"></div>
+        <div class="use_text">可用额度（元）</div>
+    </div>
+    <!--会员套餐-->
+    <div class="member_meal">
+        <div class="title">充值套餐</div>
+        <div class="list">
+            {volist name="recharge_goods" id="val"}
+            <div class="item flex" data-id="{$val.id}">
+                <div class="left flex_col">
+                    <div class="lv">{$val.goods_name}</div>
+                </div>
+                {// 判断是否有返现}
+                {if ($val.return_money > 0) }
+                    {// 期返}
+                    {if $val.return_type }
+                        <div class="center flex_col">
+                            <div class="t2">分{$val.return_date}个月返还</div>
+                            <div class="t1">送{$val.return_money|number_format=2}元</div>
+                        </div>
+                        <div class="right">
+                            <div class="t3">每月返还</div>
+                            <div class="return">&yen;&nbsp;{$val.return_money/$val.return_date|number_format=2}</div>
+                        </div>
+                    {else /}
+                    {// 立返}
+                        <div class="center flex_col">
+                            <div class="t2">立充立返</div>
+                            <div class="t1">送{$val.return_money|number_format=2}元</div>
+                        </div>
+                        <div class="right">
+                            <div class="t3">立返</div>
+                            <div class="return">&yen;&nbsp;{$val.return_money|number_format=2}</div>
+                        </div>
+                    {/if}
+                {else /}
+                    <div class="right flex_col">
+                        <div class="t1">充{$val.money}元</div>
+                    </div>
+                {/if}
+            </div>
+            {/volist}
+        </div>
+        <form action="/recharge.html" method="post" id="recharge-form">
+            <input type="hidden" name="recharge_goods_id" class="recharge_goods" value="0">
+            <button type="button" class="store_btn xls_grad-3">立即存储</button>
+        </form>
+
+    </div>
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function(){
+        //余额
+        var balance = $("#use_balance").attr("data-balance");
+        $("#use_balance").rollNumDaq({
+            deVal: balance
+        });
+
+        //切换
+        $(".member_meal").on("click", ".item", function(){
+            let id=$(this).attr('data-id');
+            $('.recharge_goods').val(id);
+            $(".member_meal .item").removeClass("active");
+            $(this).addClass("active");
+        });
+
+        //充值
+        $('.store_btn').on('click',function () {
+            let recharge_goods=parseInt($('.recharge_goods').val());
+            if(!recharge_goods){
+                layer.msg('请选择充值套餐');
+                return !1;
+            }
+            $('#recharge-form').submit();
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>

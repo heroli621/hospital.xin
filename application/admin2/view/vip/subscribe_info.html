@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="layui-form" style="width: 96%;margin: 20px auto 0;">
+        {if $info.status==2 }
+        <div class="layui-form-item">
+            <div>
+                <input type="hidden" name="id" value="{$info.id}">
+                <button class="layui-btn" lay-submit lay-filter="addForm">审核</button>
+            </div>
+        </div>
+        {/if}
+        <table class="layui-table" id="save-table">
+            <thead>
+            <tr>
+                <th>护理ID</th>
+                <th>商品名称</th>
+                <th>总次数</th>
+                <th>剩余次数</th>
+                <th>类型</th>
+                <th width="100">手工费</th>
+                <th width="120">本次扣减</th>
+                <th width="150">服务技师</th>
+            </tr>
+            </thead>
+            <tbody id="save-data">
+            {volist name="member_goods" id="vol"}
+            <tr>
+                <td>{$vol.nursing.id}</td>
+                <td>{$vol.nursing.goods_name}</td>
+                <td>{$vol.nursing.amount}</td>
+                <td>{$vol.nursing.residue_degree}</td>
+                <td>{$vol.nursing.experience?'体验':'常规'}</td>
+                <td>{$vol.cost}</td>
+                <td>{$vol.num}</td>
+                <td>
+                    {$vol.staff_name}
+                </td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var index = parent.layer.getFrameIndex(window.name);
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            layer.confirm("请仔细核对！！！<br>是否通过审核？",{icon:3},function () {
+                $.post("{:url('reserveAudit')}",jdata,function(redata){
+                    if(redata.code==0){
+                        layer.msg(redata.msg,{end:function () {
+                                parent.layer.close(index);
+                            }});
+                    }else{
+                        layer.msg(redata.msg);
+                    }
+                },"json");
+            });
+            return false;
+        });
+    });
+</script>

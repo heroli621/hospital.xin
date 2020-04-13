@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+            <table  class="layui-table" lay-filter="data-table">
+                <thead>
+                <tr>
+                    <th lay-data="{field:'course_name'}">课程</th>
+                    <th lay-data="{field:'type'}">成绩类别</th>
+                    <th lay-data="{field:'total_points'}">总分</th>
+                    <th lay-data="{field:'remark'}">备注</th>
+                    <th lay-data="{field:'tool',width:120}">操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {volist name="data" id="val" key="k"}
+                <tr>
+                    <td>{$val.course_name}</td>
+                    <td>{$val.type}</td>
+                    <td>{$val.total_points}</td>
+                    <td>{$val.remark}</td>
+                    <td>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('courseEdit')}" data-id="{$val.course_id}"><i class="layui-icon layui-icon-edit"></i></button>
+                    </td>
+                </tr>
+                {/volist}
+                </tbody>
+            </table>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="class-btn">
+    <button class="layui-btn layui-btn-sm open-btn"  data-url="{:url('courseEdit')}">添加课程</button>
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        table.init('data-table', {
+            height: "full-115" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#class-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+            //导出文件时的文件名
+            //title:'课程表',
+        });
+
+    });
+
+
+
+</script>

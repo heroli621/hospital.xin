@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <!--联动选择-->
+        <link rel="stylesheet" href="/static/shop/libs/mobileSelect.css" />
+        <script src="/static/shop/libs/mobileSelect.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_white">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">编辑收货地址</span>
+		</div>
+		
+		<!--新增收货地址-->
+		<div class="new_addr">
+			<div class="row">
+				<input type="text" class="ph input realname" value="{$info.realname}"/>
+			</div>
+			<div class="row">
+				<input type="text" class="ph input mobile" value="{$info.phone}"/>
+			</div>
+			<div class="row">
+				<input type="text" class="ph input" id="select_area" readonly value="{$info.province} {$info.city} {$info.region}"/>
+			</div>
+			<textarea class="area ph">{$info.address}</textarea>
+		</div>
+		<button class="save_address xls_grad-3">保存</button>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+var iframe_index = parent.layer.getFrameIndex(window.name);
+var data={$area_list|raw};
+$(function(){
+    var mobileSelect = new MobileSelect({
+        trigger: '#select_area',
+        title: '所在地区',
+        wheels:[{data:data}],
+        callback:function(indexArr, data) {
+            var str = '';
+            for (var i = 0; i < data.length; i++) {
+                str += data[i].value;
+                str += " ";
+            }
+            //console.log(data);
+            $("#select_area").val(str);
+        }
+    });
+
+
+    //返回
+    $('.back').on('click',function () {
+        parent.layer.close(iframe_index);
+    })
+
+    //添加地址
+    $('.save_address').on('click',function () {
+        let realname=$('.realname').val();
+        let mobile=$('.mobile').val();
+        let area=$('#select_area').val();
+        let info=$('.area').val();
+        let data={id:'{$info.id}',realname:realname,phone:mobile,area:area,info:info};
+        let verify={realname:'收货人',phone:'联系电话',area:'所在地区',info:'详细地址'};
+        //验空
+        let i;
+        for(i in data){
+            if(data[i]==''){
+                layer.msg(verify[i]+'必须填写');
+                return false;
+            }
+            if(i == 'phone'){
+                if(!/^1[345678][0-9]{9}$/.test(data[i]) && !/^0[0-9]{2,3}\-[0-9]{7,8}$/.test(data[i])){
+                    layer.msg('联系电话格式错误');
+                    return false;
+                }
+            }
+        }
+        //console.log(data);
+        $.post("{:url('shop/vip/addressSave')}",data,function (res) {
+            if(res.code==0){
+                parent.refresh();
+                parent.layer.close(iframe_index);
+            }else{
+                layer.msg(res.msg);
+            }
+        },"json");
+    });
+});
+</script>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('term')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">班级名称：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="classify_name"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.classify_name|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">班级数量：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="count"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.count|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">每班人数：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="people"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.people|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">基准分数：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="base_score"  lay-verify="required" class="layui-input" value="{$info.base_score|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">所属学校：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" id="school" class="layui-input" value="{$info.school_name|default=''}" lay-verify="required" readonly />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">是否自招：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="zizhao" lay-skin="switch" lay-filter="is_courseware" lay-text="是|否" value="1" {if !isset($info) or $info.zizhao }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="status" lay-skin="switch" lay-filter="is_courseware" lay-text="使用|禁用" value="1" {if !isset($info) or $info.status }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <textarea name="remark" id="content">{$info.remark|default=''}</textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.class_id|default=''}">
+                        <input type="hidden" name="school_id" value="{$info.school_id|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/js/module/tableSelect.js" type="text/javascript"></script>
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script>
+    //编辑器初始化
+    var ue = UE.getEditor('content',{
+        initialFrameHeight: 400
+    });
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer,tableSelect=layui.tableSelect;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('edit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.href="{:url('term')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        tableSelect.render({
+            elem: '#school',	//定义输入框input对象
+            checkedKey: 'school_id', //表格的唯一建值，非常重要，影响到选中状态 必填
+            searchKey: 'title',	//搜索输入框的name值 默认keyword
+            searchPlaceholder: '学校名称搜索',	//搜索输入框的提示文字 默认关键词搜索
+            table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                url:"{:url('getSchool')}",
+                cols: [[
+                    {field:'box',type:'radio'},
+                    {field:'school_name',title:'学校名称'},
+                    {field:'city',title:'城市'},
+                    {field:'county',title:'区县'},
+                ]]
+            },
+            done: function (elem, data) {
+                let selectData=data.data;
+                if(!selectData.length){
+                    return false;
+                }
+                elem.val(selectData[0].school_name);
+                $('input[name=school_id]').val(selectData[0].school_id);
+            }
+        });
+
+    });
+
+</script>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                绑定手机并填写真实姓名后才能转员工。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="会员昵称/姓名/手机号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="staff" class="layui-input" placeholder="服务员工姓名/昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <select name="level">
+                        <option value="0">会员等级</option>
+                        {volist name="member_level" id="val"}
+                        <option value="{$val.level_id}">{$val.level_name}</option>
+                        {/volist}
+                    </select>
+                </div>
+                <!--<div class="layui-inline">
+                    <select name="sm">
+                        <option value="0">所有人</option>
+                        <option value="1">会员</option>
+                        <option value="2">员工</option>
+
+                    </select>
+                </div>-->
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="status-btn">
+    {{# if(d.staff==0){ }}
+        <button class="layui-btn layui-btn-xs go-btn" data-url="{:url('memberEdit')}" data-id="{{d.id}}" >修改</button>
+        {{# if(d.status==1){ }}
+            <button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}" data-status="{{d.status}}">冻结</button>
+        {{# }else{ }}
+            <button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}" data-status="{{d.status}}">解冻</button>
+        {{# }; }}
+        {{# if(d.phone!='' && d.realname!=''){ }}
+            <button class="layui-btn layui-btn-xs table-list-staff"  data-id="{{d.id}}" >转员工</button>
+        {{# }; }}
+        {{# if(!d.staff_id){ }}
+        <button class="layui-btn layui-btn-xs edit-btn" data-url="{:url('assignStaff')}" data-id="{{d.id}}" data-height="300" data-width="520">分配员工</button>
+        {{# }; }}
+        <button class="layui-btn layui-btn-xs go-btn" data-url="{:url('health')}" data-id="{{d.id}}" data-height="300" data-width="520">体检数据</button>
+        <button class="layui-btn layui-btn-xs add-order" data-id="{{d.id}}">添加订单</button>
+    {{# }; }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form','layer'],function () {
+        let table=layui.table,form=layui.form,layer=layui.layer;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('index')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'会员列表',
+            //表头设置
+            cols:[[
+                {field:'check',width:60,type:"checkbox"},
+                {field:'nickname',title:'昵称',width:160},
+                {field:'realname',title:'姓名',width:160},
+                {field:'phone', title: '手机',width:160},
+                {field:'status', title: '操作',toolbar:"#status-btn"},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st = That.attr('data-status');
+            let con_t=st=="1"?'是否冻结该会员？':'是否解冻该会员？';
+            let conf=layer.confirm(con_t,{btn:['是','否'],icon:3},function () {
+                layer.close(conf);
+                $.post("{:url('admin/Vip/unAndFreeze')}",{id:id},function(redata){
+                    if(redata.code==0){
+                        let txt=redata.data=='1'?'冻结':'解冻';
+                        That.attr('data-status',redata.data);
+                        That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+
+        //修改员工属性
+        $('#table-list').on('click', '.table-list-staff', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let conf=layer.confirm('是否将该会员转成员工？',{btn:['是','否'],icon:3},function () {
+                layer.close(conf);
+                $.post("{:url('addStaff')}",{id:id},function(redata){
+                    if(redata.code==0){
+                        That.remove();
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+
+        });
+    });
+
+</script>

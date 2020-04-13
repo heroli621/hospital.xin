@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		<style>
+			img{max-width: 200px;max-height: 40px;}
+		</style>
+	</head>
+
+	<body>
+		<div class="page-content-wrap">
+            <div class="layui-tab">
+                <ul class="layui-tab-title">
+                    <li class="{eq name='type' value='0'}layui-this{/eq}">
+                        <a href="{:url('admin/article/index')}">全部</a>
+                    </li>
+                    <li class="{eq name='type' value='1'}layui-this{/eq}">
+                        <a href="{:url('admin/article/index',['type'=>1])}">新闻中心</a>
+                    </li>
+                    <li class="{eq name='type' value='2'}layui-this{/eq}">
+                        <a href="{:url('admin/article/index',['type'=>2])}">核心技术</a>
+                    </li>
+                    <li class="{eq name='type' value='3'}layui-this{/eq}">
+                        <a href="{:url('admin/article/index',['type'=>3])}">成功案例</a>
+                    </li>
+                </ul>
+            </div>
+			<div class="layui-form" id="table-list" lay-filter="lay-form">
+
+                    <div class="layui-form-item">
+                        <div class="layui-inline">
+                            <input type="text" name="title" class="layui-input" placeholder="输入标题">
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                        </div>
+                        <div class="layui-inline tool-btn">
+                            <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('admin/article/edit')}" ><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                        </div>
+                    </div>
+
+                <div id="list-table" lay-filter="user-table"></div>
+                <script type="text/html" id="top-btn">
+                    <button class="layui-btn layui-btn-xs  table-list-top {{# if(d.top==1){ }}layui-btn-danger{{# }else{ }}layui-btn-primary{{# } }}" data-id="{{d.id}}">置顶</button>
+                </script>
+                <script type="text/html" id="status-btn">
+                    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}">显示</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}">隐藏</button>{{# }; }}
+                </script>
+                <script type="text/html" id="edit-btn">
+                    <div class="layui-inline">
+                        <button class="layui-btn layui-btn-xs layui-btn-normal  open-btn" data-url="/article_detail_{{d.id}}.html" data-width="360" data-height="640" title="预览" data-title="{{d.title}}"><i class="layui-icon">&#xe615;</i></button>
+                        <button class="layui-btn layui-btn-xs layui-btn-normal  go-btn" data-id="{{d.id}}" data-url="{:url('admin/article/edit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+                        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/article/del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+                    </div>
+                </script>
+			</div>
+		</div>
+        {include file="public/script"}
+		<script>
+            layui.use(['table','form'],function () {
+                let table=layui.table,form=layui.form;
+
+                var tableOption={
+                    elem:"#list-table",
+                    //异步数据接口
+                    url:"{:url('index')}",
+                    //高度
+                    height:"full-115",
+                    //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+                    skin:'line',
+                    //额外条件
+                    where:{type:"{$type}"},
+                    //是否显示工具栏
+                    //toolbar:true,
+                    //工具栏，filter=》筛选，exports=>导出，print=》打印
+                    //defaultToolbar:['filter','exports'],
+                    //导出文件时的文件名
+                    title:'资讯列表',
+                    //表头设置
+                    cols:[[
+                        {field:'title',title:'标题',edit:1},
+                        {field:'writer', title: '作者',edit:'text'},
+                        {field:'sort', title: '排序', width:120, sort: true,edit:'text'},
+                        {field:'top', title: '置顶', width:80, toolbar:'#top-btn'},
+                        {field:'status', title: '状态', width:80, toolbar:'#status-btn'},
+                        {field:'create_time', title: '发布日期', width:180, sort: true},
+                        {field:'right', title: '操作', width:160,toolbar: '#edit-btn'},
+                    ]],
+                    //分页设置
+                    page:{
+                        limit:10,
+                        prev:"上一页",
+                        next:"下一页",
+                        layout:['prev','page','next','skip','count','limit'],
+                        limits:[10,20,30,50]
+                    },
+                };
+                var tableIns=table.render(tableOption);
+                //监听单元格编辑
+                table.on('edit(user-table)',function (obj) {
+                    //console.log(obj);return;
+                    if(obj.field=='sort'){
+                        if(!/^\d{1,9}$/.test(obj.value)){
+                            layer.alert('排序值只能是数字！');return ;
+                        }
+                    }
+                    $.post("{:url('admin/Article/changeField')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                        return res;
+                    });
+                });
+                //监听表单提交
+                form.on('submit(lay-search)',function (data) {
+                    let where={where:data.field,type:"{$type}"};
+                    //console.log(where);
+                    tableIns.reload({
+                        where:where,
+                        page:{
+                            curr:1,
+                            prev:"上一页",
+                            next:"下一页"
+                        },
+                    });
+                    return false;
+                });
+            });
+
+			$(function() {
+				//修改状态
+				$('#table-list').on('click', '.table-list-status', function() {
+					var That = $(this);
+					var id = That.attr('data-id');
+                    $.post("{:url('admin/article/changeArticle')}",{id:id,field:'status'},function(redata){
+                        if(redata.code==0){
+                            var txt='';
+                            if(redata.data=='1'){
+                                txt='显示';
+                            }else{
+                                txt='隐藏';
+                            }
+                            That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                        }else{
+                            layer.msg(redata.msg,{title:site_name,icon:2});
+                        }
+                    });
+				});
+
+                //修改置顶
+                $('#table-list').on('click', '.table-list-top', function() {
+                    var That = $(this);
+                    var id = That.attr('data-id');
+                    $.post("{:url('admin/article/changeArticle')}",{id:id,field:'top'},function(redata){
+                        if(redata.code==0){
+                            That.toggleClass('layui-btn-danger layui-btn-primary').attr('data-value',redata.data);
+                        }else{
+                            layer.msg(redata.msg,{title:site_name,icon:2});
+                        }
+                    });
+                });
+			});
+
+		</script>
+	</body>
+
+</html>

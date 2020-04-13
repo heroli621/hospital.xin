@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file='public/head'}
+		{include file='public/script'}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <style>
+            .appoint_temp_list{padding-top: .44rem;}
+        </style>
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_grad-3">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">会员跟进</span>
+		</div>
+		<div id="mescroll">
+            <div class="appoint_temp_list">
+
+            </div>
+        </div>
+		<!--没有更多了-->
+		<div class="toBottom no_more" style="display: none;">
+			<span class="span">没有更多了</span>
+		</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:8
+    };
+
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+            mescroll.lockUpScroll( !1 );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">还没有分配会员哦~</p>' +
+                '</div>' +
+                '</div>';
+            $(".appoint_temp_list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $(".appoint_temp_list").empty();
+        }
+        let clen=curPageData.length;
+        for (var i = 0; i < clen; i++) {
+            let pd=curPageData[i];
+            let level_name=!pd.level?'普通会员':pd.level_name;
+            let obj_str='<div class="appoint_temp" data-id="'+pd.id+'">' +
+                '<div class="middle flex_bet show-follow" >' +
+                '<div class="tag">'+pd.nickname+'</div>' +
+                '<div class="name">'+pd.phone+'</div>' +
+                '<div class="civil">'+level_name+'</div>' +
+                '</div>' +
+                '<div class="foot flex">' +
+                '<button class="btn add-follow">增加跟进信息</button>' +
+                '</div></div>';
+            $(".appoint_temp_list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('follow')}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+    $(function () {
+        //查看跟进
+        $(".appoint_temp_list").on('click','.show-follow',function () {
+            let id=$(this).parents('.appoint_temp').data('id');
+            let edit_index=layer.open({
+                type:2,
+                content:"{:url('followList')}?id="+id,
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(edit_index);
+        });
+        //添加跟进
+        $(".appoint_temp_list").on('click','.add-follow',function () {
+            let id=$(this).parents('.appoint_temp').data('id');
+            let edit_index=layer.open({
+                type:2,
+                content:"{:url('followEdit')}?id="+id,
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(edit_index);
+        });
+    });
+</script>
+

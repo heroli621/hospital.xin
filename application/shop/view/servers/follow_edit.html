@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+	{include file="public/head"}
+	{include file="public/script"}
+	<link rel="stylesheet" href="/static/shop/libs/mobileSelect.css">
+</head>
+<body class="body has_top">
+	<div class="headbar xls_white">
+		<a class="back">
+			<i class="iconfont icon-zuojiantou2"></i>
+		</a>
+		<span class="title">跟进记录</span>
+	</div>
+	<!--个人资料-->
+	<div class="data_box">
+		<div class="item flex_bet" id="select_follow">
+			<span class="type">跟进日期</span>
+			<div class="flex_bet">
+				<input type="text" class="input ph follow-time" readonly placeholder="请选择" value=""/>
+				<i class="iconfont icon-youjiantou"></i>
+			</div>
+		</div>
+        <div class="item flex_bet new_addr">
+            <textarea class="area ph content" placeholder="记录内容"></textarea>
+        </div>
+	</div>
+    <div style="margin-top: 2rem;">
+        <button class="save_address publish xls_grad-3">保存</button>
+    </div>
+</body>
+</html>
+<script src="/static/shop/libs/mobileSelect.min.js"></script>
+
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    $(function(){
+        //初始化日期
+        var min = new Date("2018/01/01");
+        var max = new Date();
+        var json = [];
+        for (var s = min.getFullYear(), l = max.getFullYear(); s <= l; s++) {
+            var obj = {};
+            obj['id'] = obj['value'] = s;
+            obj.childs = [];
+            for (var m = 1; m <= 12; m++) {
+                var o = {};
+                o['id'] = o['value'] = ("0" + m).slice(-2);
+                o.childs = [];
+                var days = new Date(s, m, 0).getDate();
+                for (var d = 1; d <= days; d++) {
+                    var j = {};
+                    j['id'] = j['value'] = ("0" + d).slice(-2);
+                    if (!(m == max.getMonth() + 1 && s == max.getFullYear() && d > max.getDate())) {
+                        o.childs.push(j);
+                    }
+                }
+                if (!(m > max.getMonth() + 1 && s == max.getFullYear())) {
+                    obj.childs.push(o);
+                }
+            }
+            json.push(obj);
+        }
+
+        var n_m = json.length-1;
+        var n_y = json[n_m].childs.length-1;
+        var n_d = json[n_m].childs[n_y].childs.length-1;
+
+        //初始化生日选择插件
+        var birthday = new MobileSelect({
+            trigger: '#select_follow',
+            title: '选择跟进日期',
+            position:[n_m, n_y, n_d],
+            wheels: [
+                {data: json}
+            ],
+            callback:function(indexArr, data){
+                $("#select_follow .follow-time").val(data[0].value+'-'+data[1].value+'-'+data[2].value);
+                is_change=true;
+            },
+            triggerDisplayData:false
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+
+        //保存修改
+        $('.publish').on('click',function () {
+            let follow_time=$('.follow-time').val();
+            let content=$.trim($('.content').val());
+            if(content.length==0){
+                layer.msg('跟进记录内容不能为空。');return !1;
+            }
+            let data={content:content,follow_time:follow_time,id:"{$mid}"};
+            $.post("{:url('followEdit')}",data,function (res) {
+                if(res.code==0){
+                    layer.msg(res.msg,{end:function () {
+                            parent.layer.close(iframe_index);
+                        }});
+                }else{
+                    layer.msg(res.msg);
+                }
+            },"json");
+        });
+
+    });
+</script>

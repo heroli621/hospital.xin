@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="wrap-container">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <blockquote class="layui-elem-quote">
+                初诊
+            </blockquote>
+            {if isset($data.1)}
+            <div class="layui-form-item">
+                <label class="layui-form-label">肤质：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_type[]" value="普通" title="普通" {if strstr($data.1.skin_type,'普通') }checked{/if}>
+                    <input type="checkbox" name="skin_type[]" value="干性" title="干性" {if strstr($data.1.skin_type,'干性') }checked{/if}>
+                    <input type="checkbox" name="skin_type[]" value="油性" title="油性" {if strstr($data.1.skin_type,'油性') }checked{/if}>
+                    <input type="checkbox" name="skin_type[]" value="敏感性" title="敏感性" {if strstr($data.1.skin_type,'敏感性') }checked{/if}>
+                    <input type="checkbox" name="skin_type[]" value="混合性" title="混合性" {if strstr($data.1.skin_type,'混合性') }checked{/if}>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">纹理：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="venation" value="粗糙" title="粗糙" {eq name="data.1.venation" value="粗糙" }checked{/eq}>
+                    <input type="radio" name="venation" value="普通" title="普通" {eq name="data.1.venation" value="普通" }checked{/eq}>
+                    <input type="radio" name="venation" value="细腻" title="细腻" {eq name="data.1.venation" value="细腻" }checked{/eq}>
+                </div>
+            </div>{if strstr('',$data.1.skin_color) }checked{/if}
+            <div class="layui-form-item">
+                <label class="layui-form-label">肤色：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'白') }checked{/if} value="白" title="白">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'普通') }checked{/if} value="普通" title="普通">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'淡黑') }checked{/if} value="淡黑" title="淡黑">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'黄') }checked{/if} value="黄" title="黄">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'好') }checked{/if} value="好" title="好">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'坏') }checked{/if} value="坏" title="坏">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'色斑') }checked{/if} value="色斑" title="色斑">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'雀斑') }checked{/if} value="雀斑" title="雀斑">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'暗斑') }checked{/if} value="暗斑" title="暗斑">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'粉刺') }checked{/if} value="粉刺" title="粉刺">
+                    <input type="checkbox" name="skin_color[]" {if strstr($data.1.skin_color,'红脸') }checked{/if}  value="红脸"  title="红脸">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">弹性：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="elasticity" value="好" title="好" {eq name="data.1.elasticity" value="好"}checked{/eq} />
+                    <input type="radio" name="elasticity" value="普通" title="普通" {eq name="data.1.elasticity" value="普通"}checked{/eq} />
+                    <input type="radio" name="elasticity" value="差" title="差" {eq name="data.1.elasticity" value="差"}checked{/eq} />
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[1]" class="layui-textarea">{$data.1.suggest_skin}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[1]" class="layui-input" value="{$data.1.notum}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[1]" class="layui-input" value="{$data.1.waist}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[1]" class="layui-input" value="{$data.1.arm}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[1]" class="layui-input" value="{$data.1.chest}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[1]" class="layui-input" value="{$data.1.abdomen}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[1]" class="layui-input" value="{$data.1.legs}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[1]" class="layui-textarea">{$data.1.suggest_body}</textarea>
+                </div>
+            </div>
+
+            {else /}
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">肤质：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_type[]" value="普通" title="普通">
+                    <input type="checkbox" name="skin_type[]" value="干性" title="干性">
+                    <input type="checkbox" name="skin_type[]" value="油性" title="油性">
+                    <input type="checkbox" name="skin_type[]" value="敏感性" title="敏感性">
+                    <input type="checkbox" name="skin_type[]" value="混合性" title="混合性">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">纹理：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="venation" value="粗糙" title="粗糙">
+                    <input type="radio" name="venation" value="普通" title="普通">
+                    <input type="radio" name="venation" value="细腻" title="细腻">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">肤色：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_color[]" value="白" title="白">
+                    <input type="checkbox" name="skin_color[]" value="普通" title="普通">
+                    <input type="checkbox" name="skin_color[]" value="淡黑" title="淡黑">
+                    <input type="checkbox" name="skin_color[]" value="黄" title="黄">
+                    <input type="checkbox" name="skin_color[]" value="好" title="好">
+                    <input type="checkbox" name="skin_color[]" value="坏" title="坏">
+                    <input type="checkbox" name="skin_color[]" value="色斑" title="色斑">
+                    <input type="checkbox" name="skin_color[]" value="雀斑" title="雀斑">
+                    <input type="checkbox" name="skin_color[]" value="暗斑" title="暗斑">
+                    <input type="checkbox" name="skin_color[]" value="粉刺" title="粉刺">
+                    <input type="checkbox" name="skin_color[]" value="红脸"  title="红脸">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">弹性：</label>
+                <div class="layui-input-block">
+                    <input type="radio" name="elasticity" value="好" title="好" />
+                    <input type="radio" name="elasticity" value="普通" title="普通" />
+                    <input type="radio" name="elasticity" value="差" title="差" />
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[1]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[1]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[1]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            {/if}
+            <blockquote class="layui-elem-quote">
+               6个月后
+            </blockquote>
+            {if isset($data.2)}
+            <div class="layui-form-item">
+                <label class="layui-form-label">皮肤现状：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_now[2][]" value="干燥状况明显改善、皮肤滋润" title="干燥状况明显改善、皮肤滋润" {if strstr($data.2.skin_now,'干燥状况明显改善、皮肤滋润') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="细小皱纹变浅" title="细小皱纹变浅" {if strstr($data.2.skin_now,'细小皱纹变浅') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="皮脂腺分泌正常" title="皮脂腺分泌正常" {if strstr($data.2.skin_now,'皮脂腺分泌正常') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="皮肤紧实" title="皮肤紧实" {if strstr($data.2.skin_now,'皮肤紧实') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="T字部位毛孔变细" title="T字部位毛孔变细" {if strstr($data.2.skin_now,'T字部位毛孔变细') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="草莓鼻明显改善" title="草莓鼻明显改善" {if strstr($data.2.skin_now,'草莓鼻明显改善') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="色斑明显淡化" title="色斑明显淡化" {if strstr($data.2.skin_now,'色斑明显淡化') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="肤色开始呈现透明感" title="肤色开始呈现透明感" {if strstr($data.2.skin_now,'肤色开始呈现透明感') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="肤色变亮" title="肤色变亮" {if strstr($data.2.skin_now,'肤色变亮') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="红血丝状况改善" title="红血丝状况改善" {if strstr($data.2.skin_now,'红血丝状况改善') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="角质层恢复正常" title="角质层恢复正常" {if strstr($data.2.skin_now,'角质层恢复正常') }checked{/if}>
+                    <input type="checkbox" name="skin_now[2][]" value="皮肤越来越健康" title="皮肤越来越健康" {if strstr($data.2.skin_now,'皮肤越来越健康') }checked{/if}>
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[2]" class="layui-textarea">{$data.2.suggest_skin}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[2]" class="layui-input" value="{$data.2.notum}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[2]" class="layui-input" value="{$data.2.waist}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[2]" class="layui-input" value="{$data.2.arm}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[2]" class="layui-input" value="{$data.2.chest}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[2]" class="layui-input" value="{$data.2.abdomen}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[2]" class="layui-input" value="{$data.2.legs}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[2]" class="layui-textarea">{$data.2.suggest_body}</textarea>
+                </div>
+            </div>
+
+            {else /}
+            <div class="layui-form-item">
+                <label class="layui-form-label">皮肤现状：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_now[2][]" value="干燥状况明显改善、皮肤滋润" title="干燥状况明显改善、皮肤滋润">
+                    <input type="checkbox" name="skin_now[2][]" value="细小皱纹变浅" title="细小皱纹变浅">
+                    <input type="checkbox" name="skin_now[2][]" value="皮脂腺分泌正常" title="皮脂腺分泌正常">
+                    <input type="checkbox" name="skin_now[2][]" value="皮肤紧实" title="皮肤紧实">
+                    <input type="checkbox" name="skin_now[2][]" value="T字部位毛孔变细" title="T字部位毛孔变细">
+                    <input type="checkbox" name="skin_now[2][]" value="草莓鼻明显改善" title="草莓鼻明显改善">
+                    <input type="checkbox" name="skin_now[2][]" value="色斑明显淡化" title="色斑明显淡化">
+                    <input type="checkbox" name="skin_now[2][]" value="肤色开始呈现透明感" title="肤色开始呈现透明感">
+                    <input type="checkbox" name="skin_now[2][]" value="肤色变亮" title="肤色变亮">
+                    <input type="checkbox" name="skin_now[2][]" value="红血丝状况改善" title="红血丝状况改善">
+                    <input type="checkbox" name="skin_now[2][]" value="角质层恢复正常" title="角质层恢复正常">
+                    <input type="checkbox" name="skin_now[2][]" value="皮肤越来越健康" title="皮肤越来越健康">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[2]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[2]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[2]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            {/if}
+            <blockquote class="layui-elem-quote">
+                12个月后
+            </blockquote>
+            {if isset($data.3)}
+            <div class="layui-form-item">
+                <label class="layui-form-label">皮肤现状：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_now[3][]" value="干燥状况明显改善、皮肤滋润" title="干燥状况明显改善、皮肤滋润" {if strstr($data.3.skin_now,'干燥状况明显改善、皮肤滋润') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="细小皱纹变浅" title="细小皱纹变浅" {if strstr($data.3.skin_now,'细小皱纹变浅') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="皮脂腺分泌正常" title="皮脂腺分泌正常" {if strstr($data.3.skin_now,'皮脂腺分泌正常') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="皮肤紧实" title="皮肤紧实" {if strstr($data.3.skin_now,'皮肤紧实') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="T字部位毛孔变细" title="T字部位毛孔变细" {if strstr($data.3.skin_now,'T字部位毛孔变细') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="草莓鼻明显改善" title="草莓鼻明显改善" {if strstr($data.3.skin_now,'草莓鼻明显改善') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="色斑明显淡化" title="色斑明显淡化" {if strstr($data.3.skin_now,'色斑明显淡化') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="肤色开始呈现透明感" title="肤色开始呈现透明感" {if strstr($data.3.skin_now,'肤色开始呈现透明感') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="肤色变亮" title="肤色变亮" {if strstr($data.3.skin_now,'肤色变亮') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="红血丝状况改善" title="红血丝状况改善" {if strstr($data.3.skin_now,'红血丝状况改善') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="角质层恢复正常" title="角质层恢复正常" {if strstr($data.3.skin_now,'角质层恢复正常') }checked{/if}>
+                    <input type="checkbox" name="skin_now[3][]" value="皮肤越来越健康" title="皮肤越来越健康" {if strstr($data.3.skin_now,'皮肤越来越健康') }checked{/if}>
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[3]" class="layui-textarea">{$data.3.suggest_skin}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[3]" class="layui-input" value="{$data.3.notum}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[3]" class="layui-input" value="{$data.3.waist}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[3]" class="layui-input" value="{$data.3.arm}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[3]" class="layui-input" value="{$data.3.chest}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[3]" class="layui-input" value="{$data.3.abdomen}">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[3]" class="layui-input" value="{$data.3.legs}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[3]" class="layui-textarea">{$data.3.suggest_body}</textarea>
+                </div>
+            </div>
+
+            {else /}
+            <div class="layui-form-item">
+                <label class="layui-form-label">皮肤现状：</label>
+                <div class="layui-input-block">
+                    <input type="checkbox" name="skin_now[3][]" value="干燥状况明显改善、皮肤滋润" title="干燥状况明显改善、皮肤滋润">
+                    <input type="checkbox" name="skin_now[3][]" value="细小皱纹变浅" title="细小皱纹变浅">
+                    <input type="checkbox" name="skin_now[3][]" value="皮脂腺分泌正常" title="皮脂腺分泌正常">
+                    <input type="checkbox" name="skin_now[3][]" value="皮肤紧实" title="皮肤紧实">
+                    <input type="checkbox" name="skin_now[3][]" value="T字部位毛孔变细" title="T字部位毛孔变细">
+                    <input type="checkbox" name="skin_now[3][]" value="草莓鼻明显改善" title="草莓鼻明显改善">
+                    <input type="checkbox" name="skin_now[3][]" value="色斑明显淡化" title="色斑明显淡化">
+                    <input type="checkbox" name="skin_now[3][]" value="肤色开始呈现透明感" title="肤色开始呈现透明感">
+                    <input type="checkbox" name="skin_now[3][]" value="肤色变亮" title="肤色变亮">
+                    <input type="checkbox" name="skin_now[3][]" value="红血丝状况改善" title="红血丝状况改善">
+                    <input type="checkbox" name="skin_now[3][]" value="角质层恢复正常" title="角质层恢复正常">
+                    <input type="checkbox" name="skin_now[3][]" value="皮肤越来越健康" title="皮肤越来越健康">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">皮肤建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_skin[3]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">背部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="notum[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腰部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="waist[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">臂部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="arm[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">胸部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="chest[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">腹部：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="abdomen[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">四肢：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="legs[3]" class="layui-input" >
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">身体建议：</label>
+                <div class="layui-input-block">
+                    <textarea name="suggest_body[3]" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            {/if}
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="mid" value="{$mid}">
+                    <input type="hidden" name="id[1]" value="{$data.1.id|default=0}">
+                    <input type="hidden" name="id[2]" value="{$data.2.id|default=0}">
+                    <input type="hidden" name="id[3]" value="{$data.3.id|default=0}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+
+        //日期插件
+        laydate.render({
+            elem: '#birthday-date'
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            let jdata=data.field;
+            //console.log(jdata);
+            $.post("{:url('saveHealth')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                        var url="/admin/Vip/index.html?time={:time()}";
+                        parent.$('.layui-show .iframe').attr('src',url);
+                        parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

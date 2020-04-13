@@ -1,0 +1,95 @@
+<ul class="layui-nav layui-nav-tree" lay-filter="leftNav" id="leftNav">
+    <li class="layui-nav-item">
+        <a href="javascript:;" data-url="{:url('admin/Framework/welcome')}" data-id='100' data-text="后台主页"><i class="layui-icon layui-icon-home"></i> 后台主页</a>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-cart"></i> 销售管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/classify')}" data-id='201' data-text="商品分类"><span class="l-line"></span> 商品分类</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/index')}" data-id='202' data-text="商品管理"><span class="l-line"></span> 商品管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/coupon')}" data-id='203' data-text="优惠券"><span class="l-line"></span> 优惠券管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/couponGet')}" data-id='204' data-text="优惠券领取"><span class="l-line"></span> 优惠券领取</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/couponUse')}" data-id='205' data-text="优惠券使用"><span class="l-line"></span> 优惠券使用</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Sale/couponSend')}" data-id='206' data-text="优惠券发送"><span class="l-line"></span> 优惠券发送</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Article/activity')}" data-id='207' data-text="活动管理"><span class="l-line"></span> 活动管理</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-tabs"></i> 订单管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Shop/expense')}" data-id='301' data-text="消费订单"><span class="l-line"></span> 消费订单</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Shop/recharge')}" data-id='302' data-text="充值订单"><span class="l-line"></span> 充值订单</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Shop/abnormal')}" data-id='303' data-text="异常订单"><span class="l-line"></span> 异常订单</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Shop/delivery')}" data-id='305' data-text="发货管理"><span class="l-line"></span> 发货管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Shop/express')}" data-id='306' data-text="物流公司"><span class="l-line"></span> 物流公司</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-user"></i> 会员管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/level')}" data-id='401' data-text="会员等级"><span class="l-line"></span> 会员等级</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/index')}" data-id='402' data-text="会员列表"><span class="l-line"></span> 会员列表</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/integral')}" data-id='405' data-text="积分记录"><span class="l-line"></span> 积分记录</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/signSet')}" data-id='406' data-text="签到设置"><span class="l-line"></span> 签到设置</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/signIn')}" data-id='407' data-text="签到统计"><span class="l-line"></span> 签到统计</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/message')}" data-id='409' data-text="发送消息"><span class="l-line"></span> 发送消息</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-rmb"></i> 资金管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/withdraw')}" data-id='405' data-text="提现审核"><span class="l-line"></span> 提现审核</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/brokerage')}" data-id='811' data-text="佣金记录"><span class="l-line"></span> 佣金记录</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/earnings')}" data-id='810' data-text="收益记录"><span class="l-line"></span> 收益记录</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/recharge')}" data-id='808' data-text="充值管理"><span class="l-line"></span> 充值管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/returnCash')}" data-id='812' data-text="返现记录"><span class="l-line"></span> 返现记录</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-date"></i> 预约管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/servers')}" data-id='1113' data-text="服务项目"><span class="l-line"></span> 服务项目</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Vip/subscribe')}" data-id='1103' data-text="会员预约"><span class="l-line"></span> 会员预约</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-read"></i> 内容管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Article/index')}" data-id='501' data-text="文章管理"><span class="l-line"></span> 文章管理</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-username"></i> 员工管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Company/affair')}" data-id='606' data-text="事务管理"><span class="l-line"></span> 事务管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Company/clockingIn')}" data-id='601' data-text="考勤管理"><span class="l-line"></span> 考勤管理</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Company/staff')}" data-id='603' data-text="员工列表"><span class="l-line"></span> 员工列表</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Company/level')}" data-id='604' data-text="员工等级"><span class="l-line"></span> 员工等级</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Company/evaluate')}" data-id='605' data-text="服务评价"><span class="l-line"></span> 服务评价</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon layui-icon-chart-screen"></i> 财务管理 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Finance/project')}" data-id='701' data-text="薪资项目"><span class="l-line"></span> 薪资项目</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Finance/staff')}" data-id='702' data-text="员工项目"><span class="l-line"></span> 员工项目</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Finance/createPaySheet')}" data-id='703' data-text="生成工资"><span class="l-line"></span> 生成工资</a></dd>
+        </dl>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;" data-url="{:url('admin/users/personal')}" data-id='800' data-text="修改密码"><i class="layui-icon layui-icon-password"></i> 修改密码</a>
+    </li>
+    <li class="layui-nav-item">
+        <a href="javascript:;"><i class="layui-icon">&#xe716;</i> 系统设置 <span class="layui-nav-more"></span></a>
+        <dl class="layui-nav-child">
+            <dd><a href="javascript:;" data-url="{:url('admin/Users/index')}" data-id='901' data-text="管理员"><span class="l-line"></span> 管理员</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/Power/roleList')}" data-id='902' data-text="角色管理"><span class="l-line"></span> 角色管理</a></dd>
+            {eq name="uid" value="1"}
+            <dd><a href="javascript:;" data-url="{:url('admin/Power/index')}" data-id='903' data-text="权限管理"><span class="l-line"></span> 权限管理</a></dd>
+            {/eq}
+            <dd><a href="javascript:;" data-url="{:url('admin/site/system')}" data-id='904' data-text="系统配置"><span class="l-line"></span> 系统配置</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/site/shop')}" data-id='906' data-text="商城配置"><span class="l-line"></span> 商城配置</a></dd>
+            <dd><a href="javascript:;" data-url="{:url('admin/site/logs')}" data-id='905' data-text="系统日志"><span class="l-line"></span> 系统日志</a></dd>
+        </dl>
+    </li>
+</ul>

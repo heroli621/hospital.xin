@@ -1,0 +1,9 @@
+
+<script>
+    var site_name='{$config.site_name}',de_tool_bar={if (isset($user_state) and $user_state>=99) or auth_can('export_auth')}['filter','exports']{else /}['filter']{/if};
+</script>
+<script src="/static/admin/js/jquery-3.1.1.min.js" type="text/javascript"></script>
+<script src="/static/admin/layui.all.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/admin/js/common.js" type="text/javascript" charset="utf-8"></script>
+
+

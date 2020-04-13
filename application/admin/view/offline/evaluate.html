@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-tab">
+            <ul class="layui-tab-title">
+                <li class="layui-this">学员评价</li>
+                <li>主管评价</li>
+            </ul>
+            <div class="layui-tab-content">
+                <div class="layui-tab-item layui-show">
+                    <div id="student-table" lay-filter="student_table">
+
+                    </div>
+                </div>
+                <div class="layui-tab-item">
+                    <div id="leader-table" lay-filter="leader_table">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn" data-id="{{d.id}}" data-url="{:url('expectEdit')}" data-title="编辑课件" data-width="560" data-height="300"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('expectDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption1={
+            elem:"#student-table",
+            //异步数据接口
+            url:"{:url('evaluate')}",
+            //高度
+            height:"full-205",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{id:'{$cid}'},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'线下课程《{$course_name}》学员评价',
+            //表头设置
+            cols:[[
+                {field:'realname',title:'学员姓名'},
+                {field:'phone',title:'手机号'},
+                {field:'viewpoint_c',title:'观点新颖，能引起共鸣'},
+                {field:'complexity_c',title:'讲授内容深浅合理，易于理解'},
+                {field:'case_c',title:'案例丰富'},
+                {field:'practicability_c',title:'理论与实践结合，实用性'},
+                {field:'guidance_c',title:'对实际工作有指导意义'},
+                {field:'expression_s',title:'表达技巧，讲授能力'},
+                {field:'control_s',title:'控制现场，调动气氛'},
+                {field:'encourage_s',title:'能鼓励学员积极参与'},
+                {field:'lecturer',title:'培训老师授课整体效果'},
+                {field:'management_m',title:'海轩课堂管理模式'},
+                {field:'tacit_m',title:'助教和讲师的默契度'},
+                {field:'attention_m',title:'助教对学员的关注度'},
+                {field:'assistant',title:'助教服务的整体评价'},
+                {field:'value',title:'本次课程最有价值的三点'},
+                {field:'suggest',title:'您对本次课程的建议'},
+                {field:'expect_course',title:'期望参加的课程'},
+                {field:'create_time',title:'评价日期'}
+            ]],
+            //分页设置
+            limit:{$student_total}
+        };
+        var tableOption2={
+            elem:"#leader-table",
+            //异步数据接口
+            url:"{:url('evaluate')}",
+            //高度
+            height:"full-210",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{type:1,id:'{$cid}'},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'线下课程《{$course_name}》主管评价',
+            //表头设置
+            cols:[[
+                {field:'realname',title:'主管姓名'},
+                {field:'phone',title:'手机号'},
+                {field:'content_s',title:'课程老师及内容的评分'},
+                {field:'assistant_s',title:'助教专业度评分'},
+                {field:'service_s',title:'海轩整体服务评分'},
+                {field:'content_e',title:'课程老师及内容的评价'},
+                {field:'assistant_e',title:'助教专业度评价'},
+                {field:'service_e',title:'海轩整体服务评价'},
+                {field:'create_time',title:'评价日期'}
+
+            ]],
+            //分页设置
+            limit:{$leader_total}
+        };
+        var tableIns1=table.render(tableOption1);
+        var tableIns2=table.render(tableOption2);
+
+    });
+
+</script>

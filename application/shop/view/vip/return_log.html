@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+    <style>
+        #mescroll #list{padding-top: .3rem;}
+        .re-box{text-align: center;}
+        .re-money{font-size: .6rem;}
+        #mescroll #list .btn_green{
+            border-color: green;
+            color: green;
+        }
+    </style>
+    <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+    <script src="/static/shop/js/mescroll.min.js"></script>
+</head>
+<body class="body has_top">
+    <div class="headbar xls_grad-3">
+        <a class="back">
+            <i class="iconfont icon-zuojiantou2"></i>
+        </a>
+        <span class="title">返现记录</span>
+    </div>
+    <!--订单列表-->
+    <div id="mescroll">
+        <div class="my_order_list" id="list">
+
+        </div>
+    </div>
+    <!--没有更多了-->
+    <div class="toBottom no_more" style="display: none;">
+        <span class="span">没有更多了</span>
+    </div>
+    <form action="/wxpay.html" id="pay-form" method="post">
+        <input type="hidden" name="order_id" class="order-id" />
+    </form>
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:4
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        $('.toBottom').hide();
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            mescroll.lockUpScroll( false );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<a href="/recharge.html"><div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">您还没有相关的记录</p>' +
+                '<p class="p2">可以去充值中心看看</p>' +
+                '</div></a>' +
+                '</div>';
+            $("#list").empty().append(obj_str);
+            mescroll.lockUpScroll( true );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let t=pd.create_time.split(' ');
+            let residue=pd.orders.residue_date?'<span class="num">剩余：'+pd.orders.residue_date+' 期</span>':'<span class="num">已完结</span>';
+            let obj_str='<div class="item">' +
+                '<div class="flex_bet top">' +
+                '<span class="no">订单号：'+pd.orders.order_no+'</span>' +
+                '</div>' +
+                '<div class="flex_bet center">' +
+                '<div class="info flex">' +
+                '<div class="re-box">'+
+                '<span>返还：</span>' +
+                '<span  class="re-money">&yen;'+pd.return_money+'</span>' +
+                '</div>' +
+                '<div class="flex_bet">' +
+                '<span class="num">第 '+pd.return_now+' 期</span>' +
+                '<span class="num">共 '+pd.return_date+' 期</span>' +
+                residue+
+                '</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="bottom">' +
+                '<div class="btn_group flex">' +
+                    '<span>'+t[0]+'</span>'+
+                '</div>' +
+                '</div>' +
+                '</div>';
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('returnLog')}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+        });
+    }
+    $(function(){
+
+        //去支付
+        $('#list').on('click','.item .js-pay-order',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            $('.order-id').val(id);
+            //console.log(id);return !1;
+            $("#pay-form").submit();
+        });
+
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>

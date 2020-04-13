@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                添加优惠活动请前往商品列表。排序直接点击修改。标题和封面点击编辑按钮修改，其他内容不能修改。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入活动标题">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="goods" class="layui-input" placeholder="输入商品名称">
+                </div>
+                <div class="layui-inline">
+                    <select name="ac_ty">
+                        <option value="">选择活动类型</option>
+                        <option value="1">立减优惠</option>
+                        <option value="2">打折优惠</option>
+                        <option value="3">赠送积分</option>
+                        <option value="4">赠送优惠券</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="top-btn">
+    <button class="layui-btn layui-btn-xs  table-list-top {{# if(d.top==1){ }}layui-btn-danger{{# }else{ }}layui-btn-primary{{# } }}" data-id="{{d.id}}">置顶</button>
+</script>
+<script type="text/html" id="activity-type">
+    {{#if(d.activity_type==1){ }}
+    立减优惠
+    {{# }; }}
+    {{#if(d.activity_type==2){ }}
+    打折优惠
+    {{# }; }}
+    {{#if(d.activity_type==3){ }}
+    赠送积分
+    {{# }; }}
+    {{#if(d.activity_type==4){ }}
+    赠送优惠券
+    {{# }; }}
+</script>
+<script type="text/html" id="sale-tool">
+    {{#if(d.activity_type==1){ }}
+    {{d.sale}}元
+    {{# }else if(d.activity_type==2){ }}
+    {{(d.sale/10).toFixed(1)}}折
+    {{# }else if(d.activity_type==3){ }}
+    {{d.sale}}积分
+    {{# }else{ }}
+    {{d.sale}}
+    {{# }; }}
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}">是</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}">否</button>{{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal go-btn" data-id="{{d.id}}" data-url="{:url('admin/article/activityEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/article/activityDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('activity')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            title:'优惠活动',
+            //表头设置
+            cols:[[
+                {field:'activity_title',title:'活动标题'},
+                {field:'goods_name',title:'商品'},
+                {field:'activity_type',title:'活动类型',width:100,toolbar:"#activity-type"},
+                {field:'sale',title:'优惠',toolbar:"#sale-tool"},
+                {field:'start_time',title:'起止日期'},
+                {field:'sort',title:'排序',width:80,edit:1},
+                {field:'top',title:'置顶',width:80,toolbar:'#top-btn'},
+                {field:'status',title:'启动',width:80,toolbar:'#status-btn'},
+                {field:'right',title:'操作',width:100,toolbar:'#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,20,30,50]
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return ;
+                }
+            }
+            $.post("{:url('admin/Article/activityField')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            $.post("{:url('admin/article/changeActivity')}",{id:id,field:'status'},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='是';
+                    }else{
+                        txt='否';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+
+        //修改置顶
+        $('#table-list').on('click', '.table-list-top', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            $.post("{:url('admin/article/changeActivity')}",{id:id,field:'top'},function(redata){
+                if(redata.code==0){
+                    That.toggleClass('layui-btn-danger layui-btn-primary').attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+
+</script>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="班级名称">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="学员姓名/手机">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                    <button class="layui-btn layui-btn-normal"  lay-filter="lay-export" lay-submit>导出</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="p-btn">
+    {{d.progress}}%
+</script>
+<script type="text/html" id="tool-bar">
+    <button class="layui-btn layui-btn-normal layui-btn-xs open-btn " data-url="{:url('plan')}?tid={{d.term_id}}&mid={{d.member_id}}" data-width="80%" data-height="100%" data-title="查看 {{d.realname}}{{d.phone}} 学员" >查看总结、计划</button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('user')}",
+            //高度
+            height:"full-230",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            toolbar:false,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级学员列表',
+            //表头设置
+            cols:[[
+                {field:'term_name',title:'班级名称'},
+                {field:'realname', title: '姓名'},
+                {field:'phone', title: '手机'},
+                {field:'firm', title: '单位'},
+                {field:'progress', title: '进度',width:100,toolbar:"#p-btn"},
+                {field:'credit', title: '学分'},
+                {field:'create_time', title: '开班日期', width:160},
+                {field:'plan', title: '行动计划'},
+                {field:'summary', title: '学习总结'}
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            //console.log(where);
+            tableIns.reload({
+                where:data.field,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        form.on('submit(lay-export)',function (data) {
+            //console.log(data);
+            window.open("{:url('export')}?title="+data.field.title);
+            return false;
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st=That.text();
+            st=st=='上架'?'下架':'上架';
+            let lay_index=layer.confirm("是否"+st+"班级",{btn:['是','否'],icon:3},function () {
+                $.post("{:url('toggleField')}",{id:id,field:'status'},function(redata){
+                    layer.close(lay_index);
+                    if(redata.code==0){
+                        var txt='';
+                        if(redata.data=='1'){
+                            txt='上架';
+                        }else{
+                            txt='下架';
+                        }
+                        That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+    });
+
+</script>

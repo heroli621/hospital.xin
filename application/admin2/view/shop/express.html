@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('admin/Shop/expressEdit')}"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  go-btn" data-id="{{d.id}}" data-url="{:url('admin/Shop/expressEdit')}" title="编辑"><i class="layui-icon">&#xe642;</i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/Shop/expressDel')}" title="删除"><i class="layui-icon">&#xe640;</i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('express')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'express_name',title:'公司名称'},
+                {field:'com', title: '公司编码'},
+                {field:'create_time', title: '发布日期', width:180, sort: true},
+                {field:'right', title: '操作', width:160,toolbar: '#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','count'],
+                //limits:[10,20,30,50]
+            },
+        };
+        var tableIns=table.render(tableOption);
+
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    layout:['prev','page','next','count'],
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+
+</script>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+    <style>
+        .layui-user-left{float: left;}
+        .layui-user-right{float: right;}
+        .layui-user-left,.layui-user-right{
+            width: 49%;
+        }
+        .nu{width: 60px;}
+    </style>
+</head>
+<body>
+<div class="layui-user-left">
+    <div class="layui-form" style="width: 90%;padding-top: 20px;">
+        <div class="layui-form-item" >
+            <label class="layui-form-label">商品名称：</label>
+            <div class="layui-input-block">
+                <input type="text" name="goods_name" class="layui-input" >
+            </div>
+            <div style="text-align: right;margin-top: 10px;">
+                <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                <button class="layui-btn layui-btn-normal add-right">添加 <i class="layui-icon layui-icon-next"></i></button>
+            </div>
+        </div>
+        <div id="list-table" lay-filter="user-table">
+
+        </div>
+    </div>
+</div>
+<div class="layui-user-right">
+    <div class="layui-form-item" style="margin-top: 15px;">
+        <button class="layui-btn save-btn" >保存</button>
+    </div>
+    <table id="data-table" class="layui-table" lay-filter="data-table">
+        <tr>
+            <th>商品名称</th>
+            <th>数量</th>
+            <th>移除</th>
+        </tr>
+        <tbody id="save-data">
+
+        </tbody>
+    </table>
+
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var index = parent.layer.getFrameIndex(window.name);
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('addCombo')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //表头设置
+            cols:[[
+                {field:'id',type:'checkbox'},
+                {field:'goods_name',title:'商品名称'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next']
+            },
+        };
+        var tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where=data.field;
+            //console.log(where);
+            tableIns.reload({
+                where:where
+            });
+            return false;
+        });
+
+        $('.add-right').on('click',function () {
+            var checkStatus = table.checkStatus('list-table');
+            let data=checkStatus.data;
+            if(data.length==0){
+                return false;
+            }
+            //console.log(data);
+            let i,new_tr='';
+            for(i in data){
+                new_tr+='<tr data-goods-id="'+data[i].id+'">' +
+                    '<td class="na">'+data[i].goods_name+'</td>' +
+                    '<td><input  class="nu layui-input" type="number" value="1"></td>'+
+                    '<td><button class="layui-btn layui-btn-xs layui-btn-danger delete-btn"><i class="layui-icon layui-icon-delete"></i></button></td>' +
+                    '</tr>';
+            }
+            $("#save-data").append(new_tr);
+        });
+        //保存
+        $('.save-btn').on('click',function () {
+            let trs=$("#save-data tr");
+            let trl=trs.length,i=0,data=[],gid=[];
+            for(i;i<trl;i++){
+                let this_tr=$("#save-data tr").eq(i);
+                let child_id=this_tr.data("goods-id");
+                let gname=this_tr.find('.na').text();
+                let amount=parseInt(this_tr.find('.nu').val());
+                amount=amount<1?1:amount;
+                if($.inArray(child_id,gid)==-1){
+                    gid.push(child_id);//去重
+                    data.push({child_id:child_id,goods_name:gname,amount:amount});
+                }
+            }
+            parent.Complimentary(data);
+            parent.layer.close(index);
+        });
+        //删除
+        $('#save-data').on('click','.delete-btn',function () {
+            let pa=$(this).parents('tr');
+            pa.remove();
+        });
+    });
+
+</script>

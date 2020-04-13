@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+            <form class="layui-form" style="width: 90%;padding: 20px 0 80px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">学校名称：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="school_name"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.school_name|default=''}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">类型：</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="type"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.type|default='公办'}">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">批次：</label>
+                    <div class="layui-input-inline">
+                        <select name="batch_id" >
+                            <option value="">选择批次</option>
+                            {volist name="batch" id="value"}
+                            <option value="{$value.batch_id}" {if isset($info) and $info.batch_id == $value.batch_id}selected{/if}>{$value.title}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">状态：</label>
+                    <div class="layui-input-inline">
+                        <input type="checkbox" name="status" lay-skin="switch" lay-filter="is_courseware" lay-text="使用|禁用" value="1" {if !isset($info) or $info.status }checked{/if} />
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block">
+                        <textarea name="remark" class="layui-textarea" style="resize: none;">{$info.remark|default=''}</textarea>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="id" value="{$info.school_id|default=''}">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('schoolEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="{:url('school')}";
+                           location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //监听省份
+        form.on('select(province)', function(data){
+            get_next(data.value,1);
+        });
+        //监听城市
+        form.on('select(city)', function(data){
+            get_next(data.value,0);
+        });
+        function get_next(id,type) {
+            $.post("{:url('getNext')}",{pid:id},function (res) {
+                var str = type == 1? '城市':'区县';
+                var obj = '<option value="">'+str+'</option>';
+                var i;
+                for(i in res){
+                    obj += '<option value="'+res[i].id+'">'+res[i].name+'</option>';
+                }
+                console.log(obj);
+                if(type == 1){
+                    $('#city').empty().html(obj);
+                    $('#county').empty();
+                }else{
+                    $('#county').empty().html(obj);
+                }
+                form.render('select');
+            });
+        }
+    });
+
+</script>

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .layui-table-img{max-width: 100px;max-height: 100px;cursor:pointer;}
+        .layui-layer-content img{max-width: 800px;max-height: 400px;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入商品名称">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="add-btn">
+    <button class="layui-btn layui-btn-sm layui-btn-normal edit-btn" data-url="{:url('goodsEdit')}" ><i class="layui-icon">&#xe654;</i>添加</button>
+</script>
+<script type="text/html" id="pic-tool">
+    {{# if(d.images.length){ }}
+    {{# for(var i in d.images){ }}
+    <img class="layui-table-img" src="{{d.images[i]}}" onclick="showPic(this);">
+    {{# }  }}
+    {{# }  }}
+</script>
+<script type="text/html" id="state-btn">
+    {{# if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.goods_id}}" data-value="{{d.status}}">上架</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.goods_id}}" data-value="{{d.status}}">下架</button>
+    {{# }; }}
+</script>
+<script type="text/html" id="comment-btn">
+    {{# if(d.comment_show){ }}
+    <span class="layui-text-green">显示</span>
+    {{# }else{ }}
+    <span class="layui-text-red">隐藏</span>
+    {{# }; }}
+</script>
+<script type="text/html" id="detail-btn">
+    {{# if(d.detail_show){ }}
+    <span class="layui-text-green">显示</span>
+    {{# }else{ }}
+    <span class="layui-text-red">隐藏</span>
+    {{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{{d.goods_id}}" data-url="{:url('goodsEdit')}" title="编辑">
+        <i class="layui-icon layui-icon-edit"></i>
+    </button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.goods_id}}" data-url="{:url('goodsDel')}" title="删除">
+        <i class="layui-icon layui-icon-delete"></i>
+    </button>
+</script>
+<script type="text/html" id="other-set">
+    <button class="layui-btn layui-btn-xs open-btn" data-id="{{d.goods_id}}" data-url="{:url('parameter')}" title="参数设置">
+        参数设置
+    </button>
+    <button class="layui-btn layui-btn-xs layui-btn-normal open-btn" data-id="{{d.goods_id}}" data-url="{:url('specClassify')}" title="规格设置">
+        规格设置
+    </button>
+    <button class="layui-btn layui-btn-xs open-btn" data-id="{{d.goods_id}}" data-url="{:url('keyword')}" title="关键词">
+        关键词
+    </button>
+    <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.goods_id}}" data-url="{:url('fee')}" title="费用设置">
+        费用设置
+    </button>
+</script>
+
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('goods')}",
+            //高度
+            height:"full-170",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //是否显示工具栏
+            toolbar:"#add-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'订单列表',
+            //表头设置
+            cols:[[
+                {field:'goods_name',title:'名称',edit:1},
+                {field:'images', title: '图片',toolbar:'#pic-tool'},
+                {field:'sort', title: '排序',width:100,edit:1},
+                {field:'comment', title: '评论显示',toolbar:"#comment-btn",width:100},
+                {field:'show', title: '详情显示',toolbar:"#detail-btn",width:100},
+                {field:'status', title: '状态',toolbar:"#state-btn",width:100},
+                {field:'set', title: '关联设置',toolbar:"#other-set",width:360},
+                {field:'create_time', title: '创建时间',width:160,hide:1},
+                {field:'cz', title: '操作',toolbar:"#edit-btn",width:100},
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,200,500,2000,5000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return ;
+                }
+            }
+            $.post("{:url('changeGoods')}",{id:obj.data.goods_id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            var this_value = parseInt(That.attr('data-value'));
+            this_value = this_value?0:1;
+            $.post("{:url('changeGoods')}",{id:id,field:'status',value:this_value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='上架';
+                    }else{
+                        txt='下架';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+    function showPic(obj) {
+        var pic_url=$(obj).attr('src');
+        parent.layer.open({
+            type: 1,
+            title: false,
+            closeBtn: false,
+            //area: 'auto',
+            maxWidth:false,
+            maxHeight:false,
+            //offset:["100px","200px"],
+            skin: 'layui-layer-nobg', //没有背景色
+            shadeClose: true,
+            content: "<img src='"+pic_url+"' style='max-height:600px;max-width: 1000px;'/>"
+        });
+    }
+</script>

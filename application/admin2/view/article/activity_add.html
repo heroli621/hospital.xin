@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		<style>
+            #up-image{background-size: cover;}
+            .coupon-hide{display: none;}
+		</style>
+        <link rel="stylesheet" href="../../../../public/static/admin/lib/layui/css/layui.css">
+    </head>
+	<body>
+		<div class="wrap-container">
+            <ul class="layui-tab-title">
+                <li><a href="{:url('Sale/index')}">列表</a></li>
+                <li class="layui-this">编辑</li>
+            </ul>
+				<form class="layui-form" style="width: 90%;padding-top: 20px;">
+					<div class="layui-form-item">
+						<label class="layui-form-label">活动标题：</label>
+						<div class="layui-input-block">
+							<input type="text" name="activity_title"  lay-verify="required"  class="layui-input" >
+						</div>
+					</div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">活动类型：</label>
+                        <div class="layui-input-inline">
+                            <select name="activity_type" lay-filter="activity_type">
+                                <option value="1">立减优惠</option>
+                                <option value="2">打折优惠</option>
+                                <option value="3">赠送积分</option>
+                                <option value="4">赠送优惠券</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="layui-form-item" id="sale-for-type">
+                        <label class="layui-form-label this-label">立减金额：</label>
+                        <div class="layui-input-inline this-input">
+                            <input type="text" name="sale" class="layui-input" placeholder="￥" lay-verify="required|number">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux this-aux">
+                            单位：元
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label this-label">限购数量：</label>
+                        <div class="layui-input-inline this-input">
+                            <input type="text" name="num" class="layui-input"  lay-verify="number" value="0">
+                        </div>
+                        <div class="layui-form-mid layui-word-aux this-aux">
+                            默认0，不限数量
+                        </div>
+                    </div>
+                    <div class="layui-form-item" >
+                        <label class="layui-form-label">起止时间：</label>
+                        <div class="layui-input-inline" >
+                            <input type="text" name="start_stop" class="layui-input" id="start-time" lay-verify="required" />
+                        </div>
+                        <div class="layui-form-mid layui-word-aux">
+                            开始日为0点0分0秒，结束日为23点59分59秒
+                        </div>
+                    </div>
+                    <div class="layui-form-item" style="width: 100%">
+                        <label class="layui-form-label">活动封面：</label>
+                        <div class="layui-upload-drag" id="up-image" >
+                            <i class="layui-icon"></i>
+                            <p>点击上传，或将图片拖拽到此处</p>
+                            <p>建议尺寸：750*330</p>
+                        </div>
+                    </div>
+                   <!-- <div class="layui-form-item" style="width: 100%">
+                        <label class="layui-form-label">内容：</label>
+                        <div class="layui-input-block">
+                            <textarea name="content" id="content"></textarea>
+                        </div>
+                    </div>-->
+					<div class="layui-form-item">
+						<div class="layui-input-block">
+                            <input type="hidden" name="cover"  >
+                            <input type="hidden" name="goods_id"  value="{$goods_id|default=''}">
+							<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+						</div>
+					</div>
+				</form>
+            <div class="coupon-hide">
+                <select name="sale">
+                    {volist name="coupons" id="val"}
+                    <option value="{$val.id}">{$val.coupon_name}</option>
+                    {/volist}
+                </select>
+            </div>
+		</div>
+
+	</body>
+
+</html>
+{include file="public/script"}
+<!--<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>-->
+<script>
+
+    //编辑器初始化
+    /*var ue = UE.getEditor('content', {
+        initialFrameHeight: 400
+    });*/
+    //Demo
+    layui.use(['laydate','form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+        var laydate=layui.laydate;
+        //console.log(laydate);
+        //日期插件
+        laydate.render({
+            elem: '#start-time',
+            type: 'date',
+            range:'_'
+        });
+
+        //监听活动类型下拉框
+        form.on("select(activity_type)",function (data) {
+            //console.log(data);
+            let obj='<input type="text" name="sale" class="layui-input" lay-verify="required|number">';
+            let word_aux=true;
+            let label_text='赠送积分：';
+            let lword_aux_text='单位：元';
+            switch(data.value){
+                case "1":
+                    label_text='立减金额：';
+                    break;
+                case "2":
+                    label_text='折扣：';
+                    lword_aux_text='% 折扣值(1-100 如果打9折，请输入90)';
+                    break;
+                case "3":
+                    word_aux=false;
+                    break;
+                default:
+                    label_text='优惠券：';
+                    obj=$('.coupon-hide').html();
+                    word_aux=false;
+            }
+            if(!word_aux){
+                $('#sale-for-type').find('.this-aux').hide();
+            }else{
+                $('#sale-for-type').find('.this-aux').text(lword_aux_text);
+                $('#sale-for-type').find('.this-aux').show();
+            }
+            $('#sale-for-type').find('.this-label').text(label_text);
+            $('#sale-for-type').find('.this-input').html(obj);
+            if(data.value=="4")
+                form.render();
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('admin/article/activitySave')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/article/activity.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //封面上传
+        layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

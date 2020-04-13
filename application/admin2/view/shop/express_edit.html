@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #up-image{
+            background-image: url("{$info.cover|default=''}");
+            background-size: contain;
+            background-repeat: no-repeat;}
+    </style>
+</head>
+<body>
+    <div class="wrap-container">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('admin/Shop/express')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item" style="width: 40%">
+                <label class="layui-form-label">公司名称：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="express_name"  lay-verify="required" class="layui-input" value="{$info.express_name|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">公司编码：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="com"  lay-verify="required" class="layui-input" value="{$info.com|default=''}">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    例：顺丰速运，公司编码 shunfeng
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">LOGO：</label>
+                <div class="layui-upload-drag" id="up-image">
+                    <i class="layui-icon"></i>
+                    <p>点击上传，或将图片拖拽到此处</p>
+                    <p>建议尺寸：80*80</p>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    <input type="hidden" name="cover" value="{$info.cover|default=''}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    //Demo
+    layui.use(['form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //console.log(laydate);
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('admin/Shop/expressSave')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/Shop/express.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        //封面上传
+        layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+
+    });
+</script>

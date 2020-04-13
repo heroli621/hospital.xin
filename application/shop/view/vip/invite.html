@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file='public/head'}
+		{include file='public/script'}
+        <script src="/static/shop/js/qrcode.min.js"></script>
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_white">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">好友邀请</span>
+		</div>
+		<!--邀请-->
+		<div class="invite_box">
+			<img src="/static/shop/images/yqm.jpg" class="img"/>
+            <div id="qrcode" class="invite">
+
+            </div>
+
+		</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var qrcode = new QRCode('qrcode', {
+        text: "{$url}",
+        width: '105',
+        height: '105',
+        colorDark : '#000000',
+        colorLight : '#ffffff',
+        correctLevel : QRCode.CorrectLevel.H
+    });
+
+    //返回
+    $('.back').on('click',function () {
+        if(top != self){
+            var iframe_index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(iframe_index);
+        }else{
+            history.back(-1);
+        }
+    });
+</script>

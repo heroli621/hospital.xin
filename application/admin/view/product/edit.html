@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+	<!--左侧导航-->
+	{include file="public/top"}
+	<!--顶部-->
+	{include file="public/left"}
+	<div class="layui-tab page-content-wrap">
+		<ul class="layui-tab-title">
+			<li><a href="{:url('index')}">列表</a></li>
+			<li class="layui-this">编辑</li>
+		</ul>
+		<div class="layui-tab-content">
+			<div class="layui-tab-item layui-show">
+				<form class="layui-form"  style="width: 90%;padding-top: 20px;">
+				  <div class="layui-form-item">
+					<label class="layui-form-label">商品名称：</label>
+					<div class="layui-input-inline">
+					  <input type="text" name="goods_name" value="{$info.goods_name|default=''}" autocomplete="off" class="layui-input " >
+					</div>
+				  </div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">商品价格：</label>
+						<div class="layui-input-inline">
+							<input type="text" name="price" value="{$info.price|default=''}" autocomplete="off" class="layui-input " >
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">有效期：</label>
+						<div class="layui-input-inline">
+							<input type="text" name="validate" value="{$info.validate|default=0}" autocomplete="off" class="layui-input " >
+						</div>
+						<div class="layui-form-mid layui-word-aux">
+							有效期，单位（月）。0永久有效！
+						</div>
+					</div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">状态：</label>
+						<div class="layui-input-inline">
+							<input type="checkbox" name="status" lay-skin="switch" lay-filter="is_courseware" lay-text="启用|禁用" value="1" {if !isset($info) or $info.status }checked{/if} />
+						</div>
+					</div>
+				  <div class="layui-form-item layui-form-text">
+					<label class="layui-form-label">详情：</label>
+					<div class="layui-input-block">
+					  <textarea name="detail" id="content" >{$info.detail|default=''}</textarea>
+					</div>
+				  </div>
+					<!--权限-->
+					<div class="layui-form-item">
+						<label class="layui-form-label">权益：</label>
+						<div class="layui-input-block">
+							{volist name="permissions" id="val"}
+							<input type="checkbox" name="permissions[{$val.id}]" value="{$val.id}" title="{$val.name}" data-title="{$val.des}" {if isset($info)}{in name="val.id" value="$info.permission.id"}checked{/in}{/if} />
+							{/volist}
+						</div>
+					</div>
+				  <div class="layui-form-item">
+					<div class="layui-input-block">
+						<input type="hidden" name="id" value="{$info.goods_id|default=''}">
+					  <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">保存</button>
+					</div>
+				  </div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script>
+    //编辑器初始化
+    var ue = UE.getEditor('content',{
+        initialFrameHeight: 400
+    });
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var json_data=data.field;
+            //console.log(json_data);return !1;
+            $.post("{:url('edit')}",json_data,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.href="{:url('index')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        $('input[type=checkbox]').next('div').hover(function () {
+            let $this=$(this);
+            let title=$this.prev('input').data('title');
+            layer.tips(title,$this,{tips:[3,'#666'],time:0});
+        },function () {
+            layer.closeAll('tips');
+        });
+    });
+</script>

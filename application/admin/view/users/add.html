@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+	<!--左侧导航-->
+	{include file="public/top"}
+	<!--顶部-->
+	{include file="public/left"}
+	<div class="layui-tab page-content-wrap">
+		<div class="layui-tab-content">
+			<ul class="layui-tab-title">
+				<li><a href="{:url('index')}">列表</a></li>
+				<li class="layui-this">编辑</li>
+			</ul>
+			<div class="layui-tab-item layui-show layui-form"  style="width: 90%;padding-top: 20px;">
+				<div class="layui-form-item">
+					<label class="layui-form-label">手机：</label>
+					<div class="layui-input-inline">
+					    <input type="text" name="phone"  autocomplete="off" class="layui-input " >
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">密码：</label>
+					<div class="layui-input-inline">
+					    <input type="text" name="psd"  lay-verify="required" placeholder="输入密码" autocomplete="off" class="layui-input">
+					</div>
+					<div class="layui-word-aux layui-form-mid">
+						6-16位字符,只能输入字母、数字、下划线！
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">姓名：</label>
+					<div class="layui-input-inline">
+						<input type="text" name="username" autocomplete="off" class="layui-input" value="">
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<label class="layui-form-label">角色：</label>
+					<div class="layui-input-block">
+						{volist name="roles" id="val"}
+						<input type="checkbox" name="roles[{$val.id}]" value="{$val.id}" title="{$val.name}" />
+						{/volist}
+					</div>
+				</div>
+				<div class="layui-form-item">
+					<div class="layui-input-block">
+					    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">保存</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //自定义验证规则
+        form.verify({
+            psd: [/[a-zA-Z0-9_]{6,16}$/, '密码必须6到16位，只能填写字母、数字、下划线']
+
+        });
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            $.post("{:url('add')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg("添加管理员成功",{icon:1,title:site_name,end:function(){
+                            location.href="{:url('admin/Users/index')}";
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

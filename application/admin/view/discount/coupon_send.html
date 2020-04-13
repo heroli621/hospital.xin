@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--顶部-->
+    {include file="public/top"}
+    <!--左侧导航-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                手动发送优惠券，所有项目必须填写。
+            </div>
+        </blockquote>
+        <div class="layui-row">
+            <form class="layui-form" style="width: 90%;padding-top: 20px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">优惠券：</label>
+                    <div class="layui-input-inline">
+                        <select name="coupon_id" layui-verify="required">
+                            <option value="">选择优惠券</option>
+                            {volist name="coupons" id="val"}
+                            <option value="{$val.coupon_id}">{$val.coupon_name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">会员手机：</label>
+                    <div class="layui-input-inline" >
+                        <input type="text" name="mobile" lay-verify="required" class="layui-input" value="ALL">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        全部会员填写 ALL ，单个会员请填写手机号
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">备注：</label>
+                    <div class="layui-input-block" >
+                        <textarea name="message" placeholder="此备注内容会以系统消息的方式发送给客户。例：因XXX补偿优惠券一张" class="layui-textarea" lay-verify="required"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">发送</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form'],function () {
+        let form=layui.form;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return false;
+            $.post("{:url('sendCoupon')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.reload();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

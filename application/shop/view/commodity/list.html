@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <style>
+            #mescroll .item{width: 50%;}
+        </style>
+	    <!--引入swiper组件-->
+	    <link rel="stylesheet" href="/static/shop/css/swiper.min.css" />
+	    <script src="/static/shop/js/swiper.min.js"></script>
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body>
+		<!--分类搜索-->
+		<a class="sort_to_search">
+			<i class="iconfont icon-sousuo1"></i>
+			<span>搜索</span>
+		</a>
+		
+		<!--分类列表-->
+		<div class="sort_list">
+			<div class="left_box">
+				<ul class="list">
+                    <li class="other-goods" data-id="3">热卖活动</li>
+                    <li class="other-goods" data-id="2">会员专享</li>
+					{volist name="goods_classify" id="val"}
+					{eq name="val.id" value="$cid"}
+					<li class="on goods-list" data-id="{$val.id}">{$val.classify_name}</li>
+					{else /}
+                    <li class="goods-list" data-id="{$val.id}">{$val.classify_name}</li>
+					{/eq}
+					{/volist}
+				</ul>
+			</div>
+			<div class="right_box">
+				<div class="swiper-container sort_banner">
+				    <div class="swiper-wrapper">
+					    {volist name="activity" id="val"}
+					  		<a href="/goods/detail_{$val.goods_id}.html" class="swiper-slide">
+							  <img src="{$val.cover}" class="img"/>
+						    </a>
+					    {/volist}
+				    </div>
+				    <div class="swiper-pagination"></div>
+				</div>
+				<!--产品列表-->
+				<div id="mescroll" style="padding-bottom: 0.6rem;">
+					<div class="flex sort_pro" id="goods-list"></div>
+				</div>
+			</div>
+		</div>
+
+		<!--底部导航-->
+		{include file="public/foot"}
+        <script src="/static/shop/libs/layer/layer.js"></script>
+		<script>
+            var type='{$cid}';
+            var url="{:url('getList')}";
+			$(function(){
+				var mySwiper = new Swiper('.swiper-container', {
+					autoplay: {
+						delay: 5000
+					},
+					loop : true,
+					pagination: {
+				    el: '.swiper-pagination'
+				  }
+				});
+				
+				//左侧商品分类
+				$(".left_box").on("click", ".goods-list", function(){
+					$(".left_box li").removeClass("on");
+					$(this).addClass("on");
+					type=$(this).attr('data-id');
+					url="{:url('getList')}";
+                    downCallback();
+				});
+				//左侧 特殊活动
+                $(".left_box").on("click", ".other-goods", function(){
+                    $(".left_box li").removeClass("on");
+                    $(this).addClass("on");
+                    type=$(this).attr('data-id');
+                    url="{:url('getMold')}";
+                    downCallback();
+                });
+
+                $('.sort_to_search').on('click',function () {
+                    let index=layer.open({
+                        type:2,
+                        content:"{:url('/search')}",
+                        area: ['auto','100%'],
+                        shadeClose:1,
+                        title:false,
+                        closeBtn:0,
+                        anim:2
+                    });
+                    layer.full(index);
+                });
+			});
+            //分页参数
+            var pages={
+                num:1,
+                size:10
+            };
+            //手机分页
+            var mescroll = new MeScroll("mescroll", {
+                down: {
+                    auto: true,
+                    callback: downCallback,
+                },
+                up: {
+                    auto: false,
+                    //isBounce: false,
+                    callback: upCallback,
+                    page:pages
+                }
+            });
+
+            function downCallback(){
+                getListDataFromNet(1,pages.size, function(data){
+                    mescroll.endSuccess();
+                    setListData(data, false);
+                }, function(){
+                    let obj_str='还没有添加商品哦';
+
+                    $("#goods-list").html(obj_str);
+                    mescroll.endErr();
+                });
+            }
+
+            function upCallback(page){
+                getListDataFromNet(page.num, page.size, function(curPageData){
+                    mescroll.endSuccess(curPageData.length);
+                    setListData(curPageData, true);
+                }, function(){
+                    mescroll.endErr();
+                });
+            }
+
+            function setListData(curPageData,isAppend){
+                if (!isAppend) {
+                    $("#goods-list").empty();
+                }
+                for (var i = 0; i < curPageData.length; i++) {
+                    var pd=curPageData[i];
+                    let obj_str='<a href="/goods/detail_'+pd.id+'.html" class="item">' +
+                        '<img src="'+pd.cover+'" class="img"/>' +
+                        '<p class="name">'+pd.goods_name+'</p>' +
+                        '</a>';
+
+                    $("#goods-list").append(obj_str);
+                }
+            }
+
+            function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+                $.get(url,{size:pageSize,page:pageNum,type:type},function (res) {
+                    if(res.code==0){
+                        var newArr=res.data;
+                        successCallback&&successCallback(newArr);
+                    }else{
+                        errorCallback&&errorCallback();
+                    }
+
+
+                });
+            }
+		</script>
+	</body>
+</html>

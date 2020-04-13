@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+		<link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+		<script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_white">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">积分商城</span>
+		</div>
+		<!--我的积分-->
+		<div class="my_integral">
+			<div class="title">我的积分</div>
+			<div class="flex_bet">
+				<div class="left flex_aro">
+					<span class="score">{$integral|default=0}</span>
+				</div>
+				<a class="right flex_aro integral-info">
+					<div class="icon">
+						<i class="iconfont icon-dianshangjiashangcheng"></i>
+					</div>
+					<span>积分明细</span>
+					<i class="iconfont icon-youjiantou"></i>
+				</a>
+			</div>
+		</div>
+		<!--实物周边-->
+		<div class="hot_coupon ptop" id="mescroll">
+			<div class=" member_cash">
+				<div class="list flex_bet" id="list">
+
+				</div>
+			</div>
+		</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function () {
+        $('.integral-info').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('shop/vip/integralLog')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+    });
+
+    //分页参数
+    var pages={
+        num:1,
+        size:6
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(pages.num,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+        }, function(){
+            mescroll.endErr();
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            var pd=curPageData[i];
+            let obj_str='<a href="/goods/detail_'+pd.id+'.html" class="item">' +
+                '<img src="'+pd.cover+'" class="img"/>' +
+                '<p class="title over_1">'+pd.goods_name+'</p>' +
+                '<p class="need">'+pd.integral+'积分</p>' +
+                '</a>';
+
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('getIntegral')}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+</script>

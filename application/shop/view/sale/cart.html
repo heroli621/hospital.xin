@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <style>
+            .price s{color:#999;}
+        </style>
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_grad-3">
+			<span class="title">购物车</span>
+            {notempty name="goods_list"}
+			<div class="manger_cart">
+				<span class="manger show">管理</span>
+				<span class="finish hide">完成</span>
+			</div>
+            {/notempty}
+		</div>
+		{empty name="goods_list"}
+		<!--购物车为空时的页面-->
+		<div class="cart_empty">
+			<div class="box">
+				<img src="/static/shop/images/no2.png" class="img"/>
+				<p class="text">购物车是空的</p>
+				<a href="/goods/index.html" class="tobuy">立即去逛逛</a>
+			</div>
+			<div class="guess">
+				<img src="/static/shop/images/like.jpg" class="img"/>
+			</div>
+			<div class="pro_list flex_bet">
+                {volist name="recommend_goods" id="vo" empty="<span class='none'>还没有商品上架哦</span>"}
+				<div class="item">
+					<a href="/goods/detail_{$vo.id}.html" class="block">
+						<img src="{$vo.cover}" class="img"/>
+						<h3 class="title">{$vo.goods_name}</h3>
+						{if isset($vo['activity_title']) and !empty($vo['activity_title'])}<p class="intr">{$vo.activity_title}</p>{/if}
+					<div class="flex_bet buy">
+						<div class="price">
+							<span class="current">&yen;{$vo.price}</span>
+						</div>
+						<div class="cart">
+							<i class="iconfont icon-gouwuche1"></i>
+						</div>
+					</div>
+                    </a>
+				</div>
+                {/volist}
+			</div>
+		</div>
+		{else /}
+		<!--购物车不为空的页面-->
+		<div class="cart_list">
+            {volist name="goods_list.list" id="val"}
+			<div class="cart_item flex_bet" data-item-price="{if($val.activity_type egt 0) and ($val.activity_type lt 3) }{$val.sale_price}{else /}{$val.price}{/if}"  data-price="{if($val.activity_type egt 0) and ($val.activity_type lt 3) }{$val.sale_price}{else /}{$val.price}{/if}" data-id="{$val.cart_id}" data-gid="{$val.goods_id}" data-spec="{$val.spec_id}" data-buy="{$val.buy_goods_num|default=0}" data-limits="{$val.limits|default=0}" data-inventory="{neq name='val.spec_id' value='0'}{$val.spec_inventory}{else /}{$val.inventory}{/neq}" data-num="{$val.buy_num}">
+				<div class="checkbox on">
+					<i class="iconfont icon-xuanzhong"></i>
+				</div>
+				<div class="pic">
+					<img src="{$val.cover}" class="img"/>
+				</div>
+				<div class="info">
+					<div class="flex">
+						<h3 class="name over_1">{$val.goods_name}</h3>
+						<div class="del_item">
+							<i class="iconfont icon-shanchu"></i>
+						</div>
+					</div>
+                    {neq name="val.spec_id" value="0"}<div>{$val.spec_name}</div>{/neq}
+					<div class="flex_bet">
+						<div class="price">&yen;&nbsp;<span>{if($val.activity_type egt 0) and ($val.activity_type lt 3) }{$val.sale_price|number_format=2}{else /}{$val.price|number_format=2}{/if}</span>
+                            <s>&yen;{$val.price|number_format=2}</s>
+                        </div>
+						<div class="amount flex_aro">
+							<div class="reduce"><i class="iconfont icon-jian1"></i></div>
+							<span class="num">{$val.buy_num}</span>
+							<div class="add"><i class="iconfont icon-jia3"></i></div>
+						</div>
+					</div>
+				</div>
+			</div>
+            {/volist}
+		</div>
+		<div class="cart_row flex_bet">
+			<div class="span1">商品总价</div>
+			<div class="span2">
+				<span>&yen;</span>
+				<span class="total">30.0</span>
+			</div>
+		</div>
+		<div class="cart_row">
+			<div class="span1">商品实付</div>
+			<div class="">
+				<span class="span1">运费</span>
+				<span class="span3">{$goods_list.express_fee}</span>
+			</div>
+		</div>
+		<div class="cart_row flex_bet balance_row has_bottom">
+			<div class="checkbox on flex_bet">
+				<i class="iconfont icon-xuanzhong"></i>
+				<span class="span1">全选</span>
+			</div>
+			<div class="center">
+				<div>
+					<span class="span1">合计：</span>
+					<span class="span2">&yen;</span>
+					<span class="span2 amount_paid">30.0</span>
+				</div>
+				<!--<span class="span3">包邮</span>-->
+			</div>
+            <form action="/sale/buy.html" method="post" id="buy-goods">
+                <input type="hidden" name="goods_option" value="">
+                <button class="btn_style balance xls_grad-3">去结算</button>
+            </form>
+
+			<button class="btn_style del_all xls_grad-3">删除</button>
+		</div>
+        {/empty}
+		<!--底部导航-->
+		{include file="public/foot"}
+        <script src="/static/shop/libs/layer/layer.js"></script>
+		<script>
+			$(function(){
+				//判断是否符合全选
+				function isCheck() {
+					if($(".cart_list .checkbox").length == $(".cart_list .checkbox.on").length){
+						$(".balance_row .checkbox").addClass("on");
+					} else {
+						$(".balance_row .checkbox").removeClass("on");
+					}
+				}
+				//计算商品总价
+				function countPrice() {
+					var total = 0, amount = 0, freight = 0;
+					var priceArr = [];
+					$(".cart_list .cart_item .on").each(function () {
+                        var price = parseFloat($(this).parent().attr("data-price"));
+                        let num=parseInt($(this).parent().attr("data-num"));
+                        total += price*num;
+                    });
+					amount = total - freight;
+					$(".total").text(total.toFixed(2));
+					$(".amount_paid").text(amount.toFixed(2));
+					
+				}
+				countPrice();
+				
+				//管理
+				$(".manger_cart").on("click", ".manger", function(){
+					$(this).removeClass("show").addClass("hide");
+					$(this).siblings(".finish").removeClass("hide").addClass("show");
+					$(".cart_list").find(".del_item").show();
+					$(".balance").hide();
+					$(".del_all").show();
+				});
+				$(".manger_cart").on("click", ".finish", function(){
+					$(this).removeClass("show").addClass("hide");
+					$(this).siblings(".manger").removeClass("hide").addClass("show");
+					$(".cart_list").find(".del_item").hide();
+					$(".balance").show();
+					$(".del_all").hide();
+				});
+				//单选
+				$(".cart_list").on("click", ".checkbox", function(){
+					$(this).toggleClass("on");
+					if($(this).hasClass("on")){
+						var price = parseFloat($(this).parents(".cart_item").find(".price span").text()) * parseFloat($(this).parents(".cart_item").find(".num").text());
+						$(this).parents(".cart_item").attr("data-item-price", price.toFixed(2));
+					} else {
+						$(this).parents(".cart_item").attr("data-item-price", "0");
+					}
+					isCheck();
+					countPrice();
+				});
+
+				//全选
+				$(".balance_row").on("click", ".checkbox", function(){
+					if($(this).hasClass("on")){
+						$(this).removeClass("on");
+						$(".cart_list").find(".checkbox").removeClass("on");
+						$(".cart_item").attr("data-item-price", "0");
+					} else {
+						$(this).addClass("on");
+						$(".cart_list").find(".checkbox").addClass("on");
+						var len = $(".cart_list .cart_item").length;
+						for(var i=0; i<len; i++){
+							var price = parseFloat($(".cart_item:eq("+ i +")").find(".price span").text()) * parseFloat($(".cart_item:eq("+ i +")").find(".num").text());
+						$(".cart_item:eq("+ i +")").attr("data-item-price", price.toFixed(2));
+						}
+					}
+					countPrice();
+				});
+				//数量增减
+				$(".cart_item").on("click", ".reduce", function(){
+					var t = $(this).siblings(".num").text();
+					var per = parseFloat($(this).parents(".cart_item").find(".price span").text());
+					if(t <= 1) {
+						t = 1
+						var price = per * t;
+						$(this).parents(".cart_item").attr("data-item-price", price.toFixed(2));
+					} else {
+						t--;
+						var price = per * t;
+						$(this).parents(".cart_item").attr("data-item-price", price.toFixed(2));
+					}
+					$(this).siblings(".num").text(t);
+					$(this).parents(".cart_item").attr("data-num",t);
+					countPrice();
+				});
+				$(".cart_item").on("click", ".add", function(){
+					var t = parseInt($(this).parents('.cart_item').find(".num").text());
+					let limits=$(this).parents('.cart_item').attr('data-limits');
+					let buy_num=$(this).parents('.cart_item').attr('data-buy');
+					let inventory=$(this).parents('.cart_item').attr('data-inventory');
+					let max_num=limits*1?limits-buy_num:inventory;
+					var per = parseFloat($(this).parents(".cart_item").find(".price span").text());
+					if(t >= max_num) {
+
+						t = max_num;
+						var price = per * t;
+						$(this).parents(".cart_item").attr("data-item-price", price.toFixed(2));
+					} else {
+						t++;
+						var price = per * t;
+						$(this).parents(".cart_item").attr("data-item-price", price.toFixed(2));
+					}
+					$(this).parents('.cart_item').find(".num").text(t);
+                    $(this).parents(".cart_item").attr("data-num",t);
+					countPrice();
+				});
+				//删除
+				$(".cart_list").on("click", ".del_item", function(){
+				    let id=$(this).parents(".cart_item").attr('data-id');
+                    delGoods({id:id});
+					$(this).parents(".cart_item").remove();
+					countPrice();
+				});
+				$(".balance_row").on("click", ".del_all", function(){
+				    let parents=$(".cart_list .cart_item .on").parents(".cart_item");
+				    let ids=[];
+				    for (let i=0 ;i < parents.length;i++) {
+				        ids.push(parents.eq(i).attr('data-id'));
+                    }
+				    delGoods({ids:ids});
+                    parents.remove();
+					countPrice();
+				});
+
+				//去结算
+                $('.balance').on('click',function () {
+                    let ids=[];
+                    $(".cart_list .cart_item .on").each(function () {
+                        let parents=$(this).parents('.cart_item');
+                        let id=parents.attr('data-id');
+                        let gid=parents.attr('data-gid');
+                        let sid=parents.attr('data-spec');
+                        let buy_num=parseInt(parents.find('.num').text());
+                        ids.push({cart_id:id,goods_id:gid,spec_id:sid,buy_num:buy_num});
+                    });
+                    $('input[name=goods_option]').val(JSON.stringify(ids));
+
+                    if(ids.length == 0){
+                        layer.msg('未选择任何商品');
+                    }else{
+                        $('#buy-goods').submit();
+                    }
+                    return false;
+                });
+			});
+			function delGoods(data) {
+                $.post("{:url('delGoods')}",data,function (res){});
+            }
+		</script>
+		
+	</body>
+</html>

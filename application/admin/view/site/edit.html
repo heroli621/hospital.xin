@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+	<style>
+		#up-image{background-color: #eee; background-size:contain;background-repeat: no-repeat; }
+	</style>
+</head>
+<body>
+<div class="main-layout " >
+	<!--左侧导航-->
+	{include file="public/top"}
+	<!--顶部-->
+	{include file="public/left"}
+	<div class="layui-tab page-content-wrap">
+		<div class="layui-tab-content">
+			<ul class="layui-tab-title">
+				<li><a href="{:url('system')}">列表</a></li>
+				<li class="layui-this">编辑</li>
+			</ul>
+			<div class="layui-tab-item layui-show">
+				<form class="layui-form"  style="width: 90%;padding-top: 20px;">
+				  <div class="layui-form-item">
+					<label class="layui-form-label">变量名称：</label>
+					<div class="layui-input-block">
+					  <input type="text" name="var_name" value="{$info.varname|default=''}" autocomplete="off" class="layui-input " {present name="info.varname"}readonly{/present} />
+					</div>
+				  </div>
+				   <div class="layui-form-item">
+					<label class="layui-form-label">配置名称：</label>
+					<div class="layui-input-block">
+					  <input type="text" name="name"    autocomplete="off" class="layui-input" value="{$info.name|default=''}">
+					</div>
+				  </div>
+					<div class="layui-form-item">
+						<label class="layui-form-label">配置类型：</label>
+						<div class="layui-input-block">
+							<input type="radio" name="model"  lay-filter="model" title="字符串" value="1" {present name="info"}{eq name="info.model" value="1"} checked {/eq}{else /}checked{/present} />
+							<input type="radio" name="model" lay-filter="model" title="图片" value="2" {present name="info"}{eq name="info.model" value="2"} checked {/eq}{/present} />
+						</div>
+					</div>
+					<div class="layui-form-item user-value" style="{php}echo isset($info['model']) && $info['model']==2?'display:none;':'';{/php}">
+						<label class="layui-form-label">配置值：</label>
+						<div class="layui-input-block">
+							<input name="value" class="layui-input" value="{$info.value|default=''}" />
+						</div>
+					</div>
+					<div class="layui-form-item user-image" style="{if !isset($info.model) or $info.model==1 }display:none;{/if}">
+						<label class="layui-form-label">上传图片：</label>
+						<div class="layui-upload-drag" id="up-image"  style="{if isset($info.model) and $info.model==2 }background-image:url({$info.value|default=''}){/if}">
+							<i class="layui-icon"></i>
+							<p>点击上传，或将图片拖拽到此处</p>
+						</div>
+					</div>
+					<div class="layui-form-item layui-form-text">
+						<label class="layui-form-label">拓展配置：</label>
+						<div class="layui-input-block">
+							<input name="extension" class="layui-input" value="{$info.extension|default=''}"/>
+						</div>
+					</div>
+				  <div class="layui-form-item">
+					<div class="layui-input-block">
+						<input type="hidden" name="id" value="{$info.id|default=''}">
+					  <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">保存</button>
+					</div>
+				  </div>
+				</form>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer','upload'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //自定义验证规则
+        /*form.verify({
+            password: [/[a-zA-Z0-9_]{6,16}$/, '密码必须6到16位字母、数字、下划线组成']
+
+        });*/
+        form.on("radio(model)",function (data) {
+
+            if(data.value==1){
+                $('.user-image').hide();
+                $('.user-value').show();
+            }else{
+                $('.user-image').show();
+                $('.user-value').hide();
+            }
+        });
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            //console.log(data);return;
+            $.post("{:url('admin/site/saveEdit')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                        let url="{:url('system')}?time={:time()}";
+                        location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        layui.upload.render({
+            elem:"#up-image",
+            field:"image",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=value]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+
+</script>

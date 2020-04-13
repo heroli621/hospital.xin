@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+    <style>
+        .tab{width: 1rem;border: 1px solid red;border-radius: 2px;
+        text-align: center;}
+    </style>
+    <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+    <script src="/static/shop/js/mescroll.min.js"></script>
+</head>
+<body class="body has_top">
+    <div class="headbar xls_grad-3">
+        <a href="javascript:history.back(-1);" class="back">
+            <i class="iconfont icon-zuojiantou2"></i>
+        </a>
+        <span class="title">我的订单</span>
+    </div>
+    <!--订单状态-->
+    <div class="order_status" style="z-index: 99;">
+        <div class="flex_aro list">
+            <div class="item {eq name='type' value='0'}active{/eq}" data-value="0">全部</div>
+            <div class="item {eq name='type' value='1'}active{/eq}" data-value="1">待付款</div>
+            <div class="item {eq name='type' value='2'}active{/eq}" data-value="2">待发货</div>
+            <div class="item {eq name='type' value='3'}active{/eq}" data-value="3">待收货</div>
+            <div class="item {eq name='type' value='4'}active{/eq}" data-value="4">待评价</div>
+        </div>
+    </div>
+    <div style="height: 1.2rem;"></div>
+    <!--订单列表-->
+    <div id="mescroll" class="mescroll">
+        <div class="my_order_list" id="list">
+
+        </div>
+    </div>
+    <!--没有更多了-->
+    <div class="toBottom no_more" style="display: none;">
+        <span class="span">没有更多了</span>
+    </div>
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var type="{$type}";
+    //分页参数
+    var pages={
+        num:1,
+        size:4
+    };
+    var page=1;
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+            mustToTop:true,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            //mescroll.lockUpScroll( false );
+            $('.toBottom').hide();
+        }, function(){
+            mescroll.endErr();
+            mescroll.lockUpScroll( !0 );
+            let obj_str='<div class="order_empty">' +
+                '<a href="/goods/index.html"><div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">您还没有相关的订单</p>' +
+                '<p class="p2">可以去看看有哪些想买的</p>' +
+                '</div></a>' +
+                '</div>';
+            $("#list").empty().append(obj_str);
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let status=pd.status;
+            let hj=pd.is_int?pd.integral+'积分':'&yen;'+pd.pay_money;
+            let obj_str='<div class="item" data-id="'+pd.id+'">' +
+                '<div class="flex_bet top">' +
+                '<span class="no">订单号 '+pd.order_no+'</span>';
+            if(status==0){
+                //待付款
+                obj_str+='<span class="state">待付款</span>' +
+                    '</div>';
+                let j,goods_str='';
+                for(j in pd.goods){
+                    let gd=pd.goods[j];
+                    let price=gd.sale_money>0?'&yen;'+gd.sale_money:gd.integral+'积分';
+                    let gid=gd.goods.goods_type || gd.goods.complimentary?gd.goods.id:0;
+                    let comp=gd.complimentary?'<p class="tab">赠品</p>':"";
+                    goods_str+='<div class="flex_bet center" data-id="'+gid+'" data-type="'+gd.complimentary+'">'+
+                        '<div class="pic">' +
+                        '<img src="'+gd.goods.cover+'" class="img"/>' +
+                        '</div>' +
+                        '<div class="info flex">' +
+                        '<h3 class="name over_1">'+gd.goods.goods_name+'</h3>' +comp+
+                        '<div class="flex_bet">' +
+                        '<div class="price">' +
+                        '<span class="unit">'+price+'</span>' +
+                        '</div>' +
+                        '<span class="num">x'+gd.buy_num+'</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }
+                obj_str+=goods_str;
+                obj_str+='<div class="bottom">' +
+                    '<div class="sum_price">' +
+                    '<span class="fl">运费：</span>' +
+                    '<span class="fl">'+pd.express_fee+'</span>' +
+                    '<span class="span">合计：</span>' +
+                    '<span class="total">'+hj+'</span>' +
+                    '</div>' +
+                    '<div class="btn_group flex">' +
+                    '<a class="btn js-cancel-orders">取消订单</a>' +
+                    '<a href="/order_affirm/'+pd.id+'.html" class="btn btn_color">付款</a>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }else if(status==1){
+                //待发货
+                let again_str=pd.is_int?'<a href="/goods/detail_'+pd.goods[0].goods_id+'.html" class="btn btn_color">再次购买</a>':'<a class="btn btn_color js-again-orders">再次购买</a>';
+
+                obj_str+='<span class="state">已付款</span>' +
+                    '</div>';
+                let j,goods_str='',experience=false;
+                for(j in pd.goods){
+                    let gd=pd.goods[j];
+                    if(gd.goods.experience){experience=true}
+                    let price=gd.sale_money>0?'&yen;'+gd.sale_money:gd.integral+'积分';
+                    let gid=gd.goods.goods_type || gd.goods.complimentary?gd.goods.id:0;
+                    let comp=gd.complimentary?'<p class="tab">赠品</p>':"";
+                    goods_str+='<div class="flex_bet center" data-id="'+gid+'" data-type="'+gd.complimentary+'">' +
+                        '<div class="pic">' +
+                        '<img src="'+gd.goods.cover+'" class="img"/>' +
+                        '</div>' +
+                        '<div class="info flex">' +
+                        '<h3 class="name over_1">'+gd.goods.goods_name+'</h3>' +comp+
+                        '<div class="flex_bet">' +
+                        '<div class="price">' +
+                        '<span class="unit">'+price+'</span>' +
+                        '</div>' +
+                        '<span class="num">x'+gd.buy_num+'</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }
+                obj_str+=goods_str;
+                again_str=experience?'':again_str;
+                obj_str+='<div class="bottom">' +
+                    '<div class="sum_price">' +
+                    '<span class="fl">运费：</span>' +
+                    '<span class="fl">'+pd.express_fee+'</span>' +
+                    '<span class="span">合计：</span>' +
+                    '<span class="total">'+hj+'</span>' +
+                    '</div>' +
+                    '<div class="btn_group flex">' +
+                    '<a class="btn js-warn-deliver">提醒发货</a>' + again_str+'</div>' +
+                    '</div>' +
+                    '</div>';
+            }else if(status==2){
+                //待收货
+                obj_str+='<span class="state xls_color">等待签收</span>' +
+                    '</div>';
+                let j,goods_str='';
+                for(j in pd.goods){
+                    let gd=pd.goods[j];
+                    let price=gd.sale_money>0?'&yen;'+gd.sale_money:gd.integral+'积分';
+                    let gid=gd.goods.goods_type || gd.goods.complimentary?gd.goods.id:0;
+                    let comp=gd.complimentary?'<p class="tab">赠品</p>':"";
+                    goods_str+='<div class="flex_bet center" data-id="'+gid+'" data-type="'+gd.complimentary+'">'+
+                        '<div class="pic">' +
+                        '<img src="'+gd.goods.cover+'" class="img"/>' +
+                        '</div>' +
+                        '<div class="info flex">' +
+                        '<h3 class="name over_1">'+gd.goods.goods_name+'</h3>' +comp+
+                        '<div class="flex_bet">' +
+                        '<div class="price">' +
+                        '<span class="unit">'+price+'</span>' +
+                        '</div>' +
+                        '<span class="num">x'+gd.buy_num+'</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }
+                obj_str+=goods_str;
+                obj_str+='<div class="bottom">' +
+                    '<div class="sum_price">' +
+                    '<span class="fl">运费：</span>' +
+                    '<span class="fl">'+pd.express_fee+'</span>' +
+                    '<span class="span">合计：</span>' +
+                    '<span class="total">'+hj+'</span>' +
+                    '</div>' +
+                    '<div class="btn_group flex">' +
+                    '<a class="btn js-sign-in">确认收货</a>' +
+                    '<a class="btn btn_color js-show-express">查看物流</a>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }else if(status==99){
+                //待评价
+                obj_str+='<span class="state xls_color">交易成功</span>' +
+                    '</div>';
+                let j,goods_str='';
+                let comment=pd.is_comment?'':'<a class="btn btn_color js-comment-order">评价</a>';
+                for(j in pd.goods){
+                    let gd=pd.goods[j];
+                    let price=gd.sale_money>0?'&yen;'+gd.sale_money:gd.integral+'积分';
+                    let gid=gd.goods.goods_type || gd.goods.complimentary?gd.goods.id:0;
+                    let comp=gd.complimentary?'<p class="tab">赠品</p>':"";
+                    goods_str+='<div class="flex_bet center" data-id="'+gid+'" data-type="'+gd.complimentary+'">' +
+                        '<div class="pic">' +
+                        '<img src="'+gd.goods.cover+'" class="img"/>' +
+                        '</div>' +
+                        '<div class="info flex">' +
+                        '<h3 class="name over_1">'+gd.goods.goods_name+'</h3>' +comp+
+                        '<div class="flex_bet">' +
+                        '<div class="price">' +
+                        '<span class="unit">'+price+'</span>' +
+                        '</div>' +
+                        '<span class="num">x'+gd.buy_num+'</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                }
+                obj_str+=goods_str;
+                obj_str+='<div class="bottom">' +
+                    '<div class="sum_price">' +
+                    '<span class="fl">运费：</span>' +
+                    '<span class="fl">'+pd.express_fee+'</span>' +
+                    '<span class="span">合计：</span>' +
+                    '<span class="total">'+hj+'</span>' +
+                    '</div>' +
+                    '<div class="btn_group flex">' +
+                    '<a class="btn js-delete-order">删除订单</a>' +
+                    comment+
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("/orders.html",{size:pageSize,page:pageNum,type:type},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+
+    $(function(){
+        //取消订单
+        $('#list').on('click','.item .js-cancel-orders',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            layer.confirm("订单取消后无法恢复！！！<br />真的要取消订单吗？",{icon:3},function () {
+                $.post("{:url('cancelOrder')}",{id:id},function (res) {
+                    if(res.code==0){
+                        location.reload();
+                    }else{
+                        layer.msg(res.msg);
+                    }
+                },"json");
+            });
+
+        });
+
+        //再次购买
+        $('#list').on('click','.item .js-again-orders',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            $.post("{:url('againBuy')}",{id:id},function (res) {
+                if(res.code==0){
+                    location.href='/sale/cart.html';
+                }else{
+                    layer.msg(res.msg);
+                }
+            },"json");
+        });
+
+        //确认收货
+        $('#list').on('click','.item .js-sign-in',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            let con=layer.confirm("请收到货后，再确认收货！！！",{icon:7,offset:"3rem"},function () {
+                layer.close(con);
+                layer.prompt({
+                    title: '请输入交易密码',
+                        formType: 1,
+                        offset:"3rem"
+                    },
+                    function(pass, index){
+                    layer.close(index);
+                    $.post("{:url('signFor')}",{id:id,password:pass},function (res) {
+                        if(res.code==0){
+                            $('.order_status .list .item').removeClass("active");
+                            $('.order_status .list .item').each(function () {
+                                if($(this).attr('data-value')=="4"){
+                                    $(this).addClass('active');
+                                }
+                            });
+                            $(this).addClass("active");
+                            type=4;
+                            downCallback();
+                        }else{
+                            layer.msg(res.msg);
+                        }
+                    },"json");
+                });
+
+            });
+        });
+
+        //查看物流
+        $('#list').on('click','.item .js-show-express',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            let index=layer.open({
+                type:2,
+                content:"{:url('showExpress')}?id="+id,
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //删除订单
+        $('#list').on('click','.item .js-delete-order',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            layer.confirm("订单删除后无法查看！！！<br />真的要删除订单吗？",{icon:3},function () {
+                $.post("{:url('deleteOrder')}",{id:id},function (res) {
+                    if(res.code==0){
+                        location.reload();
+                    }else{
+                        layer.msg(res.msg);
+                    }
+                },"json");
+            });
+        });
+
+        //评价订单
+        $('#list').on('click','.item .js-comment-order',function () {
+            let id=$(this).parents('.item').attr('data-id');
+            layer.open({
+                type:2,
+                content:"{:url('comment')}?id="+id,
+                area: ['100%','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+        });
+
+        //提醒发货
+        $('#list').on('click','.item .js-warn-deliver',function () {
+            layer.msg('亲，我们会及时给您发货哦');
+        });
+
+
+        //切换订单状态
+        $('.order_status .list').on('click','.item',function () {
+            type=$(this).attr('data-value');
+            $('.order_status .list .item').removeClass("active");
+            $(this).addClass("active");
+            downCallback();
+        });
+
+        //查看商品详情
+        $('#list').on('click','.item .center',function () {
+            let id=parseInt($(this).data("id"));
+            let type=parseInt($(this).data("type"));
+            if(id){
+                layer.open({
+                    type:2,
+                    content:"{:url('goods')}?type="+type+"&id="+id,
+                    area: '100%',
+                    shadeClose:1,
+                    title:false,
+                    closeBtn:0,
+                    anim:2
+                });
+            }
+
+        });
+    });
+</script>

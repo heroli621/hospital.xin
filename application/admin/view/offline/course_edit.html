@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        #upload-image{background-size: contain;background-repeat: no-repeat;background-image: url("{$info.cover|default=''}")}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <ul class="layui-tab-title">
+            <li><a href="{:url('index')}">列表</a></li>
+            <li class="layui-this">编辑</li>
+        </ul>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">课程名称：</label>
+                <div class="layui-input-block" style="width: 50%;">
+                    <input type="text" name="title"  lay-verify="required" class="layui-input" value="{$info.title|default=''}">
+                </div>
+            </div>
+            <!--<div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">讲师：</label>
+                <div class="layui-input-block" style="width: 50%;">
+                    <input type="text" id="lecturer" lay-verify="required" class="layui-input" value="{$info.teacher|default=''}" readonly>
+                </div>
+            </div>-->
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">讲师：</label>
+                <div class="layui-input-block" style="width: 50%;">
+                    <input type="text" name="tname" lay-verify="required" class="layui-input" value="{$info.tname|default=''}" >
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">课件：</label>
+                <div class="layui-input-block" style="width: 50%;">
+                    <input type="text" lay-verify="required" id="courseware" class="layui-input" value="{$info.coursewares|default=''}" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">视频地址：</label>
+                <div class="layui-input-block">
+                    <input type="text" name="video" class="layui-input" value="{$info.video|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">满意度：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="satisficing" class="layui-input" value="{$info.satisficing|default='0%'}">
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">课程封面：</label>
+                <div class="layui-upload-drag" id="upload-image" >
+                    <i class="layui-icon"></i>
+                    <p>点击上传，或将图片拖拽到此处</p>
+                    <!--<p>建议尺寸：336*336</p>-->
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">助教：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="assistant" class="layui-input" value="{$info.assistant|default=''}">
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">开课日期：</label>
+                <div class="layui-input-inline">
+                    <input type="text" id="open-date" name="open_date" class="layui-input" value="{$info.open_date|default=''}" readonly>
+                </div>
+            </div>
+            <div class="layui-form-item" style="width: 100%">
+                <label class="layui-form-label">课程详情：</label>
+                <div class="layui-input-block">
+                    <textarea name="content" id="content">{$info.detail|default=''}</textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="id" value="{$info.id|default=''}">
+                    <input type="hidden" name="lecturer" value="{$info.lecturer|default=''}">
+                    <input type="hidden" name="courseware" value="{$info.courseware|default=''}">
+                    <input type="hidden" name="cover" value="{$info.cover|default=''}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/neditor/neditor.config.js"></script>
+<script src="/static/admin/lib/neditor/neditor.all.min.js"></script>
+<script src="/static/admin/lib/neditor/neditor.service.js"></script>
+<script src="/static/admin/js/module/tableSelect.js" type="text/javascript"></script>
+<script>
+
+    //编辑器初始化
+    var ue = UE.getEditor('content', {
+        initialFrameHeight: 400
+    });
+    UE.Editor.prototype.getActionUrl = function(action) {
+        /* 按config中的xxxActionName返回对应的接口地址 */
+        if (action == 'uploadimage' || action == 'uploadscrawl') {
+            return '/admin/offline/image';
+        } else if (action == 'uploadvideo') {
+            return '/admin/offline/video';
+        }else if (action=='uploadfile') {
+            return '/admin/offline/file';
+        } else {
+            return this._bkGetActionUrl.call(this, action);
+        }
+    };
+    //Demo
+    layui.use(['form','layer','upload','laydate'], function(){
+        var form = layui.form,laydate=layui.laydate,layer=layui.layer;
+        var tableSelect=layui.tableSelect;
+        laydate.render({
+            elem: '#open-date',
+            range:'-'
+        });
+        var lecturer=tableSelect.render({
+            elem: '#lecturer',	//定义输入框input对象
+            checkedKey: 'id', //表格的唯一建值，非常重要，影响到选中状态 必填
+            searchKey: 'username',	//搜索输入框的name值 默认keyword
+            searchPlaceholder: '讲师姓名搜索',	//搜索输入框的提示文字 默认关键词搜索
+            table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                url:"{:url('getLecturer')}",
+                cols: [[
+                    {field:'box',type:'checkbox'},
+                    {field:'username',title:'讲师姓名'}
+                ]],
+                //分页设置
+                page:{
+                    limit:10,
+                    prev:"上一页",
+                    next:"下一页",
+                    layout:['prev','page','next','skip','count','limit'],
+                    limits:[10,20,50,100]
+                }
+            },
+            done: function (elem, data) {
+                var ids = [];
+                var names = [];
+                layui.each(data.data, function (index, item) {
+                    names.push(item.username);
+                    ids.push(item.id);
+                });
+                elem.val(names.join(","));
+                $('input[name=lecturer]').val(ids.join(','));
+
+            }
+        });
+        var courseware=tableSelect.render({
+            elem: '#courseware',	//定义输入框input对象
+            checkedKey: 'id', //表格的唯一建值，非常重要，影响到选中状态 必填
+            searchKey: 'file_name',	//搜索输入框的name值 默认keyword
+            searchPlaceholder: '课件标题搜索',	//搜索输入框的提示文字 默认关键词搜索
+            table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                url:"{:url('getCourseware')}",
+                cols: [[
+                    {field:'box',type:'checkbox'},
+                    {field:'file_name',title:'课件标题'}
+                ]]
+            },
+            done: function (elem, data) {
+                var ids = [];
+                var names = [];
+                layui.each(data.data, function (index, item) {
+                    names.push(item.file_name);
+                    ids.push(item.id);
+                });
+                elem.val(names.join(","));
+                $('input[name=courseware]').val(ids.join(','));
+
+            }
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('courseEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="{:url('index')}";
+                            location.href=url;
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        //封面上传
+        layui.upload.render({
+            elem:"#upload-image",
+            field:"images",
+            url: "{:url('uploadImage')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            //auto:false,
+            done: function(res) {
+                //console.log(res);return ;
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#upload-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+                //console.log(res); //上传成功返回值，必须为json格式
+            }
+        });
+    });
+</script>

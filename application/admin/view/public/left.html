@@ -1,0 +1,24 @@
+<div class="main-layout-side layui-hide-xs">
+    <ul class="layui-nav layui-nav-tree" lay-filter="leftNav" id="leftNav">
+        {volist name="left_menus" id="menu"}
+        {if isset($menu.child) }
+            <li class="layui-nav-item">
+                <a href="javascript:;"><i class="layui-icon {$menu.icon}"></i> {$menu.name} <span class="layui-nav-more"></span></a>
+                <dl class="layui-nav-child">
+                    {volist name="menu.child" id="mc"}
+                    {if $user_state >=99 or auth_can($mc.link) }
+                    <dd class="{if strtolower($nav_title)==strtolower($mc.link)}layui-this{/if}">
+                        <a href="{$mc.link|url}"><span class="l-line"></span> {$mc.name}</a>
+                    </dd>
+                    {/if}
+                    {/volist}
+                </dl>
+            </li>
+        {else /}
+            <li class="layui-nav-item {if strtolower($nav_title)==strtolower($menu.link)}layui-nav-itemed{/if}">
+                <a href="{$menu.link|url}"><i class="layui-icon {$menu.icon}"></i> {$menu.name}</a>
+            </li>
+        {/if}
+        {/volist}
+    </ul>
+</div>

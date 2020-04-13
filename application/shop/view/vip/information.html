@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+	{include file="public/head"}
+	{include file="public/script"}
+	<link rel="stylesheet" href="/static/shop/libs/mobileSelect.css">
+</head>
+<body class="body has_top">
+	<div class="headbar xls_white">
+		<a class="back">
+			<i class="iconfont icon-zuojiantou2"></i>
+		</a>
+		<span class="title">个人资料</span>
+		<span class="publish">保存</span>
+	</div>
+	<!--个人资料-->
+	<div class="data_box">
+		<div class="item flex_bet">
+			<span class="type">个人头像</span>
+			<img src="{$info.headimg}" class="img"/>
+		</div>
+		<div class="item flex_bet focus">
+			<span class="type">昵称</span>
+			<div class="flex_bet">
+				<input type="text" class="input ph nickname" placeholder="未填写" value="{$info.nickname}" />
+				<i class="iconfont icon-youjiantou"></i>
+			</div>
+		</div>
+	</div>
+	<div class="data_box">
+        <div class="item flex_bet">
+            <span class="type">真实姓名</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph realname" placeholder="请填写" value="{$info.realname}" />
+                <i class="iconfont icon-youjiantou"></i>
+            </div>
+        </div>
+        <div class="item flex_bet">
+            <span class="type">电子邮箱</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph email" placeholder="请填写" value="{$info.email}" />
+                <i class="iconfont icon-youjiantou"></i>
+            </div>
+        </div>
+		<div class="item flex_bet" id="select_gender">
+			<span class="type">性别</span>
+			<div class="flex_bet">
+                <input type="hidden" class="sex" value="{$info->getData('sex')}" />
+				<input type="text" class="input ph gender" readonly placeholder="请选择" value="{$info.sex}" />
+				<i class="iconfont icon-youjiantou"></i>
+			</div>
+		</div>
+        <div class="item flex_bet" id="select_blood">
+            <span class="type">血型</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph blood" readonly placeholder="请选择" value="{$info.blood}" />
+                <i class="iconfont icon-youjiantou"></i>
+            </div>
+        </div>
+		<div class="item flex_bet" id="select_birthday">
+			<span class="type">生日</span>
+			<div class="flex_bet">
+				<input type="text" class="input ph birthday" readonly placeholder="请选择" value="{$info.birthday}"/>
+				<i class="iconfont icon-youjiantou"></i>
+			</div>
+		</div>
+		<div class="item flex_bet" id="select_city">
+			<span class="type">常住地</span>
+			<div class="flex_bet">
+				<input type="text" class="input ph city" readonly placeholder="请选择" value="{$info.address}" />
+				<i class="iconfont icon-youjiantou"></i>
+			</div>
+		</div>
+        <div class="item flex_bet">
+            <span class="type">职业</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph profession" placeholder="请填写" value="{$info.profession}" />
+                <i class="iconfont icon-youjiantou"></i>
+            </div>
+        </div>
+        <div class="item flex_bet">
+            <span class="type">职位</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph position" placeholder="请填写" value="{$info.position}" />
+                <i class="iconfont icon-youjiantou"></i>
+            </div>
+        </div>
+        <div class="item flex_bet new_addr">
+            <textarea class="area ph interests" placeholder="兴趣、爱好">{$info.interests}</textarea>
+
+        </div>
+	</div>
+    <!--选择地址弹层-->
+    <div class="layer_mask" id="address_layer">
+        <div class="layer_content">
+            <div class="close">
+                <i class="iconfont icon-close2"></i>
+            </div>
+            <div class="head_title">选择常住地址</div>
+            <div class="addr_body">
+                <div class="address_list">
+                    {volist name="default_address" id="vo"}
+                    <div class="item flex_bet" data-id="{$vo.id}">
+                        <div class="checkbox">
+                            <i class="iconfont icon-xuanzhong"></i>
+                        </div>
+                        <div class="info">
+                            <div class="flex_bet">
+                                <div class="name">{$vo.realname}</div>
+                                <div class="phone">{$vo.phone}</div>
+                            </div>
+                            <div class="details">{$vo.province} {$vo.city} {$vo.region} {$vo.address}</div>
+                        </div>
+                    </div>
+                    {/volist}
+                </div>
+            </div>
+            <a class="addr_foot">
+                <i class="iconfont icon-jia4"></i>
+                <span>增加新地址</span>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
+<script src="/static/shop/libs/mobileSelect.min.js"></script>
+
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var is_change=false;
+    $(function(){
+        $('.ph').on('input',function () {
+            is_change=true;
+        });
+
+        $(".focus").on("click", function(){
+            $(this).find(".input").focus();
+        });
+
+        //初始化血型选择插件
+        var gender = new MobileSelect({
+            trigger: '#select_blood',
+            title: '选择性别',
+            wheels: [
+                {data: ['A型','B型','AB型','O型']}
+            ],
+            callback:function(indexArr, data){
+                $("#select_blood .blood").val(data[0]);
+                is_change=true;
+            },
+            triggerDisplayData:false
+        });
+
+        //初始化性别选择插件
+        var gender = new MobileSelect({
+            trigger: '#select_gender',
+            title: '选择性别',
+            wheels: [
+                {data: [{id:3,value:'保密'},{id:1,value:'男'},{id:2,value:'女'}]}
+            ],
+            callback:function(indexArr, data){
+                $("#select_gender .gender").val(data[0].value);
+                $("#select_gender .sex").val(data[0].id);
+                is_change=true;
+            },
+            triggerDisplayData:false
+        });
+
+        //初始化日期
+        var min = new Date("1900/01/01");
+        var max = new Date();
+        var json = [];
+        for (var s = min.getFullYear(), l = max.getFullYear(); s <= l; s++) {
+            var obj = {};
+            obj['id'] = obj['value'] = s;
+            obj.childs = [];
+            for (var m = 1; m <= 12; m++) {
+                var o = {};
+                o['id'] = o['value'] = ("0" + m).slice(-2);
+                o.childs = [];
+                var days = new Date(s, m, 0).getDate();
+                for (var d = 1; d <= days; d++) {
+                    var j = {};
+                    j['id'] = j['value'] = ("0" + d).slice(-2);
+                    if (!(m == max.getMonth() + 1 && s == max.getFullYear() && d > max.getDate())) {
+                        o.childs.push(j);
+                    }
+                }
+                if (!(m > max.getMonth() + 1 && s == max.getFullYear())) {
+                    obj.childs.push(o);
+                }
+            }
+            json.push(obj);
+        }
+
+        var n_m = json.length-1;
+        var n_y = json[n_m].childs.length-1;
+        var n_d = json[n_m].childs[n_y].childs.length-1;
+
+        //初始化生日选择插件
+        var birthday = new MobileSelect({
+            trigger: '#select_birthday',
+            title: '选择生日',
+            position:[n_m, n_y, n_d],
+            wheels: [
+                {data: json}
+            ],
+            callback:function(indexArr, data){
+                $("#select_birthday .birthday").val(data[0].value+'-'+data[1].value+'-'+data[2].value);
+                is_change=true;
+            },
+            triggerDisplayData:false
+        });
+
+        //选择地址弹窗
+        $(".city").on("click", function(){
+            $("#address_layer").addClass('open');
+            $("body").css("overflow", "hidden");
+        });
+
+        //选择地址
+        $(".addr_body").on("click", ".item", function(){
+            $(".addr_body").find(".checkbox").removeClass("on");
+            $(this).find(".checkbox").addClass("on");
+            $(".layer_mask").removeClass("open");
+            $("body").css("overflow", "auto");
+            let id=$(this).attr('data-id');
+            selectAddr(id);
+            is_change=true;
+        });
+
+        //新增地址
+        $('.add_addr,.addr_foot').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('shop/Vip/addressAdd')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+
+        //保存修改
+        $('.publish').on('click',function () {
+            if(is_change){
+                let nickname=$('.nickname').val();
+                if(nickname==''){
+                    layer.msg('昵称不能为空');
+                    return !1;
+                }
+                let realname=$('.realname').val();
+                if(realname==''){
+                    layer.msg('真实姓名必须填写');
+                    return !1;
+                }
+                let email=$('.email').val();
+                let sex=$('.sex').val();
+                let blood=$('.blood').val();
+                let birthday=$('.birthday').val();
+                let city=$('.city').val();
+                let profession=$('.profession').val();
+                let position=$('.position').val();
+                let interests=$('.interests').val();
+                let data={nickname:nickname,realname:realname,email:email,sex:sex,
+                blood:blood,birthday:birthday,address:city,profession:profession,
+                position:position,interests:interests};
+                $.post("{:url('information')}",data,function (res) {
+                    if(res.code==0){
+                        is_change=false;
+                    }
+                    layer.msg(res.msg);
+                },"json");
+            }else{
+                layer.msg('资料未做修改');
+            }
+        });
+
+    });
+    //选择地址
+    function selectAddr(id) {
+        $.post("{:url('selectAddress')}",{id:id},function (res) {
+            if(res.code==0){
+                let data=res.data;
+                let value=data.province+' '+data.city+' '+data.region;
+                $('.city').val(value);
+            }
+        },"json");
+    }
+
+    //刷新地址
+    function refresh() {
+        $.post("{:url('getAddress')}",{t:1},function (res) {
+            if(res.code==0) {
+                let data = res.data, i,obj_str='',ids=[];
+                for (i in data) {
+                    ids.push(data[i].id);
+                    let obj = '<div class="item flex_bet" data-id="'+data[i].id+'">' +
+                        '<div class="checkbox">' +
+                        '<i class="iconfont icon-xuanzhong"></i>' +
+                        '</div>' +
+                        '<div class="info">' +
+                        '<div class="flex_bet">' +
+                        '<div class="name">'+data[i].realname+'</div>' +
+                        '<div class="phone">'+data[i].phone+'</div>' +
+                        '</div>' +
+                        '<div class="details">'+data[i].province+' '+data[i].city+' '+data[i].region+' '+data[i].address+'</div>' +
+                        '</div>' +
+                        '</div>';
+                    obj_str+=obj;
+                }
+                $('.address_list').html(obj_str);
+                selectAddr(ids.shift());
+            }
+
+        });
+    }
+</script>

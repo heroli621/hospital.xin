@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .contents{
+            min-height: 50px;
+            width: 96%;
+            border: 1px solid #eee;
+            margin: 10px auto;
+        }
+    </style>
+</head>
+<body>
+<div>
+    <div class="page-wrap">
+        <h3>行动计划</h3>
+        <div class="contents">{$plan|raw}</div>
+    </div>
+    <div class="page-wrap">
+        <h3>学习总结</h3>
+        <div class="contents">{$summary|raw}</div>
+    </div>
+</div>
+</body>
+</html>

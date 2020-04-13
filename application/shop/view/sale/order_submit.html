@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+    <style>
+        .goods_order_info .info .price .t2,.goods_order_info .info .price s{
+            color:#999;
+        }
+        .disabled-btn{
+            padding: .2rem .32rem;
+            font-size: .36rem;
+            color: #999;
+            border: 1px solid #999;
+            border-radius: .08rem;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body class="has_top">
+    <div class="headbar xls_grad-3">
+        <a href="javascript:history.back(-1);" class="back">
+            <i class="iconfont icon-zuojiantou2"></i>
+        </a>
+        <span class="title">提交订单</span>
+    </div>
+    <div id="address-box">
+        {empty name="default_address"}
+        <!--无收货地址-->
+            <div class="addr_empty">
+                <a class="add_addr">
+                    <i class="iconfont icon-jia3"></i>
+                    <span>新增收货地址</span>
+                </a>
+            </div>
+        {else /}
+        <!--有收货地址-->
+            {volist name="default_address" id="vo" offset="0" length="1"}
+            <div class="addr_box flex_bet" id="select_addr">
+                <span class="left_icon">
+                    <i class="iconfont icon-dizhi1"></i>
+                </span>
+                <div class="info">
+                    <div class="flex_bet">
+                        <span class="name">{$vo.realname}</span>
+                        <span class="phone">{$vo.phone}</span>
+                    </div>
+                    <p class="site over_2">{$vo.province} {$vo.city} {$vo.region} {$vo.address}</p>
+                </div>
+                <span class="right_icon">
+                    <i class="iconfont icon-youjiantou"></i>
+                </span>
+            </div>
+            {/volist}
+        {/empty}
+    </div>
+    <!--商品信息-->
+    <div class="goods_order_list">
+        {volist name="goods_list.list" id="val"}
+        <div class="goods_order_info flex_bet">
+            <div class="pic">
+                <img src="{$val.cover}" class="img"/>
+            </div>
+            <div class="info flex">
+                <h3 class="name over_2">{$val.goods_name}</h3>
+                <p class="p">{$val.spec_name}</p>
+                <div class="flex_bet">
+                    <div class="price">
+                        {eq name="val.other_sale" value="1"}
+                        <span>&yen;</span>
+                        <span class="num">{$val.price}</span>
+                        <span class="t2">{$val.sale_price}</span>
+                        {else /}
+                        {eq name="val.is_int" value="1"}
+                        <span class="num">{$val.integral}</span>
+                        <span class="t2">积分</span>
+                        {else /}
+                        <span>&yen;</span>
+                        <span class="num">{$val.sale_price}</span>
+                        <s>&yen;{$val.price}</s>
+                        {/eq}
+                        {/eq}
+                    </div>
+                    <div class="count">x{$val['buy_num']}</div>
+                </div>
+            </div>
+        </div>
+        {/volist}
+    </div>
+    {if (!$is_int) and (!$is_new)}
+    <div class="order_row flex_bet use_coupon" id="use_coupon">
+        <div class="style">优惠券</div>
+        <div class="style">
+            <span class="goods_coupon" data-coupon="0.00">不使用优惠券</span>
+            <i class="iconfont icon-youjiantou1"></i>
+        </div>
+    </div>
+    <div class="order_row flex_bet">
+        <div class="style">商品金额</div>
+        <div class="style goods_amount" data-amount="{$goods_list.total_money}">&yen;{$goods_list.total_money}</div>
+    </div>
+    {/if}
+    <div class="order_row flex_bet">
+        <div class="style">运费</div>
+        <div class="style goods_freight" data-freight="{$goods_list.express_fee}">&yen;{$goods_list.express_fee}</div>
+    </div>
+    <div class="order_row flex leave_msg has_bottom">
+        <div class="style">留言</div>
+        <form action="/sale/sub_order.html" method="post" id="order-form">
+            <input type="hidden" name="address_id" class="address-id" value="{$default_address.0.id|default=0}">
+            <input type="hidden" name="goods_info" class="goods-info">
+            <input type="hidden" name="cart_id" class="cart-id">
+            <input type="hidden" name="coupon_get_id" class="coupon-id" value="0">
+            <textarea name="message" class="textarea ph_gray" placeholder="建议留言前先和商家沟通确认"></textarea>
+        </form>
+    </div>
+    <!--确认订单-->
+    <div class="affirm_box flex_bet">
+        <div class="sum">
+            {neq name="is_int" value="1"}
+            <span>合计金额：</span>
+            <span class="xls_color">&yen;</span>
+            <span class="price xls_color">{$goods_list.total_money}</span>
+            {else /}
+            <span>合计积分：</span>
+            <span class="price xls_color">{$integral}</span>
+            {/neq}
+        </div>
+        <button class="affirm_btn xls_grad-3">提交订单</button>
+    </div>
+
+    <!--选择地址弹层-->
+    <div class="layer_mask" id="address_layer">
+        <div class="layer_content">
+            <div class="close">
+                <i class="iconfont icon-close2"></i>
+            </div>
+            <div class="head_title">选择收货地址</div>
+            <div class="addr_body">
+                <div class="address_list">
+                    {volist name="default_address" id="vo" key="k"}
+                    <div class="item flex_bet" data-id="{$vo.id}">
+                        <div class="checkbox {eq name='k' value='1'}on{/eq}">
+                            <i class="iconfont icon-xuanzhong"></i>
+                        </div>
+                        <div class="info">
+                            <div class="flex_bet">
+                                <div class="name">{$vo.realname}</div>
+                                <div class="phone">{$vo.phone}</div>
+                            </div>
+                            <div class="details">{$vo.province} {$vo.city} {$vo.region} {$vo.address}</div>
+                        </div>
+                    </div>
+                    {/volist}
+                </div>
+            </div>
+            <a class="addr_foot">
+                <i class="iconfont icon-jia4"></i>
+                <span>增加收货地址</span>
+            </a>
+        </div>
+    </div>
+    <!--选择优惠券弹层-->
+    <div class="layer_mask" id="use_coupon_layer">
+        <div class="layer_content">
+            <div class="close">
+                <i class="iconfont icon-close2"></i>
+            </div>
+            <div class="head_title">我的优惠券</div>
+            <div class="coupon_body">
+                {volist name="me_coupon" id="value" empty="<span class='none'>亲，您还没有领取优惠券哦</span>"}
+                <div class="item flex_bet" data-id="{$value.id}">
+                    <div class="info">
+                        <div class="row1">
+                            <span class="no">{$value.coupons.sale_money}</span>
+                            <span>元</span>
+                        </div>
+                        <div class="row2">{eq name="value.coupons.need_money" value="0"}无使用限制{else /}订单满{$value.coupons.need_money}元可用{/eq}</div>
+                        <div class="row3">使用期限：
+{if ($value.coupons.stop_time) or ($value.validity)}
+    {if ($value.coupons.stop_time > 0) and ($value.validity > 0)}
+        {if ($value.coupons.stop_time > $value.validity)}
+            {$value.validity|date='Y-m-d H:i:s'}
+        {else /}
+            {$value.coupons.stop_time|date="Y-m-d H:i:s"}
+        {/if}
+    {elseif ($value.coupons.stop_time > 0)}
+        {$value.coupons.stop_time|date="Y-m-d H:i:s"}
+    {else /}
+        {$value.validity|date='Y-m-d H:i:s'}
+    {/if}
+    过期
+{else /}
+    不限
+{/if}
+                        </div>
+                    </div>
+                    {gt name="goods_list.total_money" value="$value.coupons.need_money"}
+                    <div class="use_btn">立即使用</div>
+                    {else /}
+                    <div class="disabled-btn">不满足金额</div>
+                    {/gt}
+                </div>
+                {/volist}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    //商品参数
+    var goods_arr={$goods_list.list|json_encode|raw};
+    var k,goods_info=[],cart_ids=[];
+    for(k in goods_arr){
+
+        if(goods_arr[k].cart_id){
+            cart_ids.push(goods_arr[k].cart_id);
+
+        }
+        let temp_obj={"goods_id":goods_arr[k].goods_id,"spec_id":goods_arr[k].spec_id,"buy_num":goods_arr[k].buy_num,};
+
+        goods_info.push(temp_obj);
+    }
+
+    $(function(){
+        //填充商品参数
+        $('.cart-id').val(cart_ids.join(','));
+        $('.goods-info').val(JSON.stringify(goods_info));
+
+        $(".layer_content").on("click", ".close", function(){
+            $(".layer_mask").removeClass("open");
+            $("body").css("overflow", "auto");
+        });
+        //选择地址弹窗
+        $("#address-box").on("click",'#select_addr', function(){
+            $("#address_layer").addClass('open');
+            $("body").css("overflow", "hidden");
+        });
+        //选择地址
+        $(".addr_body").on("click", ".item", function(){
+            $(".addr_body").find(".checkbox").removeClass("on");
+            $(this).find(".checkbox").addClass("on");
+            $(".layer_mask").removeClass("open");
+            $("body").css("overflow", "auto");
+            let id=$(this).attr('data-id');
+            selectAddr(id);
+        });
+        //使用优惠券弹窗
+        $("#use_coupon").on("click", function(){
+            $("#use_coupon_layer").addClass('open');
+            $("body").css("overflow", "hidden");
+        });
+
+        //使用优惠券
+        $(".coupon_body .item").on("click", ".use_btn", function(){
+            $(".coupon_body").find(".use_btn").removeClass("on");
+            $(this).addClass("on");
+            var amount = parseFloat($(this).parent().find(".no").text());
+            $(".goods_coupon").html("&yen;" + amount.toFixed(2));
+            $(".goods_coupon").attr("data-coupon", amount.toFixed(2));
+            $(".layer_mask").removeClass("open");
+            $("body").css("overflow", "auto");
+            totalAmount();
+            let get_id=$(this).parent().attr('data-id');
+            $('.coupon-id').val(get_id);
+        });
+
+        //合计金额
+        function totalAmount() {
+            var coupon = parseFloat($(".goods_coupon").attr("data-coupon"));
+            var amount = parseFloat($(".goods_amount").attr("data-amount"));
+            var freight = parseFloat($(".goods_freight").attr("data-freight"));
+            var total = amount - coupon + freight;
+            $(".affirm_box .price").text(total >= 0 ? total.toFixed(2) : 0);
+        }
+
+        //提交订单
+        $('.affirm_btn').on('click',function () {
+            let add_id=$('input[name=address_id]').val();
+            if(add_id==0){layer.msg('亲，收货地址要填写哦！');return !1;}
+            $("#order-form").submit();
+        });
+
+
+        {neq name="is_int" value="1"}
+        //积分兑换商品不做计算
+        totalAmount();
+        {/neq}
+
+    });
+</script>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function () {
+        //新增地址
+        $('.add_addr,.addr_foot').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('shop/Vip/addressAdd')}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+    });
+    //刷新地址
+    function refresh() {
+        $.post("{:url('shop/vip/getAddress')}",{t:1},function (res) {
+            if(res.code==0) {
+                let data = res.data, i,obj_str='',ids=[];
+                for (i in data) {
+                    ids.push(data[i].id);
+                    let obj = '<div class="item flex_bet" data-id="'+data[i].id+'">' +
+                        '<div class="checkbox '+(i==0?'on':'')+'">' +
+                        '<i class="iconfont icon-xuanzhong"></i>' +
+                        '</div>' +
+                        '<div class="info">' +
+                        '<div class="flex_bet">' +
+                        '<div class="name">'+data[i].realname+'</div>' +
+                        '<div class="phone">'+data[i].phone+'</div>' +
+                        '</div>' +
+                        '<div class="details">'+data[i].province+' '+data[i].city+' '+data[i].region+' '+data[i].address+'</div>' +
+                        '</div>' +
+                        '</div>';
+                    obj_str+=obj;
+                }
+                $('.address_list').html(obj_str);
+                selectAddr(ids.shift());
+            }
+
+        });
+    }
+
+    //选择地址
+    function selectAddr(id) {
+        $.post("{:url('shop/vip/selectAddress')}",{id:id},function (res) {
+            if(res.code==0){
+                let data=res.data;
+                let obj='<div class="addr_box flex_bet" id="select_addr">' +
+                    '<span class="left_icon">' +
+                    '<i class="iconfont icon-dizhi1"></i>' +
+                    '</span>'+
+                    '<div class="info">' +
+                    '<div class="flex_bet">' +
+                    '<span class="name">'+data.realname+'</span>' +
+                    '<span class="phone">'+data.phone+'</span>' +
+                    '</div>' +
+                    '<p class="site over_2">'+data.province+' '+data.city+' '+data.region+' '+data.address+'</p>' +
+                    '</div>' +
+                    '<span class="right_icon">' +
+                    '<i class="iconfont icon-youjiantou"></i>' +
+                    '</span>' +
+                    '</div>';
+                $('#address-box').empty().html(obj);
+                $('.address-id').val(data.id);
+            }
+        },"json");
+    }
+</script>

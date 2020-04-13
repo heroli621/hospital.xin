@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+
+</head>
+
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div id="list-table" lay-filter="user-table">
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="del-btn">
+    <button class="layui-btn layui-btn-sm layui-btn-danger table-del-btn">
+        <i class="layui-icon layui-icon-delete"></i>
+    </button>
+    <button class="layui-btn layui-btn-sm layui-btn-danger all-del-btn">
+        <i class="layui-icon layui-icon-delete"></i>全部删除
+    </button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('logs')}",
+            //高度
+            height:"full-125",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{type:""},
+            //是否显示工具栏
+            toolbar:"#del-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['exports'],
+            //导出文件时的文件名
+            title:'系统操作日志',
+            //表头设置
+            cols:[[
+                {field:'id',title:'id',width:50,type:"checkbox"},
+                {field:'nickname',title:'管理员',width:120},
+                {field:'ip',title:'操作IP',width:120},
+                {field:'msg', title: '操作说明'},
+                {field:'type', title: '操作类型', width:100},
+                {field:'status', title: '操作状态', width:100},
+                {field:'create_time', title: '操作时间', width:160}
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,500,2000,5000,20000]
+            },
+        };
+        //渲染表格
+        tableIns=table.render(tableOption);
+
+        //删除记录
+        $('.table-del-btn').on('click',function () {
+            let checkStatus = table.checkStatus('list-table');
+            if(!checkStatus.data.length){
+                layer.msg('没有选中任何记录！',{icon:5,title:site_name});return !1;
+            }
+            let ids =[],i,data=checkStatus.data;
+            for(i in data){
+                ids.push(data[i].id);
+            }
+            layer.confirm('您确定要删除选中项？',{title:site_name},
+                function(){
+                    $.post("{:url('logDel')}",{ids:ids},function(redata){
+                        if(redata.code==0){
+                            layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                                    tableIns.reload(tableOption);
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+        });
+        //删除全部记录
+        $('.all-del-btn').on('click',function () {
+            layer.confirm('您确定要删除全部日志？',{title:site_name},
+                function(){
+                    $.post("{:url('logDell')}",{all:1},function(redata){
+                        if(redata.code==0){
+                            layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                                    tableIns.reload(tableOption);
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+        });
+
+    });
+</script>

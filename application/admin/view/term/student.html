@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div>
+    <div id="list-table" lay-filter="user-table">
+
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="tool-bar">
+    <button class="layui-btn layui-btn-normal layui-btn-xs open-btn " data-url="{:url('plan')}?tid={{d.term_id}}&mid={{d.member_id}}" data-width="80%" data-height="100%" data-title="查看 {{d.phone}} 学员" >查看总结、计划</button>
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('student')}",
+            //高度
+            height:"full-100",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{"tid":"{$tid}"},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级学员列表',
+            //表头设置
+            cols:[[
+                {field:'realname',title:'姓名'},
+                {field:'nickname',title:'昵称'},
+                {field:'phone', title: '手机'},
+                {field:'firm', title: '工作单位'},
+                {field:'department_one', title: '一级部门'},
+                {field:'department_two', title: '二级部门'},
+                {field:'department_three', title: '三级部门'},
+                {field:'tool', title: '操作',toolbar:'#tool-bar'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,200,1000,5000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+    });
+</script>

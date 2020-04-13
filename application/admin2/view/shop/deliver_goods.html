@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <form class="layui-form" style="width: 90%;padding-top: 20px;">
+        <div class="layui-form-item" >
+            <label class="layui-form-label">物流公司：</label>
+            <div class="layui-input-inline">
+                <select name="express_id" >
+                    {volist name="express" id="val"}
+                    <option value="{$val.id}">{$val.express_name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">快递单号：</label>
+            <div class="layui-input-block">
+                <input type="text" name="express_no"  class="layui-input" >
+            </div>
+        </div>
+        <div class="layui-form-item" >
+            <label class="layui-form-label">发货单号：</label>
+            <div class="layui-input-block">
+                <input type="text" name="delivery_no" class="layui-input" >
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="oid" value="{$oid}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                <button class="layui-btn layui-btn-danger" lay-submit lay-filter="signFor">线下收货</button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    //Demo
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('admin/Shop/deliverySave')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                            var url="/admin/Shop/expense.html?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //监听提交
+        form.on('submit(signFor)', function(data) {
+            var jdata=data.field;
+            layer.confirm('门店销售或护理类产品才能线下收货！<br>线下收货后直接签收没有物流信息！！！<br>确定要线下收货吗？',
+                {title:site_name},
+                function(){
+                    $.post("{:url('offlineSign')}",jdata,function(redata){
+                        if(redata.code==0){
+                            layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+
+                                    var url="/admin/Shop/expense.html?time={:time()}";
+                                    parent.$('.layui-show .iframe').attr('src',url);
+                                    parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+            return false;
+        });
+
+    });
+</script>

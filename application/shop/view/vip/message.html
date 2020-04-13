@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <style>
+            .footer .item .btn{
+                line-height: 1.12rem;
+            }
+            #mescroll #list .msg-detail{display: none;}
+            #mescroll #list {padding: 0;}
+        </style>
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_white">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">消息中心</span>
+		</div>
+		<!--消息列表-->
+        <div id="mescroll">
+            <div class="msg_list" id="list">
+
+            </div>
+        </div>
+        <div class="toBottom" style="display: none;">
+            <span class="span">没有更多了</span>
+        </div>
+        <div class="footer flex">
+            <a class="item" data-type="1">
+                <span class="btn">清空全部</span>
+            </a>
+            <a class="item" data-type="2">
+                <span class="btn">清空已读</span>
+            </a>
+        </div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:7
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let type_str,type_img,type=pd.msg_classify;
+                if(type==1){
+                    type_str='系统消息';
+                    type_img='msg1.png';
+                }else if(type==2){
+                    type_str='消费消息';
+                    type_img='msg2.png';
+                }else if(type==3){
+                    type_str='奖励金提醒';
+                    type_img='msg3.png';
+                }else{
+                    type_str='互动消息';
+                    type_img='msg4.png';
+                }
+                obj_str='<a class="msg_item flex_aro" data-id="'+pd.id+'">' +
+                    '<div class="pic">' +
+                    '<img src="/static/shop/images/'+type_img+'" class="img" />' +
+                    '</div>' +
+                    '<div class="text">' +
+                    '<h3 class="h3">'+type_str+'</h3>' +
+                    '<p class="p">'+pd.content+'</p>' +
+                    '<div class="msg-detail">'+pd.content+'</div>' +
+                    '</div>' +
+                    '<span class="arrow">' +
+                    '<i class="iconfont icon-youjiantou"></i>' +
+                    '</span>' +
+                    '</a>';
+
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("/message.html",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                if(pageNum==1){
+                    let obj_str='<div class="msg_empty">' +
+                        '<a href="/"><div class="box">' +
+                        '<img src="/static/shop/images/no1.png" class="img" />' +
+                        '<p class="p1">暂没有任何消息</p>' +
+                        '<p class="p2">去别处看看吧</p>' +
+                        '</div></a>' +
+                        '</div>';
+                    $("#list").empty().append(obj_str);
+                }else{
+                    errorCallback&&errorCallback();
+                }
+            }
+        });
+    }
+    $(function(){
+        //清空消息
+        $('.footer').on('click','.item',function () {
+            let type=$(this).attr('data-type');
+            let str=type==1?"清空后无法恢复！！！<br />真的要清空全部消息？":"清空后无法恢复！！！<br />真的要清空已读消息？";
+            layer.confirm(str,{icon:3},function () {
+                $.post("{:url('messageDel')}",{type:type},function(res){
+                    if(res.code==0){
+                        location.href=location.href;
+                    }else{
+                        layer.msg(res.msg);
+                    }
+                },"json");
+            });
+
+        });
+        //查看消息
+        $("#mescroll #list").on('click','.msg_item',function () {
+            let id=$(this).attr('data-id');
+            $("#list .p").show();
+            $("#list .iconfont").removeClass("icon-xiajiantou").addClass("icon-youjiantou");
+            $("#list .msg-detail").hide();
+            $(this).find(".p").hide();
+            $(this).find(".msg-detail").show();
+            $(this).find(".iconfont").removeClass("icon-youjiantou").addClass("icon-xiajiantou");
+            $.post("{:url('readMsg')}",{id:id},function (res) {
+
+            },"json");
+        });
+    });
+</script>

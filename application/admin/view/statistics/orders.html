@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="main-layout" >
+        <!--左侧导航-->
+        {include file="public/top"}
+        <!--顶部-->
+        {include file="public/left"}
+        <!--主体内容-->
+        <div class="page-content-wrap">
+            <blockquote class="layui-elem-quote">
+                <div class="layui-word-aux">初始没有数据，需要选择日期查询。</div>
+            </blockquote>
+            <div class="layui-row">
+                <div class="layui-form layui-col-md-12">
+                    <div class="layui-form-item">
+                        <div class="layui-inline" style="width: 200px;">
+                            <input type="text" name="range_time" id="range-time" class="layui-input" placeholder="日期区间" readonly />
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!--图表-->
+                <div class="chart-panel panel panel-default layui-col-md-12">
+                    <div class="panel-body" id="term" style="height: 500px;"></div>
+                    <div class="panel-body" id="province" style="height: 500px;"></div>
+                    <div class="panel-body" id="teacher" style="height: 500px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script src="/static/admin/lib/echarts/echarts.js"></script>
+<script type="text/javascript">
+    layui.use(['form','laydate'],function () {
+        let form=layui.form,laydate=layui.laydate;
+        //日期插件初始化
+        laydate.render({
+            elem:"#range-time",
+            range:'-'
+        });
+        //图表
+            //班级统计
+        var  termChart = echarts.init(document.getElementById('term'));
+            //区域统计
+        var  provinceChart = echarts.init(document.getElementById('province'));
+            //讲师统计
+        var  teacherChart = echarts.init(document.getElementById('teacher'));
+
+        termChart.setOption({
+            title:{
+                text: '班级统计',
+                x:'center'
+            },
+            tooltip:{
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend:{
+                orient: 'vertical',
+                x: 'left',
+                data: ['来源']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: true
+                    }
+                }
+            },
+            series: [{
+                name: '来源',
+                type: 'pie',
+                radius: '55%',
+                data: [{name:'来源',value:0}],
+                itemStyle: {
+                    emphasis:{
+                        shadowBlur:10,//阴影大小
+                        shadowOffsetX:0,//阴影水平方向上的偏移
+                        shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                    }
+                },label : {
+                    normal : {
+                        show:true,
+                        formatter: '{b}：{c}（{d}%）',
+                        textStyle : {
+                            fontWeight : 'normal',
+                            fontSize : 15
+                        }
+                    }
+                }
+            }]
+        });
+
+        provinceChart.setOption({
+            title:{
+                text: '区域统计',
+                x:'center'
+            },
+            tooltip:{
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend:{
+                orient: 'vertical',
+                x: 'left',
+                data: ['来源']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: true
+                    }
+                }
+            },
+            series: [{
+                name: '来源',
+                type: 'pie',
+                radius: '55%',
+                data: [{name:'来源',value:0}],
+                itemStyle: {
+                    emphasis:{
+                        shadowBlur:10,//阴影大小
+                        shadowOffsetX:0,//阴影水平方向上的偏移
+                        shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                    }
+                },label : {
+                    normal : {
+                        show:true,
+                        formatter: '{b}：{c}（{d}%）',
+                        textStyle : {
+                            fontWeight : 'normal',
+                            fontSize : 15
+                        }
+                    }
+                }
+            }]
+        });
+
+        teacherChart.setOption({
+            title:{
+                text: '讲师统计',
+                x:'center'
+            },
+            tooltip:{
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend:{
+                orient: 'vertical',
+                x: 'left',
+                data: ['来源']
+            },
+            toolbox: {
+                show: true,
+                feature: {
+                    saveAsImage: {
+                        show: true
+                    }
+                }
+            },
+            series: [{
+                name: '来源',
+                type: 'pie',
+                radius: '55%',
+                data: [{name:'来源',value:0}],
+                itemStyle: {
+                    emphasis:{
+                        shadowBlur:10,//阴影大小
+                        shadowOffsetX:0,//阴影水平方向上的偏移
+                        shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                    }
+                },label : {
+                    normal : {
+                        show:true,
+                        formatter: '{b}：{c}（{d}%）',
+                        textStyle : {
+                            fontWeight : 'normal',
+                            fontSize : 15
+                        }
+                    }
+                }
+            }]
+        });
+
+        $(window).resize(function(){
+            termChart.resize();
+            teacherChart.resize();
+            provinceChart.resize();
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let jdata=data.field;
+            $.post("{:url('orders')}",jdata,function (redata) {
+                if(redata.code==0){
+                    termChart.setOption({
+                        legend:{
+                            orient: 'vertical',
+                            x: 'left',
+                            data: redata.term
+                        },
+                        series: [{
+                            name: '来源',
+                            type: 'pie',
+                            radius: '55%',
+                            data: redata.term_data,
+                            itemStyle: {
+                                emphasis:{
+                                    shadowBlur:10,//阴影大小
+                                    shadowOffsetX:0,//阴影水平方向上的偏移
+                                    shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                                }
+                            },label : {
+                                normal : {
+                                    show:true,
+                                    formatter: '{b}：{c}（{d}%）',
+                                    textStyle : {
+                                        fontWeight : 'normal',
+                                        fontSize : 15
+                                    }
+                                }
+                            }
+                        }]
+                    });
+
+                    provinceChart.setOption({
+                        legend:{
+                            orient: 'vertical',
+                            x: 'left',
+                            data: redata.area
+                        },
+                        series: [{
+                            name: '区域',
+                            type: 'pie',
+                            radius: '55%',
+                            data: redata.province,
+                            itemStyle: {
+                                emphasis:{
+                                    shadowBlur:10,//阴影大小
+                                    shadowOffsetX:0,//阴影水平方向上的偏移
+                                    shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                                }
+                            },label : {
+                                normal : {
+                                    show:true,
+                                    formatter: '{b}：{c}（{d}%）',
+                                    textStyle : {
+                                        fontWeight : 'normal',
+                                        fontSize : 15
+                                    }
+                                }
+                            }
+                        }]
+                    });
+
+                    teacherChart.setOption({
+                        legend:{
+                            orient: 'vertical',
+                            x: 'left',
+                            data: redata.teacher
+                        },
+                        series: [{
+                            name: '来源',
+                            type: 'pie',
+                            radius: '55%',
+                            data: redata.teacher_data,
+                            itemStyle: {
+                                emphasis:{
+                                    shadowBlur:10,//阴影大小
+                                    shadowOffsetX:0,//阴影水平方向上的偏移
+                                    shadowColor:'rgba(0,0,0,0.5)'//阴影颜色
+                                }
+                            },label : {
+                                normal : {
+                                    show:true,
+                                    formatter: '{b}：{c}（{d}%）',
+                                    textStyle : {
+                                        fontWeight : 'normal',
+                                        fontSize : 15
+                                    }
+                                }
+                            }
+                        }]
+                    });
+                }
+            });
+            return false;
+        });
+    });
+</script>

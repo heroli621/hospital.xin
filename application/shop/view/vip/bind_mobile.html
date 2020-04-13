@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+	{include file="public/script"}
+    <style>
+        .has_top .data_box .item .input{
+            font-size: .45rem;
+        }
+        .has_top .data_box .item .send-sms{
+            padding: 0 .2rem;width: 100%;margin: 0;
+            background-color: #fff;
+        }
+    </style>
+</head>
+<body class="has_top">
+	<div class="headbar xls_white">
+		<a class="back">
+			<i class="iconfont icon-zuojiantou2"></i>
+		</a>
+		<span class="title">绑定手机</span>
+	</div>
+	<div class="data_box" style="margin-top: 3rem;">
+        <div class="item flex_bet">
+            <span class="type">手机号码</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph mobile" />
+            </div>
+        </div>
+        <div class="item flex_bet">
+            <span class="type">短信验证码</span>
+            <div class="flex_bet">
+                <input type="text" class="input ph verify_code" />
+            </div>
+        </div>
+        <div class="item fc my_order_list">
+            <div class="fr btn_group" style="padding: 0;">
+                <button class="btn send-sms" >发送验证码</button>
+            </div>
+        </div>
+	</div>
+    <div style="margin-top: 2rem;">
+        <button class="save_address xls_grad-3">设置</button>
+    </div>
+
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var t_si;
+    var ts=120,tst=ts;
+    var isphone =/^1[3456789]\d{9}$/;
+    $(function(){
+
+        $(".item").on("click", function(){
+            $(this).find(".input").focus();
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            backUp();
+        });
+
+        //设置手机号
+        $('.save_address').on('click',function () {
+            let $this=$(this);
+            $this.attr('disabled',true);
+            let mobile=$(".mobile").val();
+            if(mobile.length != 11 || !isphone.test(mobile)){
+                layer.msg("请输入有效的手机号码！");
+                return !1;
+            }
+            let sms_code=$(".verify_code").val();
+            $.post("{:url('bindMobile')}",{phone:mobile,sms_code:sms_code,type:1},function (res) {
+                if(res.code==0){
+                    layer.msg('手机号设置成功',{end:function () {
+                            backUp();
+                        }});
+                }else{
+                    $this.attr('disabled',false);
+                    layer.msg(res.msg);
+                }
+
+            },"json");
+
+        });
+        //发送验证码
+        $('.send-sms').on("click",function () {
+            var mobile=$(".mobile").val();
+            if(mobile.length != 11 || !isphone.test(mobile)){
+                layer.msg("请输入有效的手机号码！");
+                return !1;
+            }
+            $(".send-sms").attr("disabled",true).addClass('disabled');
+            $.post("{:url('sendSMS')}",{phone:mobile,type:1},function (redata) {
+                layer.msg(redata.msg);
+                if(redata.code==0){
+                    t_();
+                    t_si=setInterval(t_,1000);
+                }else if(redata.code==-9){
+                    tst=redata.st;
+                    t_();
+                    t_si=setInterval(t_,1000);
+                }else{
+                    $(".send-sms").text("重新发送验证码").attr("disabled",false).removeClass('disabled');
+                }
+            },"json");
+
+        });
+
+    });
+    function t_() {
+        tst--;
+        var t_str;
+        if(tst==0){
+            tst=ts;
+            t_str="重新发送验证码";
+            window.clearInterval(t_si);
+            $(".send-sms").attr("disabled",false).removeClass('disabled');
+        }else{
+            t_str=tst+" 秒后重新发送";
+        }
+        $(".send-sms").text(t_str);
+    }
+
+    function backUp() {
+        if(top != self){
+            var iframe_index = parent.layer.getFrameIndex(window.name);
+            parent.layer.close(iframe_index);
+        }else{
+            history.back(-1);
+        }
+    }
+</script>

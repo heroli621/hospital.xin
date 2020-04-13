@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+	<div class="layui-tab ">
+	  <div class="layui-tab-content">
+		<div class="layui-tab-item layui-show">
+			<form class="layui-form"  style="width: 90%;padding-top: 20px;">
+			  <div class="layui-form-item">
+				<label class="layui-form-label">节点名称：</label>
+				<div class="layui-input-block">
+				  <input type="text" name="name" value="{$info.name|default=''}" autocomplete="off" class="layui-input " >
+				</div>
+			  </div>
+			   <div class="layui-form-item">
+				<label class="layui-form-label">权限路径：</label>
+				<div class="layui-input-block">
+				  <input type="text" name="path"  lay-verify="required"  autocomplete="off" class="layui-input" value="{$info.path|default=''}">
+				</div>
+			  </div>
+			  <div class="layui-form-item layui-form-text">
+				<label class="layui-form-label">描述：</label>
+				<div class="layui-input-block">
+				  <textarea name="des" class="layui-textarea" style="resize: none;">{$info.description|default=''}</textarea>
+				</div>
+			  </div>
+			  <div class="layui-form-item">
+				<div class="layui-input-block">
+					<input type="hidden" name="id" value="{$info.id|default=''}">
+				  <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">保存</button>
+				</div>
+			  </div>
+			</form>
+		</div>
+	  </div>
+	</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //自定义验证规则
+        /* form.verify({
+             password: [/[a-zA-Z0-9_]{6,16}$/, '密码必须6到16位字母、数字、下划线组成']
+
+         });*/
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            $.post("{:url('admin/Power/saveEdit')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.$('.layui-show .iframe').attr('src',"{:url('admin/Power/index')}?time={:time()}");
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

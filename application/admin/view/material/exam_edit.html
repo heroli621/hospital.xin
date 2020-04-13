@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <form class="layui-form" style="width: 90%;padding-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">试卷名称：</label>
+            <div class="layui-input-block">
+                <input type="text" name="title" lay-verify="required" class="layui-input" value="{$info.title|default=''}">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">达标成绩：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="grades" lay-verify="required|number" class="layui-input" value="{$info.grades|default=60}">
+            </div>
+            <div class="layui-form-mid layui-word-aux">考试成绩>=此成绩则达标</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">考试时长：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="duration" lay-verify="required|number" class="layui-input" value="{$info.duration|default=''}">
+            </div>
+            <div class="layui-form-mid layui-word-aux">单位（分钟）</div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">对应课程：</label>
+            <div class="layui-input-inline">
+                <input type="text" id="course" class="layui-input" value="{$info.course_name|default=''}" lay-verify="required" readonly />
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="course_id" value="{$info.course_id|default=0}">
+                <input type="hidden" name="id" value="{$info.id|default=0}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+{include file="public/script"}
+
+<script type="text/javascript" src="/static/admin/js/module/tableSelect.js"></script>
+<script>
+    var ifarme_name=parent.layer.getFrameIndex(window.name);
+
+    layui.use(['laydate','form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        var tableSelect=layui.tableSelect;
+        tableSelect.render({
+            elem: '#course',	//定义输入框input对象
+            checkedKey: 'id', //表格的唯一建值，非常重要，影响到选中状态 必填
+            searchKey: 'name',	//搜索输入框的name值 默认keyword
+            searchPlaceholder: '课程名称搜索',	//搜索输入框的提示文字 默认关键词搜索
+            table: {	//定义表格参数，与LAYUI的TABLE模块一致，只是无需再定义表格elem
+                url:"{:url('getCourse')}",
+                cols: [[
+                    {field:'box',type:'radio'},
+                    {field:'course_name',title:'课程名称'},
+                    {field:'teacher',title:'讲师'},
+                ]]
+            },
+            done: function (elem, data) {
+                let selectData=data.data;
+                if(!selectData.length){
+                    return false;
+                }
+                elem.val(selectData[0].course_name);
+                $('input[name=course_id]').val(selectData[0].id);
+            }
+        });
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('examEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.location.reload();
+                            parent.layer.close(ifarme_name);
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

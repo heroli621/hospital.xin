@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="layui-form" style="width: 96%;margin: 20px auto 0;">
+        <blockquote class="layui-elem-quote">
+            已有商品
+        </blockquote>
+        <table class="layui-table" id="show-table" lay-filter="show-table">
+            <thead>
+            <tr>
+                <th lay-data="{field:'id',type:'checkbox'}"></th>
+                <th lay-data="{field:'order_no'}">订单号</th>
+                <th lay-data="{field:'nid',width:80}">护理ID</th>
+                <th lay-data="{field:'goods_name'}">商品名称</th>
+                <th lay-data="{field:'amount'}">总次数</th>
+                <th lay-data="{field:'residue_degree'}">剩余次数</th>
+                <th lay-data="{field:'experience'}">类型</th>
+                <th lay-data="{field:'create_time'}">购买日期</th>
+            </tr>
+            </thead>
+            <tbody>
+            {volist name="goods" id="vo"}
+            <tr>
+                <td>{$vo.id}</td>
+                <td>{$vo.orders.order_no}</td>
+                <td>{$vo.id}</td>
+                <td>{$vo.goods.goods_name}</td>
+                <td>{$vo.amount}</td>
+                <td>{$vo.residue_degree}</td>
+                <td>{$vo.experience?'体验':'常规'}</td>
+                <td>{$vo.create_time}</td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <button class="layui-btn layui-btn-normal add-down">添加</button>
+                <input type="hidden" class="sub-id" value="{$id|default=0}">
+                <button class="layui-btn save-btn">保存</button>
+            </div>
+        </div>
+        <blockquote class="layui-elem-quote">
+            本次服务商品
+        </blockquote>
+        <table class="layui-table" id="save-table">
+            <thead>
+            <tr>
+                <th>护理ID</th>
+                <th>商品名称</th>
+                <th>总次数</th>
+                <th>剩余次数</th>
+                <th>类型</th>
+                <th width="100">手工费</th>
+                <th width="120">扣减次数</th>
+                <th width="150">服务技师</th>
+                <th width="60">移除</th>
+            </tr>
+            </thead>
+            <tbody id="save-data">
+            {volist name="member_goods" id="vol"}
+            <tr data-id="{$vol.id}" data-nursing-id="{$vol.member_nursing_id}">
+                <td>{$vol.nursing.id}</td>
+                <td>{$vol.nursing.goods_name}</td>
+                <td>{$vol.nursing.amount}</td>
+                <td>{$vol.nursing.residue_degree}</td>
+                <td>{$vol.nursing.experience?'体验':'常规'}</td>
+                <td><input type="number" class="layui-input cost" value="{$vol.cost}"></td>
+                <td><input type="number" class="layui-input num" data-max="{$vol.nursing.residue_degree}" value="{$vol.num}"></td>
+                <td>
+                    <select class="member_id">
+                        <option value="0">选择技师</option>
+                        {volist name="staffs" id="val"}
+                        {eq name="val.member_id" value="$vol.staff_id"}
+                        <option value="{$val.member_id}" selected>{$val.realname}</option>
+                        {else /}
+                        <option value="{$val.member_id}">{$val.realname}</option>
+                        {/eq}
+                        {/volist}
+                    </select>
+                </td>
+                <td>
+                    <button class="layui-btn layui-btn-xs layui-btn-danger delete-btn"><i class="layui-icon layui-icon-delete"></i></button>
+                </td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+        <!--<div class="layui-form-item">
+            <label class="layui-form-label">技师：</label>
+            <div class="layui-input-inline">
+                <select name="member_id" lay-evrify="required">
+                    <option value="0">选择技师</option>
+                    {volist name="staffs" id="val"}
+                    <option value="{$val.member_id}">{$val.realname}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="id" value="{$id|default=0}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">分配</button>
+            </div>
+        </div>-->
+
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer','table'], function(){
+        var form = layui.form,layer=layui.layer,table=layui.table;
+        table.init('show-table',{
+            height:300,
+            limit:{$goods|count}
+        });
+        //监听提交
+        $('.save-btn').on('click', function() {
+            let trs=$("#save-data tr");
+            let trl=trs.length;
+            if(!trl){
+                layer.msg("未选择产品");
+                return false;
+            }
+            let sub_id=$('.sub-id').val();
+            let i=0,data=[];
+            for(i;i<trl;i++){
+                let this_tr=$("#save-data tr").eq(i);
+                let id=this_tr.data("id");
+                let nursing_id=this_tr.data("nursing-id");
+                let num=parseInt(this_tr.find('.num').val());//扣除次数
+                let residue_degree=parseInt(this_tr.find('.num').data("max"));//扣除次数
+                let cost=parseInt(this_tr.find('.cost').val());
+                let staff_id=this_tr.find('.member_id').val();
+                num=num<1?1:num;
+                //扣除次数不能大于剩余次数
+                if(num > residue_degree){
+                    layer.alert("扣除次数不能大于产品剩余次数！");return false;
+                }
+                data.push({id:id,num:num,member_nursing_id:nursing_id,cost:cost,staff_id:staff_id,residue_degree:residue_degree});
+
+            }
+            let jdata={id:sub_id,goods:data};
+            //console.log(jdata);return !1;
+            $.post("{:url('apportion')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+        //添加
+        $('.add-down').on('click',function () {
+            var checkStatus = table.checkStatus('show-table');
+            let data=checkStatus.data;
+            if(data.length==0){
+                return false;
+            }
+            //console.log(data);
+            let i,new_tr='';
+            for(i in data){
+                new_tr+='<tr data-id="0" data-nursing-id="'+data[i].id+'">' +
+                    '<td>'+data[i].nid+'</td>' +
+                    '<td>'+data[i].goods_name+'</td>' +
+                    '<td>'+data[i].amount+'</td>' +
+                '<td>'+data[i].residue_degree+'</td>' +
+                    '<td>'+data[i].experience+'</td>' +
+                '<td><input type="number" class="layui-input cost" value="0"></td>' +
+                '<td><input type="number" class="layui-input num" data-max="'+data[i].residue_degree+'" value="0"></td>' +
+                '<td>' +
+                '<select class="member_id">' +
+                '<option value="0">选择技师</option>'+
+                {volist name="staffs" id="val"}
+                '<option value="{$val.member_id}">{$val.realname}</option>'+
+                {/volist}
+                '</select>'+
+                '</td><td>' +
+                '<button class="layui-btn layui-btn-xs layui-btn-danger delete-btn"><i class="layui-icon layui-icon-delete"></i></button>' +
+                '</td></tr>';
+            }
+            $("#save-data").append(new_tr);
+                form.render('select');
+        });
+
+        //删除
+        $('#save-data').on('click','.delete-btn',function () {
+            let pa=$(this).parents('tr');
+            let id=pa.data("id");
+            if(id !="0"){
+                $.post("{:url('delNursing')}",{id:id},function (res) {
+                    if(res.code==0){
+                        pa.remove();
+                    }else{
+                        layer.msg(res.msg);
+                    }
+                },"json");
+            }else{
+                pa.remove();
+            }
+        });
+    });
+</script>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .layui-table-img{max-width: 260px;max-height: 100px;cursor:pointer;}
+        .layui-layer-content img{max-width: 800px;max-height: 400px;}
+        .layui-red{color:red;}
+        .layui-green{color:green;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <!--数据表格-->
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="front-bar">
+    <img class="layui-table-img" src="{{d.idcard_front}}" alt="身份证正面" onclick="showPic(this);">
+</script>
+<script type="text/html" id="verso-bar">
+    <img class="layui-table-img" src="{{d.idcard_verso}}" alt="身份证反面" onclick="showPic(this);">
+</script>
+<script type="text/html" id="role-bar">
+    {{#if(d.role == 1){ }}
+    卖家
+    {{#}else if(d.role == 2){ }}
+    同行
+    {{#}else{ }}
+    普通会员
+    {{# } }}
+</script>
+<script type="text/html" id="audit-btn">
+    {{# if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs table-list-audit"  data-id="{{d.id}}">审核</button>
+    {{# }else if(d.status == 2){ }}
+    <span class="layui-green">通过</span>
+    {{# }else{ }}
+    <span class="layui-red">失败</span>
+    {{# }; }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form','layer'],function () {
+        let table=layui.table,form=layui.form,layer=layui.layer;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('role')}",
+            //高度
+            height:"full-220",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            //toolbar:"#tool-bar",
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'会员列表',
+            //表头设置
+            cols:[[
+                {field:'nickname',title:'昵称'},
+                {field:'mobile', title: '手机'},
+                {field:'role', title: '角色',toolbar:"#role-bar",width:160},
+                {field:'front', title: '身份证正面',toolbar:"#front-bar",width:260},
+                {field:'verso', title: '身份证反面',toolbar:"#verso-bar",width:260},
+                {field:'create_time', title: '申请日期'},
+                {field:'audit', title: '审核',toolbar:"#audit-btn",width:160},
+                {field:'remark', title: '审核说明'},
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,500,2000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            //console.log(where);
+            tableIns.reload({
+                where:data.field,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+
+        //审核
+        $('#table-list').on('click', '.table-list-audit', function() {
+            var that = $(this);
+            var id = that.attr("data-id");
+            let conf=layer.confirm('审核会员角色申请',{btn:['通过申请','拒绝申请'],icon:3},function () {
+                //通过申请
+                layer.close(conf);
+                let json_data={id:id,status:2};
+                audit(json_data);
+            },function () {
+                //拒绝申请
+                layer.close(conf);
+                layer.prompt({title:'请输入拒绝理由',formType:2},function (des,index) {
+                    layer.close(index);
+                    let json_data={id:id,des:des,status:3};
+                    audit(json_data);
+                });
+            });
+        });
+        //鉴定师设置
+        $('#table-list').on('click', '.table-list-valuator', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st = That.attr('data-value');
+            let con_t=st=="1"?'是否取消会员鉴定师资格？':'是否将该会员设置为鉴定师？';
+            let conf=layer.confirm(con_t,{btn:['是','否'],icon:3},function () {
+                layer.close(conf);
+                $.post("{:url('valuator')}",{id:id},function(redata){
+                    if(redata.code==0){
+                        let txt=redata.data=='1'?'取消资格':'设为鉴定师';
+                        That.toggleClass('layui-btn-danger').text(txt).attr('data-value',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+
+    });
+    function showPic(obj) {
+        var pic_url=$(obj).attr('src');
+        parent.layer.open({
+            type: 1,
+            title: false,
+            closeBtn: false,
+            //area: 'auto',
+            maxWidth:false,
+            maxHeight:false,
+            //offset:["100px","200px"],
+            skin: 'layui-layer-nobg', //没有背景色
+            shadeClose: true,
+            content: '<img src="'+pic_url+'" style="max-height:600px;max-width:1000px;"/>'
+        });
+    }
+    function audit(data) {
+        $.post("{:url('roleAudit')}",data,function(redata){
+            if(redata.code==0){
+                tableIns.reload();
+            }else{
+                layer.msg(redata.msg,{title:site_name,icon:2});
+            }
+        });
+    }
+</script>

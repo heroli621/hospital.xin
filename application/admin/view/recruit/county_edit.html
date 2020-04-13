@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <form class="layui-form" style="width: 90%;padding-top: 20px;">
+        <div class="layui-form-item">
+            <label class="layui-form-label">招生人数：</label>
+            <div class="layui-input-inline">
+                <input type="text" name="recruit_count" lay-verify="required|number" class="layui-input" value="">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">区域：</label>
+            <div class="layui-input-inline">
+                <select name="county_id">
+                    <option value="" >选择区县</option>
+                    {volist name="county" id="vo"}
+                    <option value="{$vo.id}" >{$vo.name}</option>
+                    {/volist}
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-input-block">
+                <input type="hidden" name="class_id" value="{$class_id|default=0}">
+                <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+            </div>
+        </div>
+    </form>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var ifarme_name=parent.layer.getFrameIndex(window.name);
+
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('countyEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.location.reload();
+                            parent.layer.close(ifarme_name);
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

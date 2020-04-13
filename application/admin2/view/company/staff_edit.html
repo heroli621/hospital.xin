@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+	<div class="layui-form" style="width: 90%;padding-top: 20px;">
+		<div class="layui-form-item">
+			<label class="layui-form-label">等级：</label>
+			<div class="layui-input-inline">
+				<select name="staff_level">
+                {volist name="staff_level" id="val"}
+                {if($info.staff_level==$val.level) }
+                    <option value="{$val.level}" selected>{$val.level_name}</option>
+                {else /}
+                    <option value="{$val.level}">{$val.level_name}</option>
+                {/if}
+                {/volist}
+				</select>
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<label class="layui-form-label">技师：</label>
+			<div class="layui-input-inline">
+			{if($info.is_technician) }
+				<input type="checkbox" name="is_technician" lay-text="是|否" value="1" checked lay-skin="switch">
+			{else /}
+				<input type="checkbox" name="is_technician" lay-text="是|否" value="1" lay-skin="switch">
+			{/if}
+			</div>
+			<div class="layui-form-mid layui-word-aux">
+				只有技师才能在预约服务中分配
+			</div>
+		</div>
+		<div class="layui-form-item" >
+			<label class="layui-form-label">提成比例：</label>
+			<div class="layui-input-inline">
+				<input type="text" name="push_money" lay-verfiy="required|number" class="layui-input" value="{$info.push_money}">
+			</div>
+			<div class="layui-form-mid layui-word-aux">
+				%(请输入0.01-99.99)
+			</div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-input-block">
+				<input type="hidden" name="id" value="{$info.id}">
+				<button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('staffEdit')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            var url="{:url('staff')}?time={:time()}";
+                            parent.$('.layui-show .iframe').attr('src',url);
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+    });
+</script>

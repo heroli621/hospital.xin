@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+        <style>
+            .news_list .order_empty{padding: 0 0 2rem 0;}
+        </style>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_grad-3">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">热门活动</span>
+		</div>
+        <div id="mescroll">
+            <div class="news_list">
+
+            </div>
+        </div>
+
+		
+		<!--没有更多了-->
+		<div class="toBottom no_more" style="display: none;">
+			<span class="span">没有更多了</span>
+		</div>
+		
+	</body>
+</html>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:4
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+            mescroll.lockUpScroll( !1 );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<a href="/goods/index.html" class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">还没有最新活动哦~ <br>去逛逛</p>' +
+                '</div>' +
+                '</a>';
+            $(".news_list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $(".news_list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            var pd=curPageData[i];
+            let ty;
+            switch (pd.activity_type) {
+                case 1:
+                    ty='立减'+pd.sale+'元';
+                    break;
+                case 2:
+                    ty='折扣'+pd.sale/10+'折';
+                    break;
+                case 3:
+                    ty='赠送'+pd.sale+'积分';
+                    break;
+                default:
+                    ty='赠送'+pd.sale;
+            }
+            let obj_str='<a href="/goods/detail_'+pd.goods_id+'.html" class="news_item flex_bet">' +
+                '<span class="pict">' +
+                '<img src="'+pd.cover+'" class="img" >' +
+                '</span>' +
+                '<div class="info flex_bet">' +
+                '<h4 class="h4 over_2">'+pd.activity_title+'</h4>' +
+                '<p class="intr over_1">'+ty+'</p>' +
+                '<div class="time">'+pd.start_time+'</div>' +
+                '</div>' +
+                '</a>';
+            $(".news_list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get('/activity.html',{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+</script>

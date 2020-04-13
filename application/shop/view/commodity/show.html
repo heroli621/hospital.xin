@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+    <style>
+        .jifen{font-size: 0.26rem;}
+    </style>
+  <!--引入swiper组件-->
+  <link rel="stylesheet" href="/static/shop/css/swiper.min.css" />
+  <script src="/static/shop/js/swiper.min.js"></script>
+</head>
+<body class="body">
+<div class="goods_head">
+    <a href="{$back_url}" class="back">
+        <i class="iconfont icon-zuojiantou2"></i>
+    </a>
+    <a href="javascript:;" class="item on">商品</a>
+    <a href="javascript:;" class="item">评价</a>
+    <a href="javascript:;" class="item">详情</a>
+</div>
+<!--商品-->
+<div class="section" id="goods">
+    <div class="goods_show">
+        <div class="swiper-container goods_pic">
+          <div class="swiper-wrapper">
+              {volist name="info.images" id="vo"}
+                <a class="swiper-slide">
+                    <img src="{$vo}" class="img"/>
+                </a>
+              {/volist}
+          </div>
+          <div class="swiper-pagination goods_fraction"></div>
+        </div>
+        <!--商品信息-->
+        <div class="goods_info">
+            <div class="cur_price">
+                <span class="price">{eq name="info.is_int" value="1"}{$info.integral} <span class="jifen">积分</span>{else /}&yen;{$sale_price|number_format=2}{/eq}</span>
+                {eq name="info.is_int" value="0"}<s>{$info.price|number_format=2}</s>{/eq}
+
+                    {eq name="info.is_int" value="1"}<span class="tag">积分兑换</span>{/eq}
+                    {eq name="info.is_new" value="1"}<span class="tag">新人专享</span>{/eq}
+                    {neq name="info.vip_level" value="0"}<span class="tag">会员专享</span>{/neq}
+            </div>
+            {if $info.activity.activity_type}
+            <div class="old_price">
+                <span>促销：</span>
+                <span>
+                    {switch info.activity.activity_type}
+                        {case 1}立减{$info.activity.sale}元{/case}
+                        {case 2}{$info.activity.sale/10}折{/case}
+                        {case 3}赠送{$info.activity.sale}积分{/case}
+                        {case 4}赠送{$info.activity.sale}优惠券{/case}
+                    {/switch}
+                </span>
+            </div>
+            {/if}
+            <h3 class="title">{$info.goods_name}</h3>
+            <div class="flex_bet other">
+                <span>快递：{$info.express_fee}</span>
+                {if $info.activity.limits}<span>每人限购{$info.activity.limits}件</span>{/if}
+                <span>销量：{$sale_num}</span>
+            </div>
+        </div>
+    </div>
+    <!--优惠券-->
+    <div class="goods_box goods_coupon">
+        <div class="flex_bet coupon_link link" id="check_coupon">
+            <div class="row">
+                <span class="tag">优惠券</span>
+                <span class="over_1" style="display: inline-block;width: 80%;vertical-align: top">{volist name='coupons' id='val' key="k" offset="0" length="4"}{$val.coupon_name}；{/volist}</span>
+            </div>
+            <i class="iconfont icon-youjiantou"></i>
+        </div>
+        {eq name="info.is_int" value="0"}
+        <div class="coupon_link">
+            <div class="row">
+                <span class="tag">积分</span>
+                <span>购买可得{$info.get_integral}积分</span>
+            </div>
+        </div>
+        {/eq}
+        {notempty name="info.des"}<div class="tip">{$info.des}</div>{/notempty}
+    </div>
+</div>
+<!--评价-->
+<div class="section" id="evaluate">
+    <div class="goods_evaluate goods_box">
+        <div class="title flex_bet">
+            <div class="left">商品评价<span class="num">({$evaluate_num})</span></div>
+            <span class="right">{$grade}分</span>
+        </div>
+       {empty name="evaluate"}
+        <div class="empty">
+            <span>还没有评价哦~</span>
+        </div>
+        {else /}
+        <!--有评价-->
+        <div class="list">
+            {volist name="evaluate" id="value"}
+            <div class="item flex">
+                <div class="via">
+                    <img src="{$value.headimg}" class="img"/>
+                </div>
+                <div class="text">
+                    <div class="flex_bet">
+                        <div class="info">
+                            <span class="name">{php}
+                                if($value['anonymity']){
+                                echo mb_substr($value['nickname'],0,1,'utf-8').'***';
+                                }else{
+                                echo $value['nickname'];
+                                }
+                                {/php}</span>
+                            <span class="date">{$value.create_time}</span>
+                        </div>
+                        <div class="grade">
+                            {for start="0" end="$value.grade"}
+                            <i class="iconfont icon-iconfontxingxing"></i>
+                            {/for}
+                        </div>
+                    </div>
+                    <p class="cont">{$value.comment}</p>
+                    <div class="show_pic flex_bet">
+                        {volist name="value.images" id='v'}
+                        <img src="{$v}" class="img" />
+                        {/volist}
+                    </div>
+                    {notempty name="value.reply"}
+                    <div class="reply">{$value.reply}</div>
+                    {/notempty}
+                </div>
+            </div>
+            {/volist}
+        </div>
+        <a class="check_more">查看全部</a>
+        {/empty}
+    </div>
+</div>
+<!--详情-->
+<div class="section" id="details">
+    <div class="goods_details goods_box">
+        <div class="title">
+            <span class="span">商品详情</span>
+        </div>
+        <div class="content">
+            {$info.detail|raw}
+        </div>
+    </div>
+</div>
+<!--操作台-->
+<div class="goods_floor flex_bet">
+    <div class="left flex_aro">
+        <a href="/" class="item">
+            <i class="xls_icon xls_home"></i>
+            <p>首页</p>
+        </a>
+        <a href="/sale/cart.html" class="item">
+            <i class="xls_icon xls_cart"></i>
+            <p>购物车</p>
+        </a>
+        <a href="/mine.html" class="item">
+            <i class="xls_icon xls_member"></i>
+            <p>我的</p>
+        </a>
+    </div>
+    <button data-type="1" class="btn join_cart xls_grad-1 {if ($info.is_int) or ($info.is_new)}disabled{/if}" {if ($info.is_int) or ($info.is_new)}disabled{/if}>加入购物车</button>
+    <button data-type="2" class="btn buy_now xls_grad-2">立即购买</button>
+</div>
+<!--优惠券弹层-->
+<div class="layer_mask" id="coupon_layer">
+    <div class="layer_content">
+        <div class="close">
+            <i class="iconfont icon-close2"></i>
+        </div>
+        <div class="head_title">优惠券</div>
+        <div class="coupon_list">
+            {volist name='coupons' id='val'}
+            <div class="coupon_item flex_bet">
+                <div class="left flex">
+                    <div class="reduced">
+                        <span>&yen;</span>
+                        <span class="money">{$val.sale_money}</span>
+                    </div>
+                    <div class="use">满{$val.need_money}元可用</div>
+                </div>
+                <div class="center">
+                    <div class="flex border">
+                        <div>
+                            <div class="t1 over_1">{$val.coupon_name}</div>
+                            <p class="t2">{neq name="val.start_time" value="0"}{$val.start_time|date="Y.m.d"} - {$val.stop_time|date="Y.m.d"}{/neq}
+                                {if ($val.start_time) and ($val.validity_time) }<br />{/if}
+                                {neq name="val.validity_time" value="0"}领取后 {$val.validity_time}天内使用{/neq}
+                            </p>
+                        </div>
+                        {neq name="val.member_get_count" value="0"}
+                        <div class="use_btn been">已领取</div>
+                        {else /}
+                        <div class="use_btn get-coupon" data-id="{$val.id}">立即领取</div>
+                        {/neq}
+                    </div>
+                    <p class="t2"><span>{neq name="val.get_amount" value="0"}每人限领{$val.get_amount}张{else /}全场通用{/neq}</span ><span class="fr">{if ($val.member_level)}{$val.level_name}专属{/if}</span></p>
+                </div>
+            </div>
+            {/volist}
+        </div>
+    </div>
+</div>
+<!--商品参数弹层-->
+<div class="layer_mask" id="argument_layer">
+    <div class="layer_content">
+        <div class="close">
+            <i class="iconfont icon-close2"></i>
+        </div>
+        <div class="argument_head flex">
+            <div class="pic">
+                <img src="{$info.cover}" class="img"/>
+            </div>
+            <div class="text">
+                <div class="price">
+                    <span class="total">{eq name="info.is_int" value="1"}<span class="sale-money">{$info.integral}</span> <span class="jifen">积分</span>{else /}&yen;<span class="sale-money">{$info.price|number_format=2}</span>{/eq}</span>
+                </div>
+                <div>
+                    <span>库存：</span>
+                    <span class="inventory">{$info.inventory}</span>
+                </div>
+                <div class="type">
+                    <span class="span">{empty name="goods_spec"}数量：{else /}规格：{/empty}</span>
+                    <span class="span" id="goods_style_arg">请选择</span>
+                </div>
+            </div>
+        </div>
+        <div class="argument_body">
+            <div class="kind">规格</div>
+            <div class="list fc" id="goods_style">
+                {volist name="goods_spec" id="va" empty='无'}
+                    <span class="item" data-id="{$va.id}" data-price="{eq name='info.is_int' value='0'}{$va.price|number_format=2}{else /}{$va.integral}{/eq}" data-inventory="{$va.inventory}" >{$va.spec_name}</span>
+                {/volist}
+            </div>
+            <div class="flex_bet">
+                <div class="kind">数量</div>
+                <div class="flex_aro">
+                    {if !$info.experience}
+                    <div class="opt_btn reduce">
+                        <i class="iconfont icon-jianshao"></i>
+                    </div>
+                    <div class="count">1</div>
+                    <div class="opt_btn add">
+                        <i class="iconfont icon-jia4"></i>
+                    </div>
+                    {else /}
+                    <div class="count">1</div>
+                    {/if}
+                </div>
+            </div>
+        </div>
+        <div class="argument_foot">
+            <form action="/sale/buy_now.html" id="buy-goods" method="post">
+                <input type="hidden" name="buy_num" value="1">
+                <input type="hidden" name="goods_id" value="{$info.id}">
+                <input type="hidden" name="spec_id" value="0">
+                <button class="btn xls_grad-3">确定</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //判断商品是否有规格
+    var spec={notempty name="goods_spec"}true{else /}false{/notempty};
+    //商品库存，用户购买数量不能大于库存
+    var inventory={$info.inventory};
+    //已购数量
+    var buy_goods_num={$buy_goods_num|default=0};
+    //限购数量
+    var limits={$info.activity.limits|default=0};
+    limits=limits?limits-buy_goods_num:0;
+    //t,数量；sub_type，提交方式：1，添加购物车，2立即支付
+    var t=1,sub_type;
+    //会员等级
+    var member_level={$member_level|default=0};
+    //商品专属会员等级
+    var goods_level={$info.vip_level|default=0};
+    //是否积分商品
+    var is_int={$info.is_int};
+    //是否新人专享
+    var is_new={$info.is_new};
+    //是否体验商品
+    var is_experience={$info.experience};
+    //商品价格或兑换所需积分
+    var price={eq name='info.is_int' value='1'}{$info.integral}{else /}{$info.price}{/eq};
+    $(function(){
+        var mySwiper = new Swiper('.swiper-container', {
+            loop : true,
+            pagination: {
+            el: '.swiper-pagination',
+            type: 'fraction'
+          }
+        });
+        //锚点导航
+        var $navs = $('.goods_head .item'),
+        $sections = $('.section'),
+            $window = $(window),
+            navLength = $navs.length - 1,
+            $height = $('.goods_head').height();
+        $(".goods_head").on("click", ".item", function(){
+            var i = $(this).index() - 1;
+            var stp = parseInt($sections.eq(i).offset().top - $height);
+            $("html, body").animate({
+          scrollTop: stp
+            }, {duration: 500,easing: "swing"});
+        });
+        $window.on('scroll', function() {
+          var scrollTop = $window.scrollTop(),
+            len = navLength;
+          for (; len > -1; len--) {
+            var that = $sections.eq(len);
+            if (scrollTop >= parseInt(that.offset().top - $height)) {
+              $navs.removeClass('on').eq(len).addClass('on');
+              break;
+            }
+          }
+        });
+        //领取优惠券弹窗
+        $("#check_coupon").on("click", function(){
+            $("#coupon_layer").addClass('open');
+            $("body").css("overflow", "hidden");
+        });
+
+        $(".layer_content").on("click", ".close", function(){
+            $(".layer_mask").removeClass("open");
+            $("body").css("overflow", "auto");
+        });
+
+        //领取优惠券
+        $('.get-coupon').on('click',function () {
+            let $this=$(this);
+            let coupon_id=$this.attr('data-id');
+
+            $.post("{:url('shop/Commodity/getCoupon')}",{id:coupon_id},function (res) {
+                if(res.code==0){
+                    $this.addClass('been').removeClass('get-coupon').text('已领取');
+                }else{
+                    layer.msg(res.msg);
+                }
+            });
+        });
+
+        //打开参数弹层
+        function openLayer (el) {
+            $(el).on("click", function(){
+                if(is_int || is_new){
+                    $('#buy-goods').submit();
+                }else{
+                    $("#argument_layer").addClass('open');
+                    $("body").css("overflow", "hidden");
+                    sub_type=parseInt($(this).attr('data-type'));
+                }
+
+            });
+        }
+        //选择商品参数
+        function selectArgument (el) {
+            $(el).on("click", ".item", function () {
+                let spec_inventory=parseInt($(this).attr('data-inventory'));
+                if(!spec_inventory)
+                    return;
+
+                $(el + ' .item').removeClass("on");
+                $(this).addClass("on");
+
+                $(el + '_arg').text($(this).text());
+                price=$(this).attr('data-price');
+                let spec_id=$(this).attr('data-id');
+                inventory=spec_inventory;
+
+                $('input[name=spec_id]').val(spec_id);
+                $('#argument_layer .argument_head .inventory').text(inventory);
+                $('#argument_layer .argument_head .price .sale-money').text(price*t);
+
+                //根据规格库存重置用户购买数量
+                if(t>inventory)t=inventory;
+                $(".count").text(t);
+                $('input[name=buy_num]').val(t);
+            });
+        }
+        //数量减少
+        function reduceNum (el) {
+            $(".argument_body").on("click", el, function () {
+                if(t <= 1) {
+                    t = 1;
+                } else {
+                    t--;
+                }
+                $(el).siblings(".count").text(t);
+                $('input[name=buy_num]').val(t);
+                $('#argument_layer .argument_head .price .sale-money').text((t*price).toFixed(2));
+            });
+        }
+        reduceNum(".reduce");
+        //数量增加
+        function addNum (el) {
+            $(".argument_body").on("click", el, function () {
+                let max_num=limits?limits:inventory;
+                if(t >= max_num) {
+                    t = max_num;
+                } else {
+                    t++;
+                }
+                $(this).siblings(".count").text(t);
+                $('input[name=buy_num]').val(t);
+                $('#argument_layer .argument_head .price .sale-money').text((t*price).toFixed(2));
+            });
+        }
+        addNum(".add");
+
+        openLayer(".join_cart");		//加入购物车
+        openLayer(".buy_now");		//立即购买
+        selectArgument("#goods_style");			//选择规格
+
+        //购买
+        $('.xls_grad-3').on('click',function () {
+            //验证会员等级
+            if(member_level < goods_level){
+                layer.msg('此商品为 {$info.level_name} 会员专属');
+                return false;
+            }
+            let url='/sale/cart_add.html';
+            //验证
+            let buy_num=parseInt($('input[name=buy_num]').val());
+            let goods_id=parseInt($('input[name=goods_id]').val());
+            let spec_id=parseInt($('input[name=spec_id]').val());
+            if(!buy_num){
+                layer.msg('购买数量必须大于0');
+                return false;
+            }
+            let max_num=limits?limits:inventory;
+            if(buy_num > max_num){
+                layer.msg('已超过该商品可购买数量！');
+                return false;
+            }
+            if(!goods_id){
+                layer.msg('商品参数错误，请刷新后重试！');
+                return false;
+            }
+            if(spec && !spec_id){
+                layer.msg('请选择一种商品规格！');
+                return false;
+            }
+            let data={buy_num:buy_num,goods_id:goods_id,goods_spec_id:spec_id};
+            if(sub_type==2){
+                $('#buy-goods').submit();
+            }else{
+                $(".layer_mask").removeClass("open");
+                $("body").css("overflow", "auto");
+                $.post(url,data,function (res) {
+                    if(res.code==0){
+                        layer.msg('添加成功');
+                    }else{
+                        layer.msg(res.msg);
+                    }
+                });
+            }
+            return false;
+        });
+
+        //查看全部评价
+        $('.check_more').on('click',function () {
+            let index=layer.open({
+                type:2,
+                content:"{:url('/evaluate_all',['goods_id'=>$info['id']])}",
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(index);
+        });
+
+    });
+</script>
+</body>
+</html>

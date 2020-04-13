@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        var url='{$info.url|default=""}';
+        if(url != ""){
+            location.href=url;
+        }
+    </script>
+    <meta charset="UTF-8">
+    <title>预览</title>
+    <link rel="stylesheet" type="text/css" href="/static/admin/css/admin.css"/>
+    <style>
+        div.title{text-align: center}
+        div.content{padding: 20px;}
+        .content img{max-width: 100%}
+    </style>
+</head>
+<body>
+<div>
+    <img src="{$info.cover}" style="max-width: 100%">
+</div>
+<div class="title">
+    <h2>{$info.title}</h2>
+    <span>{$info.create_time|date='Y年m月d日'}</span>
+</div>
+<div class="content">
+    {$info.content|raw}
+</div>
+</body>
+</html>

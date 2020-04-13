@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .layer-open-des{color:#FF5722;cursor: pointer;}
+        .layui-color-green{color:#009688;}
+    </style>
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                审核通过的项目才会计入工资
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="员工姓名/昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="month" class="layui-input" id="laydate-month" placeholder="选择月份">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                    <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('staffEdit')}" data-width="600" data-height="320"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="btn-tool">
+    {{# if(d.status==0){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-warm js-audit-btn" data-id="{{d.id}}">审核</button>
+    {{# };  }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal go-btn" data-id="{{d.id}}" data-url="{:url('staffEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('staffDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+</script>
+<script type="text/html" id="type-tool">
+    {{# if(d.type){  }}
+    奖励
+    {{# }else{ }}
+    扣减
+    {{# } }}
+</script>
+<script type="text/html" id="status-tool">
+    {{# if(d.status==1){  }}
+    <span class="layui-color-green">已审核</span>
+    {{# }else if(d.status==0){ }}
+    待审核
+    {{# }else{ }}
+    <a class="layer-open-des" data-value="{{d.des}}">审核被拒</a>
+    {{# } }}
+</script>
+{include file="public/script"}
+<script>
+    var tableIns;
+    layui.use(['table','form','layer','laydate'],function () {
+        let table=layui.table,form=layui.form,layer=layui.layer;
+        //日期插件初始
+        layui.laydate.render({
+            elem:"#laydate-month",
+            type:"month"
+        });
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('staff')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['exports'],
+            //导出文件时的文件名
+            title:'员工考勤',
+            //表头设置
+            cols:[[
+                {field:'realname',title:'姓名'},
+                {field:'phone',title:'手机'},
+                {field:'project_name', title: '项目名称'},
+                {field:'type', title: '类型',toolbar:"#type-tool"},
+                {field:'fee', title: '金额'},
+                {field:'month', title: '月份'},
+                {field:'status', title: '状态',toolbar:"#status-tool"},
+                {field:'auditer', title: '审核人'},
+                {field:'create_time', title: '添加日期',hide:1},
+                {field:'tool', title: '操作',toolbar:"#btn-tool",width:160},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+
+        //审核
+        $('#table-list').on('click', '.js-audit-btn', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+
+            let conf=layer.confirm('通过该薪资项目？',{btn:['通过','拒绝'],icon:3},function () {
+                layer.close(conf);
+                let data={id:id,type:1,des:''};
+                audit(data);
+            },function () {
+                let layer_p=layer.prompt({
+                    formType:2,
+                    title:"输入拒绝理由"
+                },function (value,index) {
+                    layer.close(layer_p);
+                    let data={id:id,type:0,des:value};
+                    audit(data);
+                });
+
+            });
+        });
+        //显示申请被拒理由
+        $('#table-list').on('click','.layer-open-des',function () {
+            let des=$(this).attr('data-value');
+            layer.open({
+                title:"拒绝理由",
+                content:des
+            });
+        });
+    });
+    function audit(data) {
+        $.post("{:url('auditStaffProject')}",data,function(redata){
+            if(redata.code==0){
+                layer.msg('审核完成',{end:function () {
+                        tableIns.reload();
+                    }});
+            }else{
+                layer.msg(redata.msg,{title:site_name,icon:2});
+            }
+        });
+    }
+</script>

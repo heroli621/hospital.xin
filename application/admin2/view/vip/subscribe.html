@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                删除后不能恢复，只能删除会员未到店的预约。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="会员昵称/姓名/手机号">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="server_no" class="layui-input" placeholder="订单单号">
+                </div>
+                <div class="layui-inline" style="width: 180px;">
+                    <input type="text" name="date_range" id="start-stop" class="layui-input" placeholder="预约时段">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="tool-btn2">
+    {{# if(d.status==0){ }}
+    待确认
+    {{# }else if(d.status==1){ }}
+    待服务
+    {{# }else if(d.status==2){ }}
+    待审核
+    {{# }else{ }}
+    已完成
+    {{# }; }}
+</script>
+<script type="text/html" id="tool-btn3">
+    {{# if(d.status<= 2){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.id}}" data-url="{:url('apportion')}" data-width="80%" data-height="100%" data-title="设置护理产品">设置</button>
+        {{# if(d.status==2){ }}
+        <button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('subscribeInfo')}" data-width="80%" data-height="100%" data-title="护理产品详情">审核</button>
+        {{# }; }}
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.id}}" data-url="{:url('subscribeInfo')}" data-width="80%" data-height="100%" data-title="护理产品详情">详情</button>
+    {{# }; }}
+    <!--{{# if(d.status<99){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('deleteSub')}" title="删除"><i class="layui-icon">&#xe640;</i></button>
+    {{# }; }}-->
+</script>
+{include file="public/script"}
+<script>
+    var tableIns;
+    layui.use(['table','form','layer','laydate'],function () {
+        let table=layui.table,form=layui.form,layer=layui.layer;
+        layui.laydate.render({
+            elem:"#start-stop",
+            range:"_"
+        });
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('subscribe')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:['filter'],
+            //导出文件时的文件名
+            title:'会员返现记录',
+            //表头设置
+            cols:[[
+                {field:'server_no',title:'订单号',width:200},
+                {field:'nickname',title:'会员'},
+                {field:'phone',title:'手机'},
+                {field:'reserve_time', title: '预约时间',width:150},
+                {field:'status', title: '状态',toolbar:"#tool-btn2",width:100},
+                {field:'create_time', title: '日期',width:160},
+                {field:'tool', title: '操作',toolbar:"#tool-btn3"},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //审核
+        $('#table-list').on('click','.audit-btn',function () {
+            let id=$(this).data('id');
+            console.log(id);
+            layer.confirm("是否通过审核？",{icon:3},function () {
+                $.post("{:url('reserveAudit')}",{id:id},function(redata){
+                    layer.msg(redata.msg);
+                    if(redata.code==0){
+                        tableIns.reload();
+                    }
+                },"json");
+            });
+
+        });
+    });
+
+</script>

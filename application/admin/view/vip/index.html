@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="member" class="layui-input" placeholder="昵称/手机号">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <!--数据表格-->
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.member_id}}" data-value="{{d.status}}">冻结</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.member_id}}" data-value="{{d.status}}">解冻</button>
+    {{# }; }}
+</script>
+<script type="text/html" id="role-bar">
+    {{#if(d.role == 1){ }}
+    卖家
+    {{#}else if(d.role == 2){ }}
+    同行
+    {{#}else{ }}
+    普通会员
+    {{# } }}
+</script>
+<script type="text/html" id="valuator-btn">
+    {{# if(d.valuator==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-danger table-list-valuator"  data-id="{{d.member_id}}" data-value="{{d.valuator}}">取消资格</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs table-list-valuator" data-id="{{d.member_id}}" data-value="{{d.valuator}}">设为鉴定师</button>
+    {{# }; }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form','layer'],function () {
+        let table=layui.table,form=layui.form,layer=layui.layer;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('member')}",
+            //高度
+            height:"full-170",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{},
+            //是否显示工具栏
+            //toolbar:"#tool-bar",
+            toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'会员列表',
+            //表头设置
+            cols:[[
+                {field:'nickname',title:'昵称'},
+                {field:'mobile', title: '手机'},
+                {field:'balance', title: '余额'},
+                {field:'earnings', title: '推广总额'},
+                {field:'role', title: '角色',toolbar:"#role-bar",width:160},
+                {field:'valuator', title: '鉴定师',toolbar:"#valuator-btn",width:160},
+                {field:'status', title: '操作',toolbar:"#status-btn",width:160},
+                {field:'create_time', title: '注册日期'},
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,500,2000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            //console.log(where);
+            tableIns.reload({
+                where:data.field,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st = That.attr('data-value');
+            let con_t=st=="1"?'是否冻结该会员？':'是否解冻该会员？';
+            let conf=layer.confirm(con_t,{btn:['是','否'],icon:3},function () {
+                layer.close(conf);
+                $.post("{:url('unAndFreeze')}",{id:id},function(redata){
+                    if(redata.code==0){
+                        let txt=redata.data=='1'?'冻结':'解冻';
+                        That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-value',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+        //鉴定师设置
+        $('#table-list').on('click', '.table-list-valuator', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st = That.attr('data-value');
+            let con_t=st=="1"?'是否取消会员鉴定师资格？':'是否将该会员设置为鉴定师？';
+            let conf=layer.confirm(con_t,{btn:['是','否'],icon:3},function () {
+                layer.close(conf);
+                $.post("{:url('valuator')}",{id:id},function(redata){
+                    if(redata.code==0){
+                        let txt=redata.data=='1'?'取消资格':'设为鉴定师';
+                        That.toggleClass('layui-btn-danger').text(txt).attr('data-value',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+
+    });
+
+</script>

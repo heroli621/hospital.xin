@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div id="list-table" lay-filter="user-table"></div>
+            <script type="text/html" id="edit-btn">
+                <div class="layui-inline">
+                    <button class="layui-btn layui-btn-xs layui-btn-danger this-del-btn" data-id="{{d.id}}" ><i class="layui-icon layui-icon-delete"></i></button>
+                </div>
+            </script>
+        </div>
+        <div class="layui-row">
+            <form class="layui-form" style="width: 90%;padding-top: 20px;">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">规格名称：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="spec_name" required lay-verify="required"  autocomplete="off" class="layui-input" >
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">价格：</label>
+                    <div class="layui-input-inline" style="width: 120px;">
+                        <input type="text" name="price" lay-verify="number"  class="layui-input" placeholder="￥">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        单位：元
+                    </div>
+                </div>
+                <div class="layui-form-item" style="width: 230px;">
+                    <label class="layui-form-label">库存：</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="inventory" lay-verify="required|number"  class="layui-input" >
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <input type="hidden" name="goods_id" value="{$goods_id|default=''}">
+                        <input type="hidden" name="cover" >
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('spec')}",
+            //高度
+            height:320,
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{goods_id:"{$goods_id|default=0}"},
+            //表头设置
+            cols:[[
+                { field:'spec_name',title:'规格名称',edit:1},
+                { field:'price', title: '价格', width:120,sort: true,edit:1},
+                { field:'inventory',title:'库存',width:120,sort: true,edit:1},
+                { field:'right',title:'操作',width:80,toolbar: '#edit-btn'},
+            ]],
+            //分页设置
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='inventory' || obj.field=='integral'){
+                if(!/^[1-9]\d{1,9}$/.test(obj.value)){
+                    layer.alert('只能输入数字！');return ;
+                }
+            }
+            if(obj.field=='price'){
+                if(!/^[0-9]+(.[0-9]{1,2})?$/.test(obj.value)){
+                    layer.alert('只能输入数字！');return ;
+                }
+            }
+            $.post("{:url('admin/Sale/changeSpec')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //封面上传
+        layui.upload.render({
+            elem:"#up-image",
+            field:"images",
+            url: "{:url('uploadPic')}",
+            exts:'jpg|jpeg|png|bmp',
+            size:2000,
+            multiple:false,
+            acceptMime: 'image/*',
+            done: function(res) {
+                if(res.code==0){
+                    $('input[name=cover]').val(res.data);
+                    $('#up-image').css({'background-image':"url("+res.data+")"});
+                }else{
+                    layer.alert(res.msg);
+                }
+            }
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return false;
+            $.post("{:url('admin/Sale/specSave')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            tableIns.reload({
+                                where:{goods_id:"{$goods_id|default=0}"},
+                            });
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+
+        //删除
+        $('#table-list').on('click','.this-del-btn',function () {
+            var id = $(this).attr('data-id');
+            layer.confirm('您确定要进行删除吗？',
+                {title:site_name},
+                function(){
+                    $.post("{:url('admin/Sale/specDel')}",{id:id},function(redata){
+                        if(redata.code==0){
+                            layer.msg('删除成功',{icon:1,title:site_name,end:function(){
+                                    tableIns.reload({
+                                        where:{goods_id:"{$goods_id|default=0}"},
+                                    });
+                                }});
+                        }else{
+                            layer.msg(redata.msg,{icon:2,title:site_name});
+                        }
+                    });
+                }
+            );
+        });
+    });
+</script>

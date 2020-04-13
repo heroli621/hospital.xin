@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+</head>
+<body>
+	<div class="layui-tab page-content-wrap">
+		<div class="layui-form" style="width: 90%;padding-top: 20px;" >
+			<input type="hidden" name="id" value="{$id}">
+			<div class="layui-form-item">
+				<label class="layui-form-label">角色：</label>
+				<div class="layui-input-block">
+					{volist name="roles" id="val"}
+						<input type="checkbox" name="roles[{$val.id}]" value="{$val.id}" title="{$val.name}" {in name="val.id" value="$user_role"}checked{/in} />
+					{/volist}
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<div class="layui-input-block">
+				  <button class="layui-btn layui-btn-normal" lay-submit lay-filter="adminInfo">立即提交</button>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form'], function(){
+        var form = layui.form;
+
+        //监听信息提交
+        form.on('submit(adminInfo)', function(data){
+            var data=data.field;
+            //console.log(data);
+            $.post("{:url('saveEdit')}",data,function(redata){
+                if(redata.code==0){
+                    layer.msg("分配权限角色成功",{icon:1,title:site_name,end:function(){
+                            parent.$('.layui-show .iframe').attr('src',"{:url('index')}?time={:time()}");
+                            parent.$('.layui-layer-shade,.layui-layer-iframe').remove();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                    console.log(redata);
+                }
+            });
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="wrap-container">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                注意！！！手动添加的订单无需支付、发货、签收，直接交易完成。需要审核通过才能生效。
+            </div>
+        </blockquote>
+        <form class="layui-form" style="width: 90%;padding-top: 20px;">
+            <div class="layui-form-item">
+                <label class="layui-form-label">充值金额：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="money"  lay-verify="number"  class="layui-input" value="0.00">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">返现金额：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="return_money" class="layui-input" lay-verify="number" value="0.00">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    注意！！！没有返现禁止填写！！！
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">返现期数：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="return_date" class="layui-input" lay-verify="number" value="0">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">交易日期：</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="success_time" id="user-date" class="layui-input" readonly />
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    当前日期可不用填写
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">是否提成：</label>
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="costs" lay-skin="switch" lay-filter="costs" lay-text="是|否" value="1">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    非本月或上月交易日期不计入提成
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">计入余额：</label>
+                <div class="layui-input-inline">
+                    <input type="checkbox" name="balance" lay-skin="switch" lay-filter="costs" lay-text="是|否" value="1">
+                </div>
+                <div class="layui-form-mid layui-word-aux">
+                    计入余额后充值金额会加入会员余额，可使用。不计入余额返现无效。
+                </div>
+            </div>
+            <div class="layui-form-item" >
+                <label class="layui-form-label">留言说明：</label>
+                <div class="layui-input-block">
+                    <textarea name="message" class="layui-textarea"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <input type="hidden" name="member_id" value="{$mid|default=0}">
+                    <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">保存</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var index=parent.layer.getFrameIndex(window.name);
+    //Demo
+    layui.use(['laydate','form','layer'], function(){
+        var form = layui.form;
+        var laydate=layui.laydate,layer=layui.layer;
+        //console.log(laydate);
+        //日期插件
+        laydate.render({
+            elem: '#user-date'
+        });
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            $.post("{:url('addRecharge')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            parent.layer.close(index);
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

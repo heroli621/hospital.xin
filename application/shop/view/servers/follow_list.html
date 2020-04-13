@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file='public/head'}
+		{include file='public/script'}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <style>
+            .appoint_temp_list{padding-top: .44rem;}
+        </style>
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_grad-3">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">会员跟进</span>
+		</div>
+		<div id="mescroll">
+            <div class="appoint_temp_list">
+
+            </div>
+        </div>
+		<!--没有更多了-->
+		<div class="toBottom no_more" style="display: none;">
+			<span class="span">没有更多了</span>
+		</div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:8
+    };
+
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+            mescroll.lockUpScroll( !1 );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">还没有跟进信息哦~</p>' +
+                '</div>' +
+                '</div>';
+            $(".appoint_temp_list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $(".appoint_temp_list").empty();
+        }
+        let clen=curPageData.length;
+        for (var i = 0; i < clen; i++) {
+            let pd=curPageData[i];
+            let obj_str='<div class="appoint_temp">' +
+                '<div class="flex_bet head"> ' +
+                '<div class="time"> ' +
+                '<i class="iconfont icon-shijian"></i> ' +
+                '<span>'+pd.follow_time+'</span> ' +
+                '</div>' +
+                '<div class="state"></div> ' +
+                '</div> ' +
+                '<div class="middle flex_bet">'+pd.content+'</div></div>';
+            $(".appoint_temp_list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('followList')}?id={$mid}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+    $(function () {
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>
+

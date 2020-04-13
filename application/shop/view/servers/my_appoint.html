@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html class="html">
+	<head>
+		{include file='public/head'}
+		{include file='public/script'}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="body has_top">
+		<div class="headbar xls_grad-3">
+			<a href="javascript:history.back(-1);" class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">我的预约</span>
+		</div>
+		
+		<div class="order_status">
+			<div class="flex_aro list">
+				<div data-type="1" class="item {eq name='type' value='1'}active{/eq}">待确认</div>
+				<div  data-type="2" class="item {eq name='type' value='2'}active{/eq}">待服务</div>
+				<div  data-type="3" class="item {eq name='type' value='3'}active{/eq}">已完成</div>
+			</div>
+		</div>
+		<div id="mescroll">
+            <div class="appoint_temp_list">
+
+            </div>
+        </div>
+		<!--没有更多了-->
+		<div class="toBottom no_more" style="display: none;">
+			<span class="span">没有更多了</span>
+		</div>
+		
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:4
+    };
+    var type='{$type}';
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+            mescroll.lockUpScroll( !1 );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">还没有相关预约订单哦~</p>' +
+                '</div>' +
+                '</div>';
+            $(".appoint_temp_list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $(".appoint_temp_list").empty();
+        }
+        let clen=curPageData.length;
+        for (var i = 0; i < clen; i++) {
+            var pd=curPageData[i];
+            let status_str,k,s_str='',del_str='';
+            switch (pd.status) {
+                case 0:
+                    status_str='待确认';
+                    break;
+                case 99:
+                    status_str='已完成';
+                    break;
+                default:
+                    status_str='待服务';
+            }
+            let is_comment=(pd.status==99 && pd.is_comment==0)?'<button class="btn evaluate-order">评价</button>':'';
+            if(pd.status < 2){
+                del_str='<button class="btn remove-order">取消预约</button>';
+            }else if(pd.status==99 && pd.is_comment){
+                del_str='<button class="btn delete-order">删除订单</button>';
+            }
+            let obj_str='<div class="appoint_temp" data-id="'+pd.id+'">' +
+                '<div class="flex_bet head">' +
+                '<div class="time">' +
+                '<span>'+pd.server_no+'</span>' +
+                '</div>' +
+                '<div class="state">'+status_str+'</div>' +
+                '</div>' ;
+            if(pd.goods.length){
+                for(k in pd.goods){
+                    let gd=pd.goods[k];
+                    let staff_name=gd.staff_id>0?gd.staff_name:'未分配';
+                    s_str+='<div class="middle flex_bet"><div class="tag">项目</div>' +
+                        '<div class="name">'+gd['nursing'].goods_name+'</div>' +
+                        '<div class="civil">'+staff_name+'</div></div>' ;
+                }
+			}else{
+                s_str='<div class="middle flex_bet"><div class="tag">项目</div>' +
+                '<div class="name">'+pd.server_name+'</div></div>' ;
+			}
+
+            obj_str+=s_str;
+            obj_str+='<div class="foot flex">' +
+                is_comment+ del_str +
+                '</div>' +
+                '</div>';
+            $(".appoint_temp_list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get('/my_subscribe/'+type+'.html',{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+    $(function () {
+        //切换订单状态查询
+        $('.order_status .list').on('click','.item',function () {
+            type=$(this).data('type');
+            $('.order_status .item').removeClass('active');
+            $(this).addClass('active');
+            downCallback();
+        });
+
+        //取消订单
+        $("#mescroll").on('click','.remove-order',function () {
+            let id=$(this).parents('.appoint_temp').data('id');
+			layer.confirm("取消预约后不能恢复<br>您确定要取消预约吗？",{icon:3},function () {
+                $.post("{:url('removeSub')}",{id:id},function (res) {
+                    layer.msg(res.msg);
+                    if(res.code==0){
+                        downCallback();
+                    }
+                },"json");
+            });
+        });
+        //删除订单
+        $("#mescroll").on('click','.delete-order',function () {
+            let id=$(this).parents('.appoint_temp').data('id');
+            layer.confirm("删除预约订单后不能恢复<br>您确定要删除预约订单吗？",{icon:3},function () {
+                $.post("{:url('deleteSub')}",{id:id},function (res) {
+                    layer.msg(res.msg);
+                    if(res.code==0){
+                        downCallback();
+                    }
+                },"json");
+            });
+        });
+        //评价
+        $("#mescroll").on('click','.evaluate-order',function () {
+            let id=$(this).parents('.appoint_temp').data('id');
+            let edit_index=layer.open({
+                type:2,
+                content:"{:url('comment')}?id="+id,
+                area: ['auto','100%'],
+                shadeClose:1,
+                title:false,
+                closeBtn:0,
+                anim:2
+            });
+            layer.full(edit_index);
+        });
+    });
+</script>
+

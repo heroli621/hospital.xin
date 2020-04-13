@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+        <script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_grad-3">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">我的积分</span>
+		</div>
+		<!--积分来源-->
+        <div id="mescroll">
+            <div class="integral_list" id="list">
+
+            </div>
+        </div>
+        <!--已经到底了-->
+        <div class="toBottom" style="display: none;">
+            <span class="span">没有更多了</span>
+        </div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+
+<script>
+	$(function () {
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>
+<script>
+    //分页参数
+    var pages={
+        num:1,
+        size:8
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(pages.num,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            mescroll.lockUpScroll( !1 );
+            $('.toBottom').hide();
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">您还没有积分记录哦~</p>' +
+                '</div>' +
+                '</div>';
+            $("#list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let type=pd.type==1?'+':'-';
+            let obj_str='<div class="item flex_bet">' +
+                '<div class="left">' +
+                '<div class="type">'+pd.des+'</div>' +
+                '<div class="date">'+pd.create_time+'</div>' +
+                '</div>' +
+                '<div class="right">'+type+pd.integral+'积分</div>' +
+                '</div>';
+
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('integralLog')}",{size:pageSize,page:pageNum},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+</script>

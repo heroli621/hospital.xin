@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="layui-form" style="width: 96%;margin: 20px auto 0;">
+        <table class="layui-table" id="save-table">
+            <thead>
+            <tr>
+                <th>会员</th>
+                <th>订单号</th>
+                <th>商品名称</th>
+                <th>购买数量</th>
+                <th>含有次数</th>
+                <th>总次数</th>
+                <th>剩余次数</th>
+                <th>类型</th>
+                <th>获得日期</th>
+                <th>获得日期</th>
+            </tr>
+            </thead>
+            <tbody id="save-data">
+            {volist name="list" id="vol"}
+            <tr>
+                <td>{$vol.member.nickname}</td>
+                <td>{$vol.orders.order_no}</td>
+                <td>{$vol.goods_name}</td>
+                <td>{$vol.buy_num}</td>
+                <td>{$vol.nursing_num}</td>
+                <td>{$vol.amount}</td>
+                <td>{$vol.residue_degree}</td>
+                <td>{$vol.experience?'体验':'常规'}</td>
+                <td>{$vol.create_time}</td>
+                <td><button class="layui-btn layui-btn-xs layui-btn-normal open-this" data-width="90%" data-height="80%" data-title="我的护理记录" data-url="{:url('nursingLog')}" data-id="{$vol.id}">查看护理记录</button></td>
+            </tr>
+            {/volist}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    var index = parent.layer.getFrameIndex(window.name);
+    layui.use(['form','layer'], function(){
+        var form = layui.form,layer=layui.layer;
+
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return !1;
+            layer.confirm("请仔细核对！！！<br>是否通过审核？",{icon:3},function () {
+                $.post("{:url('reserveAudit')}",jdata,function(redata){
+                    if(redata.code==0){
+                        layer.msg(redata.msg,{end:function () {
+                                parent.layer.close(index);
+                            }});
+                    }else{
+                        layer.msg(redata.msg);
+                    }
+                },"json");
+            });
+            return false;
+        });
+    });
+</script>

@@ -1,0 +1,10 @@
+{
+
+    "require": {
+        "phpoffice/phpspreadsheet": "^1.7",
+        "gmars/tp5-rbac": "^2.0",
+        "topthink/think-captcha": "2.0.*",
+        "phpoffice/phpword": "^0.17.0",
+        "topthink/think-image": "^1.0"
+    }
+}

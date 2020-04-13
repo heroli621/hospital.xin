@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                课程名称和排序可直接点击修改。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="输入课程名称">
+                </div>
+                <div class="layui-inline">
+                    <input type="text" name="teacher" class="layui-input" placeholder="输入讲师姓名">
+                </div>
+                <div class="layui-inline">
+                    <select name="classify_id">
+                        <option value="0">选择分类</option>
+                        {volist name="course_classify" id="val"}
+                        <option value="{$val.id}">{$val.classify_name}</option>
+                        {/volist}
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <select name="status">
+                        <option value="-1">选择类型</option>
+                        <option value="0">收费</option>
+                        <option value="1">免费</option>
+                    </select>
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="tool-bar">
+    <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('courseEdit')}" ><i class="layui-icon layui-icon-add-1"></i>添加课程</button>
+</script>
+<script type="text/html" id="is-new">
+    <span>{{# if(d.is_new==1){ }}是{{# }; }}</span>
+</script>
+<script type="text/html" id="is-experience">
+    <span>{{# if(d.experience==1){ }}是{{# }; }}</span>
+</script>
+<script type="text/html" id="goods-activity">
+    {{# if((!d.vip_level) && (!d.is_int) && (!d.is_new)){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('admin/Article/activityAdd')}">添加活动</button>{{# }; }}
+</script>
+<script type="text/html" id="spec-btn">
+    {{# if((!d.vip_level) && (!d.is_int) && (!d.is_new)){ }}<button class="layui-btn layui-btn-xs open-btn" data-id="{{d.id}}" data-url="{:url('admin/Sale/spec')}">规格</button>{{# }; }}
+</script>
+<script type="text/html" id="is-combo">
+    {{# if(d.goods_type){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('combo',['type'=>1])}">查看</button>{{# }; }}
+</script>
+<script type="text/html" id="is-complimentary">
+    {{# if(d.complimentary){ }}<button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('combo')}">查看</button>{{# }; }}
+</script>
+<script type="text/html" id="top-btn">
+    <button class="layui-btn layui-btn-xs  table-list-top {{# if(d.top==1){ }}layui-btn-danger{{# }else{ }}layui-btn-primary{{# } }}" data-id="{{d.id}}">置顶</button>
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}免费{{# }else{ }}收费{{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{{d.id}}" data-url="{:url('courseEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('courseDel')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('course')}",
+            //高度
+            height:"full-250",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:{type:""},
+            //是否显示工具栏
+            toolbar:"#tool-bar",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'商品列表',
+            //表头设置
+            cols:[[
+                {field:'box',type:'checkbox'},
+                {field:'course_name',title:'课程名称',edit:1},
+                {field:'teacher',title:'讲师',width:120},
+                {field:'classify_name', title: '分类',width:160},
+                {field:'sort', title: '排序', width:80,sort:true,edit:1},
+                {field:'status',title:'状态',toolbar:'#status-btn',width:80},
+                {field:'right', title:'操作',width:140,toolbar:'#edit-btn'},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort' || obj.field=='integral' || obj.field=='inventory'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            if(obj.field=='price'){
+                if(!/^[0-9]+\.*\d{1,2}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            $.post("{:url('changeCourse')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+</script>

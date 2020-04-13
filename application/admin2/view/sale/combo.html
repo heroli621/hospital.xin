@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+
+</head>
+<body>
+
+<div>
+    <table id="data-table" class="layui-table" lay-filter="data-table">
+        <tr>
+            <th>商品名称</th>
+            <th>数量</th>
+            <th>预览</th>
+        </tr>
+        <tbody id="save-data">
+        {volist name="data" id="val"}
+        <tr>
+            <td class="na">{$val.goods_name}</td>
+            <td class="na">{$val.amount}</td>
+            <td><button class="layui-btn layui-btn-xs layui-btn-normal  open-btn"  data-url="/preview_{$val.child_id}.html" data-width="360" data-height="640" title="预览" data-title="{$val.goods_name}"><i class="layui-icon layui-icon-search"></i></button></td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+{include file="public/script"}

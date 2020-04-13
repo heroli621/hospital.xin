@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal go-btn " data-url="{:url('serverEdit')}" data-width="800" data-height="520"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal  go-btn" data-id="{{d.id}}" data-url="{:url('serverEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('serverDel')}" title="删除"><i class="layui-icon">&#xe640;</i></button>
+    </div>
+</script>
+<script type="text/html" id="type-btn">
+    {{#if(d.type==1){ }}
+    常规
+    {{# }else{ }}
+    体验
+    {{# } }}
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('servers')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'server_name',title:'项目名称',width:200},
+                //{field:'type', title: '类型',width:120,toolbar:"#type-btn"},
+                //{field:'cost', title: '手工费',width:120},
+                {field:'des', title: '描述'},
+                {field:'right', title: '操作', width:160,toolbar: '#edit-btn'},
+            ]]
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='level' || obj.field=='level_sale' || obj.field=='level_money'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');
+                    tableIns.reload();
+                    return ;
+                }
+            }
+            if(obj.field=='level_sale' && (obj.value>100 ||obj.value<1)){
+                layer.alert('折扣只能填写1-100的数字！');
+                tableIns.reload();
+                return ;
+            }
+
+            $.post("{:url('admin/Vip/changeLevel')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                if(res.code!=0){
+                    layer.msg(res.msg,{anim:6,icon:2,end:function () {
+                            tableIns.reload();
+                        }});
+                }
+            });
+        });
+
+    });
+
+
+</script>

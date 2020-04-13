@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <style>
+            #list{margin-top: 1.5rem;}
+        </style>
+		<link rel="stylesheet" href="/static/shop/css/mescroll.min.css" />
+		<script src="/static/shop/js/mescroll.min.js"></script>
+	</head>
+	<body>
+		<div class="fans_order_head">
+			<div class="headbar xls_white">
+				<a class="back">
+					<i class="iconfont icon-zuojiantou2"></i>
+				</a>
+				<span class="title">粉丝订单</span>
+			</div>
+		</div>
+		<div id="mescroll">
+            <div class="fans_order_list" id="list">
+
+            </div>
+        </div>
+        <!--没有更多了-->
+        <div class="toBottom no_more" style="display: none;">
+            <span class="span">没有更多了</span>
+        </div>
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    //分页参数
+    var pages={
+        num:1,
+        size:3
+    };
+    //手机分页
+    var mescroll = new MeScroll("mescroll", {
+        down: {
+            auto: true,
+            callback: downCallback,
+        },
+        up: {
+            auto: false,
+            //isBounce: false,
+            callback: upCallback,
+            page:pages
+        }
+    });
+
+    function downCallback(){
+        getListDataFromNet(1,pages.size, function(data){
+            mescroll.endSuccess();
+            setListData(data, false);
+            $('.toBottom').hide();
+            mescroll.lockUpScroll( !1 );
+        }, function(){
+            mescroll.endErr();
+            let obj_str='<div class="order_empty">' +
+                '<div class="box">' +
+                '<img src="/static/shop/images/no3.png" class="img" />' +
+                '<p class="p1">该粉丝还没有订单哦~</p>' +
+                '</div>' +
+                '</div>';
+            $("#list").empty().append(obj_str);
+            mescroll.lockUpScroll( !0 );
+        });
+    }
+
+    function upCallback(page){
+        getListDataFromNet(page.num, page.size, function(curPageData){
+            mescroll.endSuccess(curPageData.length);
+            setListData(curPageData, true);
+        }, function(){
+            mescroll.endErr();
+            $('.toBottom').show();
+        });
+    }
+
+    function setListData(curPageData,isAppend){
+        if (!isAppend) {
+            $("#list").empty();
+        }
+        for (var i = 0; i < curPageData.length; i++) {
+            let pd=curPageData[i];
+            let t=pd.create_time.split(' ');
+            let obj_str='<div class="item"><div class="flex_bet row">' +
+                '<div class="no">订单号：'+pd.order_no+'</div></div>' +
+                '<div class="flex_bet row">' +
+                '<div class="left">成交日期</div>' +
+                '<div class="right">'+t[0]+'</div>' +
+                '</div>' +
+                '<div class="flex_bet row">' +
+                '<div class="left">订单金额</div>' +
+                '<div class="right">&yen;&nbsp;'+pd.order_money+'</div>' +
+                '</div>' +
+                '<div class="flex_bet row">' +
+                '<div class="left">佣金金额</div>' +
+                '<div class="right">&yen;&nbsp;'+pd.brokerage+'</div>' +
+                '</div>' +
+                '</div>';
+
+            $("#list").append(obj_str);
+        }
+    }
+
+    function getListDataFromNet(pageNum,pageSize,successCallback,errorCallback) {
+        $.get("{:url('showFans')}",{size:pageSize,page:pageNum,id:{$mid}},function (res) {
+            if(res.code==0){
+                var newArr=res.data;
+                successCallback&&successCallback(newArr);
+            }else{
+                errorCallback&&errorCallback();
+            }
+
+
+        });
+    }
+
+    //返回
+    $('.back').on('click',function () {
+        parent.layer.close(iframe_index);
+    })
+</script>

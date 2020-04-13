@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+    <style>
+        .layui-table-img{max-width: 260px;max-height: 100px;cursor:pointer;}
+        .layui-layer-content img{max-width: 800px;max-height: 400px;}
+    </style>
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="add-btn">
+    <button class="layui-btn layui-btn-sm layui-btn-normal edit-btn" data-url="{:url('naviEdit')}" ><i class="layui-icon">&#xe654;</i>添加</button>
+</script>
+<script type="text/html" id="pic-tool">
+    {{# if(d.cover){ }}
+    <img class="layui-table-img" src="{{d.cover}}" alt="{{d.navi_name}}" onclick="showPic(this);">
+    {{# } }}
+</script>
+<script type="text/html" id="state-btn">
+    {{# if(d.status==1){ }}
+    <button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.navi_id}}" data-value="{{d.status}}">启用</button>
+    {{# }else{ }}
+    <button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.navi_id}}" data-value="{{d.status}}">禁用</button>
+    {{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{{d.navi_id}}" data-url="{:url('naviEdit')}" title="编辑">
+        <i class="layui-icon layui-icon-edit"></i>
+    </button>
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.navi_id}}" data-url="{:url('naviDel')}" title="删除">
+        <i class="layui-icon layui-icon-delete"></i>
+    </button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('navi')}",
+            //高度
+            height:"full-170",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //是否显示工具栏
+            toolbar:"#add-btn",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+            //导出文件时的文件名
+            title:'订单列表',
+            //表头设置
+            cols:[[
+                {field:'navi_name',title:'名称',edit:1},
+                {field:'parent_name',title:'上级'},
+                {field:'level', title: '级别',width:80},
+                {field:'cover', title: '图片',toolbar:'#pic-tool',width:300},
+                {field:'sort', title: '排序',width:100,edit:1},
+                {field:'status', title: '状态',toolbar:"#state-btn",width:100},
+                {field:'create_time', title: '创建时间',width:160},
+                {field:'cz', title: '操作',toolbar:"#edit-btn",width:160},
+            ]],
+            //分页设置
+            page:{
+                limit:20,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[20,50,100,200,500,2000,5000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return ;
+                }
+            }
+            $.post("{:url('changeNavi')}",{id:obj.data.navi_id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            var That = $(this);
+            var id = That.attr('data-id');
+            var this_value = parseInt(That.attr('data-value'));
+            this_value = this_value?0:1;
+            $.post("{:url('changeNavi')}",{id:id,field:'status',value:this_value},function(redata){
+                if(redata.code==0){
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='启用';
+                    }else{
+                        txt='禁用';
+                    }
+                    That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-value',redata.data);
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+    function showPic(obj) {
+        var pic_url=$(obj).attr('src');
+        parent.layer.open({
+            type: 1,
+            title: false,
+            closeBtn: false,
+            //area: 'auto',
+            maxWidth:false,
+            maxHeight:false,
+            //offset:["100px","200px"],
+            skin: 'layui-layer-nobg', //没有背景色
+            shadeClose: true,
+            content: "<img src='"+pic_url+"' style='max-height:600px;max-width: 1000px;'/>"
+        });
+    }
+</script>

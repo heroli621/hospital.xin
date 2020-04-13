@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+        <style>
+            .go-back{text-align: center;flex-grow: 1;}
+            .search_head .sort_search{flex-grow:3;}
+            .to_result{flex-grow: 1;}
+        </style>
+	</head>
+	<body>
+		<!--分类搜索返回-->
+		<div class="flex_bet search_head">
+            <div class="go-back" >
+                <i class="iconfont icon-zuojiantou2"></i>
+            </div>
+			<div class="sort_search">
+				<i class="iconfont icon-sousuo1"></i>
+				<input type="text" class="input input_ph" placeholder="搜索" />
+			</div>
+			<div class="to_result">搜索</div>
+		</div>
+        <div class="search_content">
+            <!--最近搜索-->
+            <div class="search_list" id="lately">
+                <div class="flex_bet">
+                    <div class="left">
+                        <i class="iconfont icon-shijian"></i>
+                        <span>最近搜索</span>
+                    </div>
+                    <div class="delete">
+                        <i class="iconfont icon-shanchu1"></i>
+                    </div>
+                </div>
+                <div class="list flex">
+                    {empty name="data"}
+                    <!--无记录-->
+                    <span class="none">暂无搜索记录</span>
+                    {else /}
+                    <!--有记录-->
+                    {volist name="data" id="val"}
+                    <a class="item">{$val}</a>
+                    {/volist}
+                    {/empty}
+                </div>
+            </div>
+            <!--热门搜索-->
+            <div class="search_list">
+                <div class="flex_bet">
+                    <div class="left">
+                        <i class="iconfont icon-remen"></i>
+                        <span>热门搜索</span>
+                    </div>
+                </div>
+                <div class="list flex">
+                    {volist name="hot_keywords" id="val" empty=''}
+                    <a class="item">{$val}</a>
+                    {/volist}
+
+                </div>
+            </div>
+        </div>
+        <div class="goods_content" style="display: none;">
+            <div class="pro_list flex_bet">
+
+            </div>
+        </div>
+
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function(){
+        let iframe_index = parent.layer.getFrameIndex(window.name);
+        //删除搜索历史记录
+        $(".search_list").on("click", ".delete", function(){
+            $.post("{:url('/search_del')}",{type:'delete'},function () {
+                $("#lately .list").html('<span class="none">暂无搜索记录</span>');
+                $(this).hide();
+            });
+
+        });
+
+        //点击历史记录搜索
+        $('.list').on('click','.item',function () {
+            let keyword=$(this).text();
+            search_start(keyword);
+        });
+
+        //点击搜索按钮
+        $('.to_result').on('click',function () {
+            let keyword=$('.input_ph').val();
+            search_start(keyword);
+        });
+
+        //返回
+        $('.go-back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+
+    });
+
+    //搜索
+    function search_start(keyword) {
+        if(keyword=='')return !1;
+        $.post("/search_keyword.html",{keyword:keyword},function (res) {
+            $('.pro_list').empty();
+            if(res.code==0){
+                let k,obj_str='',data=res.list;
+                if(data.length>0){
+                    for(k in data){
+                        let item='<div class="item">' +
+                            '<a href="/goods/detail_'+data[k].id+'.html?back_url='+parent.location.href+'" class="block" target="_parent">' +
+                            '<img src="'+data[k].cover+'" class="img"/>' +
+                            '<h3 class="title">'+data[k].goods_name+'</h3>' +
+                            '<div class="flex_bet buy">' +
+                            '<div class="price">' +
+                            '<span class="current">&yen;'+data[k].price+'</span>' +
+                        '</div>' +
+                        '<div class="cart">' +
+                        '<i class="iconfont icon-gouwuche1"></i>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div></a>';
+                        obj_str+=item;
+                    }
+                }else{
+                    obj_str='<span class="none">没有相关商品哦</span>';
+                }
+                $('.pro_list').html(obj_str);
+                $('.goods_content').show();
+                $('.search_content').hide();
+            }else{
+                layer.msg(res.msg,{icon:2,anim:6})
+            }
+
+        });
+    }
+
+</script>
+	</body>
+</html>

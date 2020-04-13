@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+	</head>
+	<body>
+		<div class="main-layout" id='main-layout'>
+			<!--侧边栏-->
+			<div class="main-layout-side">
+				<div class="m-logo" style="background: url(/static/admin/images/logo.png) center center no-repeat;">
+				</div>
+				{include file="public/menus"}
+			</div>
+			<!--右侧内容-->
+			<div class="main-layout-container">
+				<!--头部-->
+				<div class="main-layout-header">
+					<div class="menu-btn" id="hideBtn">
+						<a href="javascript:;">
+							<span class="layui-icon">&#xe668;</span>
+							<span class="layui-icon" style="display: none;">&#xe66b;</span>
+						</a>
+					</div>
+					<ul class="layui-nav" lay-filter="rightNav">
+					  <li class="layui-nav-item">
+					    <a href="javascript:;" data-url="{:url('admin/users/personal')}" data-id='8' data-text="个人信息" style="color: rgba(0,0,0,.7);">{$nickname}</a>
+					  </li>
+					  <li class="layui-nav-item"><a href="javascript:;" class="login-out" style="color: rgba(0,0,0,.7);">退出</a></li>
+					</ul>
+				</div>
+				<!--主体内容-->
+				<div class="main-layout-body">
+					<!--tab 切换-->
+					<div class="layui-tab layui-tab-brief main-layout-tab" lay-filter="tab" lay-allowClose="true">
+					  <ul class="layui-tab-title">
+					    <li class="layui-this welcome" lay-id="110">后台主页</li>
+					  </ul>
+					  <div class="layui-tab-content">
+					    <div class="layui-tab-item layui-show">
+					    	<!--1-->
+					    	<iframe src="{:url('admin/Framework/welcome')}" width="100%" height="100%" name="iframe" scrolling="auto" class="iframe" framborder="0"></iframe>
+					    	<!--1end-->
+					    </div>
+					  </div>
+					</div>
+				</div>
+
+			</div>
+			<!--遮罩-->
+			<div class="main-mask">
+				
+			</div>
+		</div>
+		{include file="public/script"}
+		<script type="text/javascript">
+            $(function(){
+                $('.login-out').on('click',function(){
+                    layer.confirm('是否退出登录？',{btn:['是','否'],title:site_name,icon:3},function(){
+                        $.post("{:url('/loginOut')}",{has:1},function(){
+                            layer.msg('成功退出登录',{title:site_name,icon:1,end:function(){
+                                location.href="{:url('/system')}";
+                            }});
+                        });
+                    });
+                });
+            });
+		</script>
+
+		<script src="./static/admin/js/main.js" type="text/javascript" charset="utf-8"></script>
+
+	</body>
+</html>

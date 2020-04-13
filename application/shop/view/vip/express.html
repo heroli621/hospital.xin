@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html class="html">
+<head>
+    {include file="public/head"}
+    {include file="public/script"}
+</head>
+<body class="body has_top">
+    <div class="headbar xls_grad-3">
+        <a class="back">
+            <i class="iconfont icon-zuojiantou2"></i>
+        </a>
+        <span class="title">物流信息</span>
+    </div>
+
+    <!--订单列表-->
+    <div id="mescroll">
+        <div class="my_order_list" id="list">
+            <div class="order_empty">
+                <a href="/goods/index.html"><div class="box">
+                    <img src="/static/shop/images/no4.png" class="img" />
+                    <p class="p1">您的宝贝已送货上门</p>
+                    <p class="p2">请您耐心等待哦</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    $(function(){
+        //返回
+        $('.back').on('click',function () {
+            if(top != self){
+                var iframe_index = parent.layer.getFrameIndex(window.name);
+                parent.layer.close(iframe_index);
+            }else{
+                history.back(-1);
+            }
+        });
+    });
+</script>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+
+</head>
+<body>
+<div class="main-layout " >
+	<!--左侧导航-->
+	{include file="public/top"}
+	<!--顶部-->
+	{include file="public/left"}
+	<div class="page-content-wrap">
+		<div class="column-content-detail">
+			<form class="layui-form" action="">
+				<div class="layui-form-item">
+					<div class="layui-inline tool-btn">
+						 <button class="layui-btn layui-btn-sm layui-btn-normal edit-btn" data-url="{:url('roleEdit')}" ><i class="layui-icon">&#xe654;</i></button>
+					</div>
+				</div>
+			</form>
+			<div class="layui-form" id="table-list">
+				<table class="layui-table" lay-skin="nob">
+					<colgroup>
+						<col width="150">
+						<col class="hidden-xs" width="150">
+						<col class="hidden-xs">
+						<col width="100">
+					</colgroup>
+					<thead>
+						<tr>
+							<th>角色名称</th>
+							<th class="hidden-xs">角色描述</th>
+							<th class="hidden-xs">拥有权限</th>
+							<th>操作</th>
+						</tr>
+					</thead>
+					<tbody>
+					{volist name="data" id="val"}
+						<tr>
+							<td>{$val.name}</td>
+							<td class="hidden-xs">{$val.description}</td>
+							<td class="hidden-xs">
+								{volist name="val.permission" id="vo" empty="无"}
+								[{$vo.name}]
+								{/volist}
+							</td>
+							<td>
+								<div class="layui-inline">
+									<button class="layui-btn layui-btn-xs layui-btn-normal  edit-btn" data-id="{$val.id}" data-url="{:url('roleEdit')}" ><i class="layui-icon">&#xe642;</i></button>
+									<button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{$val.id}" data-url="{:url('admin/Power/roleDel')}"><i class="layui-icon">&#xe640;</i></button>
+								</div>
+							</td>
+						</tr>
+					{/volist}
+					</tbody>
+				</table>
+
+			</div>
+		</div>
+		<div class="page-wrap">{$data|raw}</div>
+	</div>
+</div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['layer'], function() {
+        var layer = layui.layer;
+
+        //改变管理员状态
+        $('.layui-status-btn').on('click','.layui-btn',function(){
+            var     $this=$(this),
+                id=$this.parent().attr('data-id');
+            changeStatus({id:id},$this);
+        });
+
+        function changeStatus(data,obj){
+            $.post("{:url('admin/Power/changeStatus')}",data,function(redata){
+                if(redata.code==0){
+                    //layer.msg('用户状态修改成功',{icon:1,title:site_name});
+                    var txt='';
+                    if(redata.data=='1'){
+                        txt='正常';
+                    }else{
+                        txt='禁用';
+                    }
+                    obj.toggleClass('layui-btn-normal layui-btn-warm').text(txt).attr('data-status',redata.data);
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+        }
+
+    });
+</script>

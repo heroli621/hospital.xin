@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<title>{$config.site_name}-管理系统</title>
+		<link rel="stylesheet" type="text/css" href="./static/admin/css/layui.css" />
+		<link rel="stylesheet" type="text/css" href="./static/admin/css/login.css" />
+	</head>
+	<body>
+		<div class="m-login-bg bg-img"><!--无动画加 bg-img 类-->
+            <canvas id="c" width="100%" height="100%"></canvas>
+			<div class="m-login">
+				<p style="text-align: center;"><img src="{$config.web_logo|default=''}" style="max-width:390px;max-height: 80px;"></p>
+				<h3>{$config.site_name} <span style="font-size: 18px;">管理系统</span></h3>
+				<div class="m-login-warp">
+					<form class="layui-form">
+						<div class="layui-form-item">
+							<input type="text" name="name" required lay-verify="name" placeholder="手机" autocomplete="off" class="layui-input">
+						</div>
+						<div class="layui-form-item">
+							<input type="password" name="password" required lay-verify="password" placeholder="密码" autocomplete="off" class="layui-input">
+						</div>
+						<div class="layui-form-item">
+							<div class="layui-inline">
+								<input type="text" name="verify" required lay-verify="verify" placeholder="验证码" autocomplete="off" class="layui-input">
+							</div>
+							<div class="layui-inline" style="float:right;margin-right: 0;">
+								<img class="verifyImg" onclick="this.src=this.src+'?c='+Math.random();" src="{:url('/verify')}" style="margin-bottom: 5px;border-radius: 2px;"/>
+							</div>
+						</div>
+						<div class="layui-form-item m-login-btn">
+							<div class="layui-inline">
+								<button type="button" class="layui-btn layui-btn-login">登录</button>
+							</div>
+							<div class="layui-inline">
+								<button type="reset" class="layui-btn layui-btn-primary">取消</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+		{include file="public/script"}
+        <script>
+			/*动画处理*/
+            if (!window.requestAnimationFrame)
+                window.requestAnimationFrame = function(callback) {
+                    var id = window.setTimeout(function() { callback(); },
+                        17);
+
+                    return id;
+                };
+
+            var auto_play=$("#c").is(":hidden")?false:true;
+            var w = c.width = window.innerWidth,
+                h = c.height = window.innerHeight,
+                ctx = c.getContext('2d'),
+                opts = {
+                    len: 20,
+                    count: 50,
+                    baseTime: 10,
+                    addedTime: 10,
+                    dieChance: .05,
+                    spawnChance: 1,
+                    sparkChance: .1,
+                    sparkDist: 10,
+                    sparkSize: 2,
+                    color: 'hsl(hue,100%,light%)',
+                    baseLight: 50,
+                    addedLight: 10,
+                    shadowToTimePropMult: 6,
+                    baseLightInputMultiplier: .01,
+                    addedLightInputMultiplier: .02,
+                    cx: w / 2,
+                    cy: h / 2,
+                    repaintAlpha: .04,
+                    hueChange: .1
+                },
+                tick = 0,
+                lines = [],
+                dieX = w / 2 / opts.len,
+                dieY = h / 2 / opts.len,
+                baseRad = Math.PI * 2 / 6;
+            ctx.fillStyle = 'blank';
+            ctx.fillRect(0, 0, w, h);
+            function loop() {
+                window.requestAnimationFrame(loop); ++tick;
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(0,0,0,alp)'.replace('alp', opts.repaintAlpha);
+                ctx.fillRect(0, 0, w, h);
+                ctx.globalCompositeOperation = 'lighter';
+                if (lines.length < opts.count && Math.random() < opts.spawnChance) lines.push(new Line);
+                lines.map(function(line) {
+                    line.step()
+                });
+
+            }
+            function Line() {
+                this.reset()
+            }
+            Line.prototype.reset = function() {
+                this.x = 0;
+                this.y = 0;
+                this.addedX = 0;
+                this.addedY = 0;
+                this.rad = 0;
+                this.lightInputMultiplier = opts.baseLightInputMultiplier + opts.addedLightInputMultiplier * Math.random();
+                this.color = opts.color.replace('hue', tick * opts.hueChange);
+                this.cumulativeTime = 0;
+                this.beginPhase()
+            }
+            Line.prototype.beginPhase = function() {
+                this.x += this.addedX;
+                this.y += this.addedY;
+                this.time = 0;
+                this.targetTime = (opts.baseTime + opts.addedTime * Math.random()) | 0;
+                this.rad += baseRad * (Math.random() < .5 ? 1 : -1);
+                this.addedX = Math.cos(this.rad);
+                this.addedY = Math.sin(this.rad);
+                if (Math.random() < opts.dieChance || this.x > dieX || this.x < -dieX || this.y > dieY || this.y < -dieY) this.reset()
+            }
+            Line.prototype.step = function() {++this.time; ++this.cumulativeTime;
+                if (this.time >= this.targetTime) this.beginPhase();
+                var prop = this.time / this.targetTime,
+                    wave = Math.sin(prop * Math.PI / 2),
+                    x = this.addedX * wave,
+                    y = this.addedY * wave;
+                ctx.shadowBlur = prop * opts.shadowToTimePropMult;
+                ctx.fillStyle = ctx.shadowColor = this.color.replace('light', opts.baseLight + opts.addedLight * Math.sin(this.cumulativeTime * this.lightInputMultiplier));
+                ctx.fillRect(opts.cx + (this.x + x) * opts.len, opts.cy + (this.y + y) * opts.len, 2, 2);
+                if (Math.random() < opts.sparkChance) ctx.fillRect(opts.cx + (this.x + x) * opts.len + Math.random() * opts.sparkDist * (Math.random() < .5 ? 1 : -1) - opts.sparkSize / 2, opts.cy + (this.y + y) * opts.len + Math.random() * opts.sparkDist * (Math.random() < .5 ? 1 : -1) - opts.sparkSize / 2, opts.sparkSize, opts.sparkSize)
+            };
+
+            if(auto_play)
+                loop();
+
+            window.addEventListener('resize',
+                function() {
+                    w = c.width = window.innerWidth;
+                    h = c.height = window.innerHeight;
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(0, 0, w, h);
+                    opts.cx = w / 2;
+                    opts.cy = h / 2;
+                    dieX = w / 2 / opts.len;
+                    dieY = h / 2 / opts.len
+                }
+            );
+
+        </script>
+		<script>
+            $(function(){
+                //点击按钮登录
+                $(".layui-btn-login").on('click',function () {
+                    login();
+                });
+
+                //回车键进入下个文本框
+                $(".layui-form .layui-input").on('keyup',function(e){
+                    e.preventDefault();
+                    if (e.which==13) {
+                        var i=$(".layui-input").index(this)+1;
+                        if(i<3) {
+                            $(".layui-input").eq(i).focus();
+                        }else{
+                            login();
+                        }
+                    }
+                });
+            });
+            //登录函数
+            function login(){
+                var data={
+                    "name":$(".layui-input[name=name]").val(),
+                    "password":$(".layui-input[name=password]").val(),
+                    "verify":$(".layui-input[name=verify]").val()
+                };
+                //console.log(data);
+                //console.log(data.name);
+                if(!verification(data)){
+                    return false;
+                }
+                $.post("{:url('/login')}",data,function(redata){
+                    if(redata.code==0){
+                        layer.msg('登录成功！',{title:site_name,icon:1,end:function(){
+                            location.href="{:url('/manage')}";
+                        }})
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                        $('.verifyImg').attr('src',"/verify.html?c={:time()}");
+                        $(".layui-input[name=verify]").val('');
+                    }
+                });
+            }
+            //验证函数
+            function verification(data){
+                var rules={
+                    name:{canon:/^1[345678][0-9]{9}$/,msg:'手机账号格式错误！！'},
+                    password: {canon:/(.+){6,18}$/, msg:'密码必须6到18位！'},
+                    verify: {canon:/(.+){4}$/, msg:'验证码必须是4位！'}
+                },key,res=true;
+                for(key in data){
+                    var value=data[key];
+                    var str=rules[key].canon;
+                    if(!str.test(value)){
+                        layer.msg(rules[key].msg,{icon: 5,title:site_name});
+                        $(".layui-input[name="+key+"]").focus();
+                        res=false;
+                        break;
+                    }
+                }
+                return res;
+            }
+		</script>
+	</body>
+
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                点击课程名称可查看学员签到列表。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="课程名称">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="tool-bar">
+    <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('courseEdit')}" ><i class="layui-icon layui-icon-add-1"></i>新建课程</button>
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}">显示</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}">隐藏</button>{{# }; }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('studyGroup')}" data-id="{{d.id}}" data-width="80%" data-height="100%" data-title="{{d.title}}"><i class="layui-icon layui-icon-read"></i> 学习小组</button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.id}}" data-url="{:url('courseEdit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+        <button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('student')}"><i class="layui-icon layui-icon-group"></i> 学员分组</button>
+        <button class="layui-btn layui-btn-xs edit-btn" data-id="{{d.id}}" data-url="{:url('evaluate')}"><i class="layui-icon layui-icon-list"></i> 学员评价</button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn" data-id="{{d.id}}" data-url="{:url('createCode')}" data-height="100%" data-width="50%" data-title="生成二维码" title="生成二维码"><i class="layui-icon layui-icon-cols"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.id}}" data-url="{:url('statistics')}" title="统计"><i class="layui-icon layui-icon-chart"> 评价统计</i></button>
+    </div>
+</script>
+<script type="text/html" id="member-bar">
+    <a class="layui-cursor-pointer open-btn" data-url="{:url('signIn')}" data-id="{{d.id}}" data-width="80%" data-height="100%" data-title="查看【{{d.title}}】学员签到" title="学员签到">{{d.title}}</a>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('index')}",
+            //高度
+            height:"full-230",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            toolbar:"#tool-bar",
+            //工具栏，filter=>筛选，exports=>导出，print=>打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'线下课程列表',
+            //表头设置
+            cols:[[
+                {field:'title',title:'课程名称',toolbar:'#member-bar'},
+                {field:'tname', title: '讲师',width:200},
+                {field:'assistant', title: '助教'},
+                {field:'satisficing', title: '满意度'},
+                {field:'open_date', title: '开课日期'},
+                {field:'right', title:'操作',toolbar:'#edit-btn',width:525}
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st=That.text();
+            st=st=='上架'?'下架':'上架';
+            let lay_index=layer.confirm("是否"+st+"班级",{btn:['是','否'],icon:3},function () {
+                $.post("{:url('toggleField')}",{id:id,field:'status'},function(redata){
+                    layer.close(lay_index);
+                    if(redata.code==0){
+                        var txt='';
+                        if(redata.data=='1'){
+                            txt='显示';
+                        }else{
+                            txt='隐藏';
+                        }
+                        That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+    });
+
+</script>

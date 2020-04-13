@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+	{include file="public/script"}
+    <style>
+        #sel_city{font-size: 0;}
+    </style>
+	<!--引入swiper组件-->
+	<link rel="stylesheet" href="/static/shop/css/swiper.min.css" />
+	<script src="/static/shop/js/swiper.min.js"></script>
+</head>
+<body>
+	<!--头部-->
+	<div class="header">
+		<div class="search_bar fc" >
+			<div class="city flex_aro" id="change_city">
+				<span id="sel_city" class="sel_city">shopping</span>
+			</div>
+			<a class="search" style="background-color: #eee;">
+				<i class="iconfont icon-sousuo1"></i>
+				<span>搜索</span>
+			</a>
+			<a href="/message.html" class="msg">
+				<i class="iconfont icon-xiaoxi2" style="color:#eee;"></i>
+			</a>
+		</div>
+		{notempty name="activity"}
+		<div class="swiper-container banner">
+            <div class="swiper-wrapper">
+                {volist name="activity" id="val"}
+					<a href="/goods/detail_{$val.goods_id}.html" class="swiper-slide">
+						<img src="{$val.cover}" class="img"/>
+                        </a>
+                {/volist}
+            </div>
+		  <div class="swiper-pagination"></div>
+		</div>
+		{else /}
+		<div style="height: 1rem;"></div>
+		{/notempty}
+	</div>
+	<div class="nav flex_aro">
+		<a href="/goods/list/1.html" class="item">
+			<img src="/static/shop/images/nav1.png" class="img"/>
+			<span class="title">新人专享</span>
+		</a>
+		<a href="/goods/list/2.html" class="item">
+			<img src="/static/shop/images/nav2.png" class="img"/>
+			<span class="title">会员专区</span>
+		</a>
+        <a href="{:url('Commodity/integral')}" class="item">
+            <img src="/static/shop/images/nav4.png" class="img"/>
+            <span class="title">积分专区</span>
+        </a>
+		<a href="/activity.html" class="item">
+			<img src="/static/shop/images/nav3.png" class="img"/>
+			<span class="title">最新活动</span>
+		</a>
+	</div>
+	{notempty name="activity_goods"}
+	<!--广告列表-->
+	<div class="pro_list flex_bet">
+        {volist name="activity_goods" id="val"}
+        <div class="item">
+            <a href="/goods/detail_{$val.id}.html" class="block">
+                <img src="{$val.cover}" class="img"/>
+                <h3 class="title">{$val.goods_name}</h3>
+                <div class="flex_bet buy">
+                    <div class="price">
+                        <span class="original">&yen;{$val.price}</span>
+
+                    </div>
+                    <div class="cart">
+                        <span class="current">
+                            {switch val.activity.activity_type}
+                                {case 1}立减{$val.activity.sale}元{/case}
+                                {case 2}{$val.activity.sale/10}折优惠{/case}
+                                {case 3}赠送{$val.activity.sale}积分{/case}
+                                {case 4}赠送优惠券{/case}
+                            {/switch}
+                        </span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {/volist}
+	</div>
+	<!--猜你喜欢-->
+	<div class="guess">
+		<img src="/static/shop/images/like.jpg" class="img"/>
+	</div>
+    {/notempty}
+	<!--产品列表-->
+	<div class="pro_list flex_bet">
+        {volist name="hot_goods" id="vo"}
+		<div class="item">
+			<a href="/goods/detail_{$vo.id}.html" class="block">
+				<img src="{$vo.cover}" class="img"/>
+				<h3 class="title">{$vo.goods_name}</h3>
+                <div class="flex_bet buy">
+                    <div class="price">
+                        <span class="current">&yen;{$vo.price}</span>
+                    </div>
+                    <div class="cart">
+                        <i class="iconfont icon-gouwuche1"></i>
+                    </div>
+                </div>
+            </a>
+		</div>
+		{/volist}
+	</div>
+	<!--已经到底了-->
+	<div class="toBottom">
+		<span class="span">已经到底了</span>
+	</div>
+	<!--底部导航-->
+    {include file="public/foot"}
+    <script src="/static/shop/libs/layer/layer.js"></script>
+	<script>
+		$(function(){
+			//首页轮播图
+			var mySwiper = new Swiper('.swiper-container', {
+				autoplay: {
+					delay: 5000
+				},
+				loop : true,
+				pagination: {
+				el: '.swiper-pagination'
+			  }
+			});
+
+			$('.search').on('click',function () {
+                let index=layer.open({
+                    type:2,
+                    content:"{:url('/search')}",
+                    area: ['auto','100%'],
+                    shadeClose:1,
+                    title:false,
+                    closeBtn:0,
+                    anim:2
+                });
+                layer.full(index);
+            });
+
+			//隐藏定位城市弹层
+			/*function hideLayer() {
+				$(".choice_city").animate({
+					'right' : '-100%'
+				})
+				$("body").css("overflow", "auto");
+			}
+			//重新定位城市
+			$("#change_city").on("click", function(){
+				$(".choice_city").animate({
+					'right' : 0
+				})
+				$("body").css("overflow", "hidden");
+			});
+			//取消
+			$(".choice_city").on("click", ".cancel", function(){
+				hideLayer();
+			});
+			//当前定位
+			$(".choice_city").on("click", ".cur", function(){
+				var city = $(this).find(".b").text();
+				$("#sel_city").text(city);
+				hideLayer();
+			});
+			//其他城市选择
+			$(".city_list").on("click", "li", function(){
+				$(".city_list li").removeClass("on");
+				$(this).addClass("on");
+				var city = $(this).text();
+				$("#sel_city").text(city);
+				hideLayer();
+			});*/
+		})
+	</script>
+	<!--<script type="text/javascript" src="http://webapi.amap.com/maps?v=1.4.2&key=	83f724962c33dd7ba780c918b8ac2880"></script>-->
+	<script>
+		$(function(){
+			/*var map, geolocation;
+			map = new AMap.Map('location', {
+				resizeEnable: true
+			});
+			map.plugin('AMap.Geolocation', function() {
+			  geolocation = new AMap.Geolocation({
+					enableHighAccuracy: true,
+					timeout: 10000
+				});
+				geolocation.getCityInfo(getCity)
+			});
+			function getCity(status, result) {
+				if(status != 'complete'){
+				  console.log(status)
+				}else{
+				  $("#sel_city").html(result.city);
+				  $("#cur_city").html(result.city);
+				}
+			}
+
+			$(".relocation").on("click", function(){
+				$("#cur_city").html('定位中..');
+				setTimeout(function(){
+					geolocation.getCityInfo(getCity);
+				}, 1000);
+			})*/
+
+		})
+	</script>
+</body>
+</html>

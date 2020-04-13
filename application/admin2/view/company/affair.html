@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                事务名称可直接点击修改。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal edit-btn" data-url="{:url('affairAdd')}" data-width="500" data-height="220"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('affairDel')}" title="删除"><i class="layui-icon">&#xe640;</i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('affair')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //表头设置
+            cols:[[
+                {field:'affair_name',title:'事务名称',edit:1},
+                {field:'create_time', title: '日期'},
+                {field:'right', title: '操作', width:80,toolbar: '#edit-btn'},
+            ]]
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            if(obj.field=='affair_name' && obj.value=="" ){
+                layer.alert('事务名称不能为空！');
+                tableIns.reload();return !1;
+            }
+            $.post("{:url('changeAffair')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                if(res.code!=0){
+                    layer.msg(res.msg,{anim:6,icon:2,end:function () {
+                            tableIns.reload();
+                        }});
+                }
+            });
+        });
+
+    });
+
+
+</script>

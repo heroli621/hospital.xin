@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                所有属性可直接点击修改。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline tool-btn">
+                    <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('admin/Vip/levelAdd')}" data-width="800" data-height="520"><i class="layui-icon layui-icon-add-1"></i>添加</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('admin/Vip/levelDel')}" title="删除"><i class="layui-icon">&#xe640;</i></button>
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        let table=layui.table;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('level')}",
+            //高度
+            height:"full-115",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            //toolbar:true,
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            //defaultToolbar:['filter','exports'],
+            //导出文件时的文件名
+            //title:'资讯列表',
+            //表头设置
+            cols:[[
+                {field:'level_id',title:'等级',edit:1},
+                {field:'level_name',title:'等级名称',edit:1},
+                {field:'level_money',title:'满足金额',width:120,edit:1},
+                {field:'level_condition', title: '等级条件',edit:1},
+                {field:'level_interests', title: '等级权益',edit:1},
+                {field:'level_sale', title: '享受折扣',edit:1},
+                {field:'right', title: '操作', width:80,toolbar: '#edit-btn'},
+            ]]
+        };
+        var tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='level' || obj.field=='level_sale' || obj.field=='level_money'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');
+                    tableIns.reload();
+                    return ;
+                }
+            }
+            if(obj.field=='level_sale' && (obj.value>100 ||obj.value<1)){
+                layer.alert('折扣只能填写1-100的数字！');
+                tableIns.reload();
+                return ;
+            }
+
+            $.post("{:url('admin/Vip/changeLevel')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                if(res.code!=0){
+                    layer.msg(res.msg,{anim:6,icon:2,end:function () {
+                            tableIns.reload();
+                        }});
+                }
+            });
+        });
+
+    });
+
+
+</script>

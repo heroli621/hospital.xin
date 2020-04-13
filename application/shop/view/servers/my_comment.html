@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_gray">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">服务评价</span>
+		</div>
+
+            <div class="goods-item">
+                <div class="flex goods_describe">
+                    <div class="pic">
+
+                    </div>
+                    <div class="graded flex_aro" data-value="5">
+                        <p class="item {egt name='info.grade' value='1'}on{/egt}"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item {egt name='info.grade' value='2'}on{/egt}"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item {egt name='info.grade' value='3'}on{/egt}"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item {egt name='info.grade' value='4'}on{/egt}"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item {egt name='info.grade' value='5'}on{/egt}"><i class="iconfont icon-iconfontxingxing"></i></p>
+                    </div>
+                    <div class="norm">非常好</div>
+                </div>
+                <div class="eval_area" style="padding-top: 2rem;text-align: center;">
+                    {$info.comment}
+                </div>
+            </div>
+
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    //评分
+    var normArr = ['非常差', '差', '一般', '好', '非常好'];
+    $(function(){
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+        $('.norm').text(normArr[{$info.grade-1}]);
+    });
+</script>

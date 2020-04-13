@@ -1,0 +1,18 @@
+<div class="main-layout-header">
+    <ul class="layui-nav" style="padding:0;border-radius: 0;">
+        <li style="width: 200px;height: 60px;display: inline-block;position: relative;margin-right: 20px;text-align: center;">
+            <img src="{$config.web_logo}" style="max-width: 200px;max-height: 60px;">
+        </li>
+        {volist name="main_nav" id="nav"}
+            {if $user_state >=99 or auth_can($nav.link) }
+            <li class="layui-nav-item layui-hide-xs {eq name='nav_path' value='$nav.link'}layui-this{/eq}">
+                <a href="{$nav.link|url}" >{$nav.name}</a>
+            </li>
+            {/if}
+        {/volist}
+        <li class="layui-nav-item f-r"><a href="javascript:;" class="login-out" >退出</a></li>
+        <li class="layui-nav-item f-r {eq name='nav_path' value='mine'}layui-this{/eq}">
+            <a href="{:url('admin/mine/info')}">{$nickname}</a>
+        </li>
+    </ul>
+</div>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		{include file="public/head"}
+		{include file="public/script"}
+	</head>
+	<body class="has_top">
+		<div class="headbar xls_gray">
+			<a class="back">
+				<i class="iconfont icon-zuojiantou2"></i>
+			</a>
+			<span class="title">发表评价</span>
+			<a class="publish">发布</a>
+		</div>
+        {volist name="goods_list" id="val"}
+            <div class="goods-item" data-id="{$val.id}" data-goods-id="{$val.goods_id}">
+                <div class="flex goods_describe">
+                    <div class="pic">
+                        <img src="{$val.goods.cover}" class="img"/>
+                    </div>
+                    <div class="graded flex_aro" data-value="5">
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                        <p class="item on"><i class="iconfont icon-iconfontxingxing"></i></p>
+                    </div>
+                    <div class="norm">非常好</div>
+                </div>
+                <div class="eval_area">
+                    <textarea class="area input_ph comment" placeholder="宝贝满足你的期待吗？说说他们的优点和美中不足的地方吧"></textarea>
+                    <!--<div class="flex">
+                        <div class="box flex">
+                            <i class="iconfont icon-xiangji"></i>
+                            <p class="p">添加图片</p>
+                        </div>
+                        <div class="box flex">
+                            <i class="iconfont icon-shipin"></i>
+                            <p class="p">添加视频</p>
+                        </div>
+                    </div>-->
+                </div>
+            </div>
+        {/volist}
+		<div class="flex_bet is_anonymity">
+			<div class="anonymity" data-value="0">
+				<i class="iconfont icon-xuanzhong1"></i>
+				<span>匿名</span>
+			</div>
+			<div class="explain">你的评价能帮助其他小伙伴哟</div>
+		</div>
+
+	</body>
+</html>
+<script src="/static/shop/libs/layer/layer.js"></script>
+<script>
+    var iframe_index = parent.layer.getFrameIndex(window.name);
+    $(function(){
+
+        //评分
+        var normArr = ['非常差', '差', '一般', '好', '非常好'];
+        $(".goods-item").on("click", ".graded .item", function(){
+            var idx = $(this).index();
+            let parents=$(this).parents('.goods-item');
+            parents.find(".graded").attr('data-value',idx+1);
+            parents.find(".graded .item").removeClass("on");
+            for (var i = 0; i <= idx; i++) {
+                parents.find(".graded .item:eq("+ i +")").addClass("on");
+                parents.find(".norm").text(normArr[i]);
+            }
+
+        });
+        //是否匿名
+        $(".is_anonymity").on("click", ".anonymity", function(){
+            if ($(this).hasClass("on")) {
+                $(this).attr("data-value",0);
+                $(this).removeClass("on");
+                $(".explain").text('你的评价能帮助其他小伙伴哟');
+            } else {
+                $(this).addClass("on");
+                $(this).attr("data-value",1);
+                $(".explain").text('你写的评价会以匿名形式展现');
+            }
+        });
+
+        //返回
+        $('.back').on('click',function () {
+            parent.layer.close(iframe_index);
+        });
+
+        //发布评价
+        $('.publish').on('click',function () {
+            let data=[];
+            $('.goods-item').each(function () {
+                let comment=$(this).find('.comment').val();
+                if(comment!==""){
+                    let id=$(this).attr('data-id');
+                    let goods_id=$(this).attr('data-goods-id');
+                    let grade=$(this).find('.graded').attr('data-value');
+                    data.push({goods_id:goods_id,comment:comment,grade:grade,id:id});
+                }
+            });
+            if(data.length==0){
+                layer.msg('至少填写一个评论才能发布');
+                return !1;
+            }
+            //是否匿名
+            let anonymity=$('.anonymity').attr('data-value');
+            let post_data={anonymity:anonymity,oid:"{$oid|default=0}",goods:data};
+            $.post("{:url('comment')}",post_data,function (res) {
+                if(res.code==0){
+                    layer.msg('评价成功',{end:function () {
+                            parent.downCallback();
+                            parent.layer.close(iframe_index);
+                        }});
+
+                }
+            });
+        });
+    });
+</script>

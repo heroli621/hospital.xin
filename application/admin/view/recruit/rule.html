@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+    <style>
+        thead tr th div,td{text-align: center;}
+        .lay-state{color:#009688;}
+    </style>
+</head>
+<body>
+<div style="padding: 10px;">
+    <table id="data-table" class="layui-table" lay-filter="data-table">
+        <thead>
+        <tr>
+            <th lay-data="{field:'rule_name'}">规则名称</th>
+            <th lay-data="{field:'weight',width:100}">权重</th>
+            <th lay-data="{field:'pass_score',width:100}">合格分数</th>
+            <th lay-data="{field:'course_title'}">包含课程</th>
+            <th lay-data="{field:'type',width:100}">验证类型</th>
+            <th lay-data="{field:'score_type',width:100}">评判标准</th>
+            <th lay-data="{field:'status',width:100}">状态</th>
+            <th lay-data="{field:'tool',width:120}">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="data" id="val" key="k"}
+        <tr>
+            <td>{$val.rule_name}</td>
+            <td>{$val.weight}</td>
+            <td>{$val.pass_score}</td>
+            <td>{$val.course.course_title}</td>
+            <td>{$val.type?"严格":"一般"}</td>
+            <td>{$val.score_type?"等级":"成绩"}</td>
+            <td>{$val.status == 1?'<span class="lay-state">使用</span>':'禁用'}</td>
+            <td>
+                <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('ruleEdit')}" data-width="100%" data-id="{$val.rule_id}" data-height="100%" data-title="编辑规则"><i class="layui-icon layui-icon-edit"></i></button>
+            </td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+<script type="text/html" id="class-tool">
+    <button class="layui-btn  layui-btn-normal open-btn " data-url="{:url('ruleEdit',['class_id'=>$class_id])}" data-height="100%" data-width="100%" data-title="编辑班级"><i class="layui-icon layui-icon-add-1"></i>添加规则</button>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        var table=layui.table;
+        //渲染表格
+        table.init('data-table', {
+            height: "full-115" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#class-tool",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+            //导出文件时的文件名
+            title:'班级表',
+        });
+    });
+</script>

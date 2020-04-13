@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div style="padding-top: 10px;">
+    <blockquote class="layui-elem-quote">
+        <div class="layui-word-aux">
+            序列、小组名称、最大人数、小组得分点击可直接修改。
+        </div>
+    </blockquote>
+    <div class="layui-form" id="table-list" lay-filter="lay-form">
+        <div id="list-table" lay-filter="user-table">
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="tool-btn">
+    <button class="layui-btn  layui-btn-normal open-btn " data-url="{:url('editStudyGroup',['cid'=>$id])}" data-height="300" data-width="460" data-title="编辑学习小组"><i class="layui-icon layui-icon-add-1"></i>添加学习小组</button>
+</script>
+<script type="text/html" id="edit-btn">
+    <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('deleteStudyGroup')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+</script>
+{include file="public/script"}
+<script>
+
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('studyGroup')}",
+            //高度
+            height:"full-100",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            where:{"id":"{$id}"},
+            //是否显示工具栏
+            toolbar:'#tool-btn',
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:[],
+            //导出文件时的文件名
+            //title:'班级学员学分排行',
+            //表头设置
+            cols:[[
+                {field:'sort',title:'序列',width:120,edit:1},
+                {field:'title',title:'小组名称',edit:1},
+                {field:'member_count', title: '最大人数',edit:1},
+                {field:'score', title: '小组得分',edit:1},
+                {field:'create_time', title: '创建时间'},
+                {field:'right', title:'操作',toolbar:'#edit-btn',width:120}
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,200,1000,5000,10000]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听单元格编辑
+        table.on('edit(user-table)',function (obj) {
+            //console.log(obj);return;
+            if(obj.field=='sort' || obj.field=='member_count' || obj.field=='score'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('只能填写数字！');return ;
+                }
+            }
+            $.post("{:url('changeStudyGroup')}",{id:obj.data.id,field:obj.field,value:obj.value},function (res) {
+                return res;
+            });
+        });
+    });
+</script>

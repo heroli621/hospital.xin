@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                手动发送消息，所有项目必须填写。
+            </div>
+        </blockquote>
+        <div class="layui-row">
+            <form class="layui-form" style="width: 90%;padding-top: 20px;">
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">会员手机：</label>
+                    <div class="layui-input-inline" style="width: 160px;">
+                        <input type="text" name="mobile" lay-verify="required" class="layui-input" placeholder="ALL">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        全部会员填写 ALL ，单个会员请填写手机号
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">会员等级：</label>
+                    <div class="layui-input-inline" style="width: 160px;">
+                        <select name="member_level">
+                            <option value="0">所有会员</option>
+                            {volist name="member_level" id="val"}
+                            <option value="{$val.level_id}">{$val.level_name}</option>
+                            {/volist}
+                        </select>
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">
+                        会员等级只有填写ALL（所有会员）时才有效。
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <label class="layui-form-label">消息内容：</label>
+                    <div class="layui-input-block" >
+                        <textarea name="message" class="layui-textarea" lay-verify="required"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item" >
+                    <div class="layui-input-block">
+                        <button class="layui-btn layui-btn-normal" lay-submit lay-filter="addForm">发送</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+{include file="public/script"}
+<script>
+    layui.use(['form'],function () {
+        let form=layui.form;
+        //监听提交
+        form.on('submit(addForm)', function(data) {
+            var jdata=data.field;
+            //console.log(jdata);return false;
+            $.post("{:url('message')}",jdata,function(redata){
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            tableIns.reload({
+                                where:{goods_id:"{$goods_id|default=0}"},
+                            });
+                        }});
+                }else{
+                    layer.msg(redata.msg,{icon:2,title:site_name});
+                }
+            });
+            return false;
+        });
+    });
+</script>

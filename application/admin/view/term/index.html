@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {include file="public/head"}
+</head>
+<body>
+<div class="main-layout " >
+    <!--左侧导航-->
+    {include file="public/top"}
+    <!--顶部-->
+    {include file="public/left"}
+    <div class="page-content-wrap">
+        <blockquote class="layui-elem-quote">
+            <div class="layui-word-aux">
+                <!--已开课班级，课程无法编辑。-->点击班级名称可查看班级学员学分排行。部分信息已隐藏。需要查看，请使用表格工具 <i class="layui-icon layui-icon-cols"></i> 筛选列。
+            </div>
+        </blockquote>
+        <div class="layui-form" id="table-list" lay-filter="lay-form">
+            <div class="layui-form-item">
+                <div class="layui-inline">
+                    <input type="text" name="title" class="layui-input" placeholder="班级名称">
+                </div>
+                <div class="layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="lay-search">查找</button>
+                </div>
+            </div>
+            <div id="list-table" lay-filter="user-table">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script type="text/html" id="tool-bar">
+    <button class="layui-btn  layui-btn-normal edit-btn " data-url="{:url('edit')}" ><i class="layui-icon layui-icon-add-1"></i>新建班级</button>
+</script>
+<script type="text/html" id="member-bar">
+    <a class="layui-cursor-pointer open-btn" data-url="{:url('ranking')}" data-id="{{d.id}}" data-width="80%" data-height="100%" data-title="查看【{{d.term_name}}】学员学分排行" title="学分排行">{{d.term_name}}</a>
+</script>
+<script type="text/html" id="week-btn">
+    {{# if(d.weekday==1){ }}
+    周一
+    {{#}else if(d.weekday==2){ }}
+    周二
+    {{#}else if(d.weekday==3){ }}
+    周三
+    {{#}else if(d.weekday==4){ }}
+    周四
+    {{#}else if(d.weekday==5){ }}
+    周五
+    {{#}else if(d.weekday==6){ }}
+    周六
+    {{#}else{ }}
+    周日
+    {{# } }}
+</script>
+<script type="text/html" id="status-btn">
+    {{# if(d.status==1){ }}<button class="layui-btn layui-btn-xs layui-btn-normal table-list-status"  data-id="{{d.id}}">上架</button>{{# }else{ }}<button class="layui-btn layui-btn-xs layui-btn-primary table-list-status" data-id="{{d.id}}">下架</button>{{# }; }}
+</script>
+<script type="text/html" id="long-btn">
+    {{d.renewal_long}} 周
+</script>
+<script type="text/html" id="classify-btn">
+    {{#if(d.classify==1){ }}
+    系统班
+    {{#}else{ }}
+    定制班
+    {{#} }}
+</script>
+<script type="text/html" id="edit-btn">
+    <div class="layui-inline">
+        <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('setCourse')}" data-id="{{d.id}}" data-width="80%" data-height="100%" data-title="{{d.term_name}}"><i class="layui-icon layui-icon-read"></i> 课程管理</button>
+        <button class="layui-btn layui-btn-xs layui-btn-normal edit-btn" data-id="{{d.id}}" data-url="{:url('edit')}" title="编辑"><i class="layui-icon layui-icon-edit"></i></button>
+        <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{{d.id}}" data-url="{:url('del')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+        <button class="layui-btn layui-btn-xs edit-btn" data-url="{:url('edit',['ac'=>'copy'])}" data-id="{{d.id}}"><i class="layui-icon layui-icon-list"></i> 复制</button>
+        {{#if(d.classify==2){ }}
+        <button class="layui-btn layui-btn-xs open-btn" data-url="{:url('Vip/importExcel')}" data-id="{{d.id}}" data-title="Excel导入学员" data-height="100%"><i class="layui-icon layui-icon-component"></i> 学员导入</button>
+        {{#}  }}
+    </div>
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table','form'],function () {
+        let table=layui.table,form=layui.form;
+
+        var tableOption={
+            elem:"#list-table",
+            //异步数据接口
+            url:"{:url('index')}",
+            //高度
+            height:"full-230",
+            //表格样式line （行边框风格）row （列边框风格）nob （无边框风格）
+            skin:'line',
+            //额外条件
+            //where:'',
+            //是否显示工具栏
+            toolbar:"#tool-bar",
+            //工具栏，filter=>筛选，exports=>导出，print=>打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级列表',
+            //表头设置
+            cols:[[
+                {field:'id',title:'班级ID',width:100},
+                {field:'term_name',title:'班级名称',toolbar:'#member-bar'},
+                {field:'periods', title: '期数',width:65},
+                {field:'classify', title: '类型',toolbar:'#classify-btn',width:80},
+                {field:'learning_count', title: '学习点',width:100},
+                {field:'class_teacher', title: '班主任',width:80,hide:1},
+                {field:'wechart', title: '微信号',width:100,hide:1},
+                {field:'exam_num', title: '考试次数',width:100,hide:1},
+                {field:'renewal_long',title:'更新时长',width:90,toolbar:'#long-btn'},
+                {field:'weekday', title: '更新周期', width:90,toolbar:'#week-btn'},
+                {field:'start_time', title: '开班日期', width:105},
+                {field:'status',title:'状态',toolbar:'#status-btn',width:70},
+                {field:'right', title:'操作',toolbar:'#edit-btn',width:356},
+            ]],
+            //分页设置
+            page:{
+                limit:10,
+                prev:"上一页",
+                next:"下一页",
+                layout:['prev','page','next','skip','count','limit'],
+                limits:[10,50,100,200,500]
+            },
+        };
+        tableIns=table.render(tableOption);
+        //监听表单提交
+        form.on('submit(lay-search)',function (data) {
+            let where={where:data.field};
+            //console.log(where);
+            tableIns.reload({
+                where:where,
+                page:{
+                    curr:1,
+                    prev:"上一页",
+                    next:"下一页"
+                },
+            });
+            return false;
+        });
+    });
+
+    $(function() {
+        //修改状态
+        $('#table-list').on('click', '.table-list-status', function() {
+            let That = $(this);
+            let id = That.attr('data-id');
+            let st=That.text();
+            st=st=='上架'?'下架':'上架';
+            let lay_index=layer.confirm("是否"+st+"班级",{btn:['是','否'],icon:3},function () {
+                $.post("{:url('toggleField')}",{id:id,field:'status'},function(redata){
+                    layer.close(lay_index);
+                    if(redata.code==0){
+                        var txt='';
+                        if(redata.data=='1'){
+                            txt='上架';
+                        }else{
+                            txt='下架';
+                        }
+                        That.toggleClass('layui-btn-normal layui-btn-primary').text(txt).attr('data-status',redata.data);
+                    }else{
+                        layer.msg(redata.msg,{title:site_name,icon:2});
+                    }
+                });
+            });
+        });
+    });
+
+</script>

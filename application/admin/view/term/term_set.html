@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	{include file="public/head"}
+    <style>
+        thead tr th div,td{text-align: center;}
+    </style>
+</head>
+<body>
+<div style="padding: 10px;">
+    <blockquote class="layui-elem-quote">
+        <div class="layui-word-aux">
+            <!--已开课班级，课程无法编辑。-->班级开课前务必生成视频更新列表。视频列表的顺序：课程排序（数字倒序）->视频排序（视频集数）。
+        </div>
+    </blockquote>
+
+    <button class="layui-btn  layui-btn-normal open-btn " data-url="{:url('editTermCourse',['tid'=>$tid])}" data-height="100%" data-width="100%" data-title="编辑课程"><i class="layui-icon layui-icon-add-1"></i>添加课程</button>
+    {if count($data)}
+    <button class="layui-btn update-btn"><i class="layui-icon layui-icon-list"></i>生成视频更新列表</button>
+    {/if}
+
+    <table id="data-table" class="layui-table" lay-filter="data-table">
+        <thead>
+        <tr>
+            <th lay-data="{field:'id',hide:1}">ID</th>
+            <th lay-data="{field:'course_name'}">课程</th>
+            <th lay-data="{field:'teacher',width:120}">讲师</th>
+            <th lay-data="{field:'credit',width:100}">学分</th>
+            <th lay-data="{field:'video_credit',width:120}">视频占比</th>
+            <th lay-data="{field:'courseware_credit',width:120}">课件占比</th>
+            <th lay-data="{field:'exam_credit',width:120}">考试占比</th>
+            <th lay-data="{field:'ask_credit',width:120}">提问占比</th>
+            <th lay-data="{field:'sort',width:100,edit:1}">排序</th>
+            <th lay-data="{field:'tool',width:120}">操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="data" id="val" key="k"}
+        <tr>
+            <td>{$val.id}</td>
+            <td>{$val.course_name}</td>
+            <td>{$val.teacher}</td>
+            <td>{$val.credit}</td>
+            <td>{$val.video_credit}%</td>
+            <td>{$val.courseware_credit}%</td>
+            <td>{$val.exam_credit}%</td>
+            <td>{$val.ask_credit}%</td>
+            <td>{$val.sort}</td>
+            <td>
+                <button class="layui-btn layui-btn-xs layui-btn-normal open-btn"  data-url="{:url('editTermCourse')}" data-width="100%" data-id="{$val.id}" data-height="100%" data-title="编辑课程"><i class="layui-icon layui-icon-edit"></i></button>
+                <button class="layui-btn layui-btn-xs layui-btn-danger del-btn" data-id="{$val.id}" data-url="{:url('deleteTermCourse')}" title="删除"><i class="layui-icon layui-icon-delete"></i></button>
+            </td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+    <table id="video-list-table" class="layui-table" lay-filter="video-list-table">
+        <thead>
+        <tr>
+            <th lay-data="{field:'id',hide:1}">ID</th>
+            <th lay-data="{field:'course_name'}">课程</th>
+            <th lay-data="{field:'teacher',width:120}">讲师</th>
+            <th lay-data="{field:'title'}">视频</th>
+            <th lay-data="{field:'episode',width:100}">集数</th>
+            <th lay-data="{field:'turnover_time',width:120,edit:1}">更新日期</th>
+        </tr>
+        </thead>
+        <tbody>
+        {volist name="list" id="vo"}
+        <tr>
+            <td>{$vo.id}</td>
+            <td>{$vo.course_name}</td>
+            <td>{$vo.teacher}</td>
+            <td>{$vo.video.title}</td>
+            <td>{$vo.video.episode}</td>
+            <td>{$vo.turnover_time|date='Y-m-d'}</td>
+        </tr>
+        {/volist}
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+<script type="text/html" id="course-tool">
+    课程列表
+</script>
+<script type="text/html" id="video-tool">
+    视频更新列表
+</script>
+{include file="public/script"}
+<script>
+    layui.use(['table'],function () {
+        var table=layui.table;
+        //渲染表格
+        table.init('data-table', {
+            height: "300" //设置高度
+            ,limit: '{$data|count}',
+            toolbar:"#course-tool",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'班级课程表',
+        });
+        //渲染表格
+        table.init('video-list-table', {
+            height: "300" //设置高度
+            ,limit: '{$list|count}',
+            toolbar:"#video-tool",
+            //工具栏，filter=》筛选，exports=>导出，print=》打印
+            defaultToolbar:de_tool_bar,
+            //导出文件时的文件名
+            title:'视频更新列表',
+        });
+        //监听单元格编辑
+        table.on('edit(data-table)',function (obj) {
+            //console.log(obj);
+            if(obj.field=='sort'){
+                if(!/^\d{1,9}$/.test(obj.value)){
+                    layer.alert('排序值只能是数字！');return false;
+                }
+            }
+            let data=obj.data;
+            $.post("{:url('setCourse')}",{id:data.id,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //监听单元格编辑
+        table.on('edit(video-list-table)',function (obj) {
+            let data=obj.data;
+            console.log(data);
+            $.post("{:url('setVideoList')}",{id:data.id,value:obj.value},function (res) {
+                return res;
+            });
+        });
+        //生成视频更新列表
+        $('.update-btn').on('click',function () {
+            $.get("{:url('setCourse')}",{tid:"{$tid}"},function (redata) {
+                if(redata.code==0){
+                    layer.msg(redata.msg,{icon:1,title:site_name,end:function(){
+                            location.reload();
+                        }});
+                }else{
+                    layer.msg(redata.msg,{title:site_name,icon:2});
+                }
+            });
+        });
+    });
+</script>
